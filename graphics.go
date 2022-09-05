@@ -18,12 +18,37 @@ import (
 
 var bgrStyle, YellowDrawStyle, OrangeDrawStyle, BlackDrawStyle, WhiteDrawStyle, DarkGreenDrawStyle tcell.Style
 
+var character [4][2]rune
+var colorStyle [4][2]tcell.Style
+
 var castles, bottomOpen []string
 var playerX, playerY int
 
 func InitPlayer() {
 	playerX = 80
 	playerY = 40
+}
+
+func getUnderPlayer(currentScreen tcell.Screen, playerX, playerY int) {
+	character[0][0], _, colorStyle[0][0], _ = currentScreen.GetContent(playerX, playerY)
+	character[1][0], _, colorStyle[1][0], _ = currentScreen.GetContent(playerX+1, playerY)
+	character[2][0], _, colorStyle[2][0], _ = currentScreen.GetContent(playerX+2, playerY)
+	character[3][0], _, colorStyle[3][0], _ = currentScreen.GetContent(playerX+3, playerY)
+	character[0][1], _, colorStyle[0][1], _ = currentScreen.GetContent(playerX, playerY+1)
+	character[1][1], _, colorStyle[1][1], _ = currentScreen.GetContent(playerX+1, playerY+1)
+	character[2][1], _, colorStyle[2][1], _ = currentScreen.GetContent(playerX+2, playerY+1)
+	character[3][1], _, colorStyle[3][1], _ = currentScreen.GetContent(playerX+3, playerY+1)
+}
+
+func erasePlayer(currentScreen tcell.Screen, playerX, playerY int) {
+	currentScreen.SetContent(playerX, playerY, character[0][0], nil, colorStyle[0][0])
+	currentScreen.SetContent(playerX+1, playerY, character[1][0], nil, colorStyle[1][0])
+	currentScreen.SetContent(playerX+2, playerY, character[2][0], nil, colorStyle[2][0])
+	currentScreen.SetContent(playerX+3, playerY, character[3][0], nil, colorStyle[3][0])
+	currentScreen.SetContent(playerX, playerY+1, character[0][1], nil, colorStyle[0][1])
+	currentScreen.SetContent(playerX+1, playerY+1, character[1][1], nil, colorStyle[1][1])
+	currentScreen.SetContent(playerX+2, playerY+1, character[2][1], nil, colorStyle[2][1])
+	currentScreen.SetContent(playerX+3, playerY+1, character[3][1], nil, colorStyle[3][1])
 }
 
 func drawPlayer(currentScreen tcell.Screen, playerX, playerY int) {

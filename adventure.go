@@ -33,6 +33,7 @@ func main() {
 	}
 
 	switchScreen(currentScreen, castles, YellowDrawStyle)
+	// getUnderPlayer(currentScreen, playerX, playerY)
 	drawPlayer(currentScreen, playerY, playerX)
 
 	for {
@@ -65,6 +66,8 @@ func main() {
 			} else if ev.Rune() == 'd' {
 				playerX += 4
 			}
+			erasePlayer(currentScreen, playerX, playerY)
+			// getUnderPlayer(currentScreen, playerX, playerY)
 			drawPlayer(currentScreen, playerX, playerY)
 
 			// case *tcell.EventMouse:
