@@ -1,147 +1,189 @@
 package main
 
 import (
+	// "log"
 
-	// "github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/v2"
 )
 
-var bgrStyle tcell.Style
-var OrangeDrawStyle tcell.Style
-var YellowDrawStyle tcell.Style
+// type world struct {
+// 	stage     tcell.Screen
+// 	leftWall  bool
+// 	rightWall bool
+// 	up        tcell.Screen
+// 	down      tcell.Screen
+// 	left      tcell.Screen
+// 	right     tcell.Screen
+// }
 
-func InitColor() {
+var bgrStyle, YellowDrawStyle, OrangeDrawStyle, BlackDrawStyle, WhiteDrawStyle, DarkGreenDrawStyle tcell.Style
+
+var castles, bottomOpen []string
+var playerX, playerY int
+
+func InitPlayer() {
+	playerX = 80
+	playerY = 40
+}
+
+func drawPlayer(currentScreen tcell.Screen, playerX, playerY int) {
+	currentScreen.SetContent(playerX, playerY, 'X', nil, YellowDrawStyle)
+	currentScreen.SetContent(playerX+1, playerY, 'X', nil, YellowDrawStyle)
+	currentScreen.SetContent(playerX+2, playerY, 'X', nil, YellowDrawStyle)
+	currentScreen.SetContent(playerX+3, playerY, 'X', nil, YellowDrawStyle)
+	currentScreen.SetContent(playerX, playerY+1, 'X', nil, YellowDrawStyle)
+	currentScreen.SetContent(playerX+1, playerY+1, 'X', nil, YellowDrawStyle)
+	currentScreen.SetContent(playerX+2, playerY+1, 'X', nil, YellowDrawStyle)
+	currentScreen.SetContent(playerX+3, playerY+1, 'X', nil, YellowDrawStyle)
+}
+
+func InitColors() {
 	// define all colors as drawing color
 	// defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
 	bgrStyle = tcell.StyleDefault.Foreground(tcell.ColorLightGray).Background(tcell.ColorLightGray)
 
 	OrangeDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorOrange).Background(tcell.ColorOrange)
 	YellowDrawStyle = tcell.StyleDefault.Foreground(tcell.Color226).Background(tcell.Color226)
-	// RedDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorIndianRed).Background(tcell.ColorIndianRed)
-	// BlackDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorBlack)
-	// WhiteDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorWhite)
-	// DarkGreenDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorDarkGreen).Background(tcell.ColorDarkGreen)
-	// GreenDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorGreen).Background(tcell.ColorGreen)
-	// DarkOliveGreenDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorDarkOliveGreen).Background(tcell.ColorDarkOliveGreen)
-	// PurpleDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorMediumPurple).Background(tcell.ColorMediumPurple)
-	// LightBlueDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorDeepSkyBlue).Background(tcell.ColorDeepSkyBlue)
-	// NeonYellowDrawStyle := tcell.StyleDefault.Foreground(tcell.Color227).Background(tcell.Color227)
-	// BlueDrawStyle := tcell.StyleDefault.Foreground(tcell.Color21).Background(tcell.Color21)
+	BlackDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorBlack)
+	// RedDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorIndianRed).Background(tcell.ColorIndianRed)
+	WhiteDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorWhite)
+	DarkGreenDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorDarkGreen).Background(tcell.ColorDarkGreen)
+	// GreenDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorGreen).Background(tcell.ColorGreen)
+	// DarkOliveGreenDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorDarkOliveGreen).Background(tcell.ColorDarkOliveGreen)
+	// PurpleDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorMediumPurple).Background(tcell.ColorMediumPurple)
+	// LightBlueDrawStyle = tcell.StyleDefault.Foreground(tcell.ColorDeepSkyBlue).Background(tcell.ColorDeepSkyBlue)
+	// NeonYellowDrawStyle = tcell.StyleDefault.Foreground(tcell.Color227).Background(tcell.Color227)
+	// BlueDrawStyle = tcell.StyleDefault.Foreground(tcell.Color21).Background(tcell.Color21)
 	return
 }
 
-// type Stage struct {
-// 	content []string
-// }
+func switchScreen(screenName tcell.Screen, content []string, drawingColor tcell.Style) {
+	screenName.SetStyle(bgrStyle)
+	// s.EnableMouse()
+	// s.EnablePaste()
+	screenName.Clear()
 
-// // var YellowCastle Stage
+	var tempString string
+	// var tempContent = *content
 
-// // YellowCastle = Stage{
-// // 	content: castles,
-// // }
+	for i, _ := range content {
+		tempString = content[i]
+		characters := []rune(tempString)
+		for j := 0; j < len(tempString); j++ {
+			if string(characters[j]) == "X" {
+				col := j * 2
+				screenName.SetContent(col, i, 'X', nil, drawingColor)
+				screenName.SetContent(col+1, i, 'X', nil, drawingColor)
+			}
+		}
+	}
+}
 
-// all different kinds of stages
-// castles := []stringg{
-// 	"XXXXXXXXXXXXXXXX   XXX   XXX   XXX            XXX   XXX   XXX   XXXXXXXXXXXXXXXX",
-// 	"XXXXXXXXXXXXXXXX   XXX   XXX   XXX            XXX   XXX   XXX   XXXXXXXXXXXXXXXX",
-// 	"XX           XXX   XXX   XXX   XXX            XXX   XXX   XXX   XXX           XX",
-// 	"XX           XXX   XXX   XXX   XXX            XXX   XXX   XXX   XXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-// 	"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-// 	"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-// 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-// }
+func InitContent() {
+	// all different kinds of stages
+	castles = []string{
+		"XXXXXXXXXXXXXXXX   XXX   XXX   XXX            XXX   XXX   XXX   XXXXXXXXXXXXXXXX",
+		"XXXXXXXXXXXXXXXX   XXX   XXX   XXX            XXX   XXX   XXX   XXXXXXXXXXXXXXXX",
+		"XX           XXX   XXX   XXX   XXX            XXX   XXX   XXX   XXX           XX",
+		"XX           XXX   XXX   XXX   XXX            XXX   XXX   XXX   XXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
+		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
+		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+	}
 
-// bottomOpen := []string{
-// 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-// 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XX                                                                            XX",
-// 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-// 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-// }
+	bottomOpen = []string{
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XX                                                                            XX",
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+	}
+
+}
 
 // bottomLeftRightOpen := []string{
 // 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",

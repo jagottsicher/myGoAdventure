@@ -9,218 +9,69 @@ import (
 
 func main() {
 
-	InitColor()
-	// defStyle := tcell.StyleDefault.Background(tcell.ColorReset).Foreground(tcell.ColorReset)
-	// bgrStyle := tcell.StyleDefault.Foreground(tcell.ColorLightGray).Background(tcell.ColorLightGray)
-	// OrangeDrawStyle := tcell.StyleDefault.Foreground(tcell.ColorOrange).Background(tcell.ColorOrange)
-	// YellowDrawStyle := tcell.StyleDefault.Foreground(tcell.Color226).Background(tcell.Color226)
+	InitColors()
+	InitContent()
+	InitPlayer()
 
-	// fmt.Printf("%T", YellowDrawStyle)
-	// fmt.Scanln()
-
-	testStage := []string{
-		"XXXXXXXXXXXXXXXX   XXX   XXX   XXX            XXX   XXX   XXX   XXXXXXXXXXXXXXXX",
-		"XXXXXXXXXXXXXXXX   XXX   XXX   XXX            XXX   XXX   XXX   XXXXXXXXXXXXXXXX",
-		"XX           XXX   XXX   XXX   XXX            XXX   XXX   XXX   XXX           XX",
-		"XX           XXX   XXX   XXX   XXX            XXX   XXX   XXX   XXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXX            XXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX           XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX           XX",
-		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-		"XX                  XXXXXXXXXXXXXXX   ####   XXXXXXXXXXXXXXX                  XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XX                                                                            XX",
-		"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-		"XXXXXXXXXXXXXXXXXXXXXXXXXXXX                        XXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	}
-
-	testStage2 := []string{
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"                                                                                ",
-	"                                                                                ",
-	"                                                                                ",
-	"                                                                                ",
-	"                                                                                ",
-	"                                                                                ",
-	"                                                                                ",
-	"                                                                                ",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"                              XX                XX                              ",
-	"                              XX                XX                              ",
-	"                              XX                XX                              ",
-	"                              XX                XX                              ",
-	"                              XX                XX                              ",
-	"                              XX                XX                              ",
-	"                              XX                XX                              ",
-	"                              XX                XX                              ",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXX    XX                XX    XXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXX    XX                XX    XXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXX    XX                XX    XXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXX    XX                XX    XXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXX    XX                XX    XXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXX    XX                XX    XXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXX    XX                XX    XXXXXXXXXXXXXXXXXXXXXXXXXX",
-	"XXXXXXXXXXXX            XX    XX    XXXXXXXX    XX    XX            XXXXXXXXXXXX",
-	"XXXXXXXXXXXX            XX    XX    XXXXXXXX    XX    XX            XXXXXXXXXXXX",
-	"XXXXXXXXXXXX            XX    XX    XXXXXXXX    XX    XX            XXXXXXXXXXXX",
-	"XXXXXXXXXXXX            XX    XX    XXXXXXXX    XX    XX            XXXXXXXXXXXX",
-	"XXXXXXXXXXXX            XX    XX    XXXXXXXX    XX    XX            XXXXXXXXXXXX",
-	"XXXXXXXXXXXX            XX    XX    XXXXXXXX    XX    XX            XXXXXXXXXXXX",
-	"XXXXXXXXXXXX            XX    XX    XXXXXXXX    XX    XX            XXXXXXXXXXXX",
-	"XXXXXXXXXXXX            XX    XX    XXXXXXXX    XX    XX            XXXXXXXXXXXX",
-	"XXXXXXXXXXXX    XXXX    XXXXXXXX    XXXXXXXX    XXXXXXXX    XXXX    XXXXXXXXXXXX",
-	"XXXXXXXXXXXX    XXXX    XXXXXXXX    XXXXXXXX    XXXXXXXX    XXXX    XXXXXXXXXXXX",
-	"XXXXXXXXXXXX    XXXX    XXXXXXXX    XXXXXXXX    XXXXXXXX    XXXX    XXXXXXXXXXXX",
-	"XXXXXXXXXXXX    XXXX    XXXXXXXX    XXXXXXXX    XXXXXXXX    XXXX    XXXXXXXXXXXX",
-	"XXXXXXXXXXXX    XXXX    XXXXXXXX    XXXXXXXX    XXXXXXXX    XXXX    XXXXXXXXXXXX",
-}
-
-	//  Initialize screen
-	s, err := tcell.NewScreen()
+	currentScreen, err := tcell.NewScreen()
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
-	if err := s.Init(); err != nil {
+	if err := currentScreen.Init(); err != nil {
 		log.Fatalf("%+v", err)
 	}
-	s.SetStyle(bgrStyle)
+	currentScreen.SetStyle(bgrStyle)
 	// s.EnableMouse()
 	// s.EnablePaste()
-	s.Clear()
-
-	// fmt.Println(testStage[1])
-
-	// Draw initial boxes
-	// drawBox(s, 1, 1, 42, 7, boxStyle, "Click and drag to draw a box")
-	// drawBox(s, 5, 9, 32, 14, boxStyle, "Press C to reset")
-	//drawBox(s, 0, 0, 1, 0, dotStyle)
-
-	var tempString string
-
-	for i, _ := range testStage {
-		tempString = testStage[i]
-		characters := []rune(tempString)
-		for j := 0; j < len(tempString); j++ {
-			if string(characters[j]) == "X" {
-				col := j * 2
-				s.SetContent(col, i, 'X', nil, YellowDrawStyle)
-				s.SetContent(col+1, i, 'X', nil, YellowDrawStyle)
-			}
-		}
-	}
-
-	s2, err := tcell.NewScreen()
-	if err != nil {
-		log.Fatalf("%+v", err)
-	}
-	if err := s2.Init(); err != nil {
-		log.Fatalf("%+v", err)
-	}
-	s2.SetStyle(bgrStyle)
-	// s.EnableMouse()
-	// s2.EnablePaste()
-	s2.Clear()
-
-	for i, _ := range testStage2 {
-		tempString = testStage2[i]
-		characters := []rune(tempString)
-		for j := 0; j < len(tempString); j++ {
-			if string(characters[j]) == "X" {
-				col := j * 2
-				s2.SetContent(col, i, 'X', nil, OrangeDrawStyle)
-				s2.SetContent(col+1, i, 'X', nil, OrangeDrawStyle)
-			}
-		}
-	}
+	currentScreen.Clear()
 
 	// Event loop
 	// ox, oy := -1, -1
 	quit := func() {
-		s.Fini()
+		currentScreen.Fini()
 		os.Exit(0)
 	}
 
-	nextScreen := false
+	switchScreen(currentScreen, castles, YellowDrawStyle)
+	drawPlayer(currentScreen, playerY, playerX)
 
 	for {
-		// Update screen
-		if nextScreen == false {
-			s.Show()
-		} else {
-			s2.Show()
-		}
+		currentScreen.Show()
 
 		// Poll event
-		ev := s.PollEvent()
+		ev := currentScreen.PollEvent()
 
 		// Process event
 		switch ev := ev.(type) {
 		case *tcell.EventResize:
-			s.Sync()
+			currentScreen.Sync()
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape || ev.Key() == tcell.KeyCtrlC {
 				quit()
 			} else if ev.Key() == tcell.KeyCtrlL {
-				s.Sync()
+				currentScreen.Sync()
 			} else if ev.Rune() == 'C' || ev.Rune() == 'c' {
-				s.Clear()
-			} else if ev.Rune() == 'd' {
-				s.Clear()
-				drawBox(s, 5, 0, 9, 1, OrangeDrawStyle)
+				currentScreen.Clear()
 			} else if ev.Rune() == 'n' {
-				nextScreen = true
+				switchScreen(currentScreen, castles, BlackDrawStyle)
+			} else if ev.Rune() == 'p' {
+				switchScreen(currentScreen, bottomOpen, DarkGreenDrawStyle)
+			} else if ev.Rune() == 'w' {
+				playerY -= 2
+			} else if ev.Rune() == 'a' {
+				playerX -= 4
+			} else if ev.Rune() == 's' {
+				playerY += 2
+			} else if ev.Rune() == 'd' {
+				playerX += 4
 			}
+			drawPlayer(currentScreen, playerX, playerY)
+
 			// case *tcell.EventMouse:
 			// 	x, y := ev.Position()
 			// 	button := ev.Buttons()
 			// 	// Only process button events, not wheel events
 			// 	button &= tcell.ButtonMask(0xff)
-
 			// 	if button != tcell.ButtonNone && ox < 0 {
 			// 		ox, oy = x, y
 			// 	}
