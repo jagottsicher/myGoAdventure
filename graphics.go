@@ -37,7 +37,7 @@ type playBall struct {
 	Style  tcell.Style
 }
 
-func (player playBall) init() {
+func (player *playBall) init() {
 	Player.width = 4
 	Player.height = 2
 	Player.pos_x = 80
@@ -48,13 +48,28 @@ func (player playBall) init() {
 func (Player playBall) display(s tcell.Screen) {
 	s.Clear()
 	emitStr(s, Player.pos_x, Player.pos_y, Player.Style, "PPPP")
-	emitStr(s, Player.pos_x, Player.pos_y+1, Player.Style, fmt.Sprintf("%d/%d", Player.pos_x, Player.pos_y))
+	emitStr(s, Player.pos_x, Player.pos_y+1, Player.Style, "PPPP")
+	emitStr(s, 80, 24, Player.Style, fmt.Sprintf("%d/%d", Player.pos_x, Player.pos_y))
 	s.Show()
 }
 
-// func (Player playBall) movement(s tcell.Screen, deltaXY int8) {
-
-// }
+func (Player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
+	w, h := s.Size()
+	if Player.pos_x+deltaX >= w {
+		Player.pos_x -= w
+	}
+	if Player.pos_y+deltaY >= h {
+		Player.pos_y -= h
+	}
+	if Player.pos_x+deltaX < 0 {
+		Player.pos_x += w
+	}
+	if Player.pos_y+deltaY < 0 {
+		Player.pos_y += h
+	}
+	Player.pos_x += deltaX
+	Player.pos_y += deltaY
+}
 
 var Player playBall
 
