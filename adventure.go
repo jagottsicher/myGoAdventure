@@ -58,32 +58,16 @@ func main() {
 				fmt.Println("Bye.")
 				os.Exit(0)
 			} else if ev.Rune() == 'w' || ev.Key() == tcell.KeyUp {
-				_, h := s.Size()
-				if Player.pos_y-1 < 0 {
-					Player.pos_y += h
-				}
-				Player.pos_y -= 1
+				Player.movement(s, 0, -2)
 				Player.display(s)
 			} else if ev.Rune() == 'a' || ev.Key() == tcell.KeyLeft {
-				w, _ := s.Size()
-				if Player.pos_x-2 < 0 {
-					Player.pos_x += w
-				}
-				Player.pos_x -= 2
+				Player.movement(s, -4, 0)
 				Player.display(s)
 			} else if ev.Rune() == 's' || ev.Key() == tcell.KeyDown {
-				_, h := s.Size()
-				if Player.pos_y > h-Player.height {
-					Player.pos_y -= h
-				}
-				Player.pos_y += 1
+				Player.movement(s, 0, 2)
 				Player.display(s)
 			} else if ev.Rune() == 'd' || ev.Key() == tcell.KeyRight {
-				w, _ := s.Size()
-				if Player.pos_x > w-Player.width {
-					Player.pos_x -= w
-				}
-				Player.pos_x += 2
+				Player.movement(s, 4, 0)
 				Player.display(s)
 			}
 		}
