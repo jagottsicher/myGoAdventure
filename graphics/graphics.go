@@ -1,3 +1,8 @@
+// TO-DO
+// own struct for sizes
+// add all screens
+// add and initialize all directions
+
 package graphics
 
 import (
