@@ -13,7 +13,7 @@ func main() {
 	encoding.Register()
 
 	// init direction to avoid init error
-	initDirections(&topEntryRoom)
+	initDirections()
 
 	// Player.Init()
 
@@ -37,7 +37,7 @@ func main() {
 
 	var currentRoom rooms
 
-	currentRoom = YellowCastle
+	currentRoom = roomStartRoomTopEntryRoom
 
 	display(s, &currentRoom)
 	// display(s, &TopEntryRoom)
@@ -55,22 +55,36 @@ func main() {
 				os.Exit(0)
 			} else if ev.Rune() == 'w' || ev.Key() == tcell.KeyUp {
 				//Player.Movement(s, 0, -2)
-				currentRoom = *currentRoom.up
-				display(s, &currentRoom)
-				s.Sync()
+				if currentRoom.up != nil {
+					currentRoom = *currentRoom.up
+					display(s, &currentRoom)
+					s.Sync()
+				}
 				//Player.display(s)
 			} else if ev.Rune() == 'a' || ev.Key() == tcell.KeyLeft {
 				//Player.Movement(s, -4, 0)
 				//Player.display(s)
+				if currentRoom.left != nil {
+					currentRoom = *currentRoom.left
+					display(s, &currentRoom)
+					s.Sync()
+				}
 			} else if ev.Rune() == 's' || ev.Key() == tcell.KeyDown {
 				//Player.Movement(s, 0, 2)
-				currentRoom = *currentRoom.down
-				display(s, &currentRoom)
-				s.Sync()
+				if currentRoom.down != nil {
+					currentRoom = *currentRoom.down
+					display(s, &currentRoom)
+					s.Sync()
+				}
 				//Player.display(s)
 			} else if ev.Rune() == 'd' || ev.Key() == tcell.KeyRight {
 				//Player.Movement(s, 4, 0)
 				//Player.display(s)
+				if currentRoom.right != nil {
+					currentRoom = *currentRoom.right
+					display(s, &currentRoom)
+					s.Sync()
+				}
 			}
 		}
 	}

@@ -2,13 +2,13 @@ package main
 
 // Dragons graphics
 type size struct {
+	width  int
 	height int
-	with   int
 }
 
 type spriteGfx []string
 
-// Left of Name Room
+// Dragon gfx definition
 var roomGfxDragonCalm = spriteGfx{
 	"    DDD ",
 	"DDDDD  D",
@@ -43,15 +43,15 @@ var roomGfxDragonDead = spriteGfx{
 	"   DD   ",
 	"   DD   ",
 	"   DDD  ",
-	"  D  DD ",
+	"  D  D  ",
 	"   DD   ",
 	" DDDDDD ",
 	"DD    DD",
 	"DD    DD",
 	" DDDDDD ",
 	"  DDD   ",
-	" DD  DD ",
-	"  DDD   ",
+	" DD   D ",
+	"  DDDD  ",
 }
 
 //
@@ -91,7 +91,7 @@ var roomGfxBelowYellowCastle = compressedRoom{
 }
 
 // Side CoXXidor
-var roomGfxSideCoXXidor = compressedRoom{
+var roomGfxSideCorridor = compressedRoom{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 	"                                        ",
 	"                                        ",
@@ -119,7 +119,7 @@ var roomGfxNumberRoom = compressedRoom{
 	"X                                      X",
 	"X                                      X",
 	"X                                      X",
-	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 }
 
 // `
@@ -401,8 +401,8 @@ var roomGfxBlackMaze2 = compressedRoom{
 	"                  XX                  XX",
 	"XXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXX  XX",
 	"XXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXX  XX",
-	"                  XX                  XX",
-	"                  XX                  XX",
+	"              XX                  XX    ",
+	"              XX                  XX    ",
 	"XXXX    XXXXXXXXXXXXXXXX    XXXXXXXXXXXX",
 	"XXXX    XXXXXXXXXXXXXXXX    XXXXXXXXXXXX",
 	"        XXXX      XX        XXXX      XX",
