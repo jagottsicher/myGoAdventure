@@ -8,14 +8,21 @@ import (
 	"github.com/gdamore/tcell/encoding"
 )
 
+// room needed to be globally available
+var currentRoom *rooms = nil
+
 // This program just prints "Hello, World!".  Press ESC to exit.
 func main() {
 	encoding.Register()
 
+	// init the room colors
+	// roomColorInit()
+
 	// init direction to avoid init error
 	initDirections()
 
-	// Player.Init()
+	// player init
+	player.init()
 
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -27,26 +34,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	defStyle := tcell.StyleDefault.
-		Background(tcell.ColorBlack).
-		Foreground(tcell.ColorWhite)
-	s.SetStyle(defStyle)
+	// init the startroom
+	currentRoom = &roomStartRoomTopEntryRoom
 
-	// displayPlayer(s)
-	// Player.display(s)
+	// show the room for the first time
+	display(s, currentRoom)
 
-	var currentRoom rooms
-
-	currentRoom = roomStartRoomTopEntryRoom
-
-	display(s, &currentRoom)
-	// display(s, &TopEntryRoom)
+	// displayPlayer
+	player.display(s, currentRoom)
 
 	for {
 		switch ev := s.PollEvent().(type) {
 		case *tcell.EventResize:
+			display(s, currentRoom)
+			player.display(s, currentRoom)
 			s.Sync()
-			// Player.display(s)
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape {
 				s.Fini()
@@ -54,38 +56,20 @@ func main() {
 				fmt.Println("Bye.")
 				os.Exit(0)
 			} else if ev.Rune() == 'w' || ev.Key() == tcell.KeyUp {
-				//Player.Movement(s, 0, -2)
-				if currentRoom.up != nil {
-					currentRoom = *currentRoom.up
-					display(s, &currentRoom)
-					s.Sync()
-				}
-				//Player.display(s)
+				player.movement(s, 0, -2)
 			} else if ev.Rune() == 'a' || ev.Key() == tcell.KeyLeft {
-				//Player.Movement(s, -4, 0)
-				//Player.display(s)
-				if currentRoom.left != nil {
-					currentRoom = *currentRoom.left
-					display(s, &currentRoom)
-					s.Sync()
-				}
+				player.movement(s, -4, 0)
+
 			} else if ev.Rune() == 's' || ev.Key() == tcell.KeyDown {
-				//Player.Movement(s, 0, 2)
-				if currentRoom.down != nil {
-					currentRoom = *currentRoom.down
-					display(s, &currentRoom)
-					s.Sync()
-				}
-				//Player.display(s)
+				player.movement(s, 0, 2)
+
 			} else if ev.Rune() == 'd' || ev.Key() == tcell.KeyRight {
-				//Player.Movement(s, 4, 0)
-				//Player.display(s)
-				if currentRoom.right != nil {
-					currentRoom = *currentRoom.right
-					display(s, &currentRoom)
-					s.Sync()
-				}
+				player.movement(s, 4, 0)
 			}
 		}
+
+		display(s, currentRoom)
+		player.display(s, currentRoom)
+		s.Sync()
 	}
 }
