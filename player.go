@@ -7,6 +7,9 @@ import (
 // Player needed to be globally available
 var player playBall
 
+// Player-Wall collision
+var playerWallCollsion bool
+
 // type size declared in graphics.go
 var defaultPlayerSize = size{
 	width:  4,
@@ -21,8 +24,8 @@ type playBall struct {
 }
 
 func (player *playBall) init() {
-	player.dimensions.height = 4
-	player.dimensions.width = 2
+	player.dimensions.width = 4
+	player.dimensions.height = 2
 	player.pos_x = 80
 	player.pos_y = 30
 }
@@ -38,6 +41,9 @@ func (player *playBall) display(s tcell.Screen, r *rooms) {
 }
 
 func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
+
+	// assume the way is not blocked
+	playerWallCollsion = false
 
 	// Valid for terminal Size, but we move on screens only
 	// w, h := s.Size()
@@ -79,47 +85,48 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 		}
 	}
 
-	// check for collision
-	// above the player (includes left and right corner)
-	// var wallRune rune
-	// y := player.pos_y - 1
-	// checkXWidth := player.pos_x + player.dimensions.width + 1
-	// for x := player.pos_x - 1; x < checkXWidth; x++ {
-	// 	spot, _, _, _ := s.GetContent(x, y)
-	// 	s.SetContent(10, 5, spot, nil, player.style)
-	// 	s.SetContent(10, 6, wallRune, nil, player.style)
-
-	// 	// s.Sync()
-	// 	if spot == wallRune {
-	// 		return
-	// 	}
-	// }
-
-	// x := 0
-	// // left and right of the player (only the sides)
-	// for y = 0; y < player.dimensions.height; y++ {
-	// 	x = player.pos_x - 1
-	// 	spot, _, _, _ := s.GetContent(x, y)
-	// 	if spot == 'X' {
-	// 		return
-	// 	}
-	// 	x = player.pos_x + player.dimensions.width + 1
-	// 	spot, _, _, _ = s.GetContent(x, y)
-	// 	if spot == 'X' {
-	// 		return
-	// 	}
-	// }
-
-	// //below the player (includes left and right corner)
-	// y = player.dimensions.height + 1
-	// for x := player.pos_x - 1; x < (x + player.dimensions.width + 1); x++ {
-	// 	spot, _, _, _ := s.GetContent(x, y)
-	// 	if spot == 'X' {
-	// 		return
-	// 	}
-	// }
-
 	// only move if not a wall
 	player.pos_x += deltaX
 	player.pos_y += deltaY
+}
+
+func checkPlayerWallCollision(s tcell.Screen, intendedDirection uint8) bool {
+	// check for collision
+	// intendedDirection above = 1
+	// intendedDirection above = 2
+	// intendedDirection above = 3
+	// intendedDirection above = 4
+
+	switch intendedDirection {
+	case 1: // check above the player
+		for x := 0; x < player.dimensions.width; x++ {
+			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y-1)
+			if spot == rune('X') {
+				return true
+			}
+		}
+	case 2: // check right of the player
+		for y := 0; y < player.dimensions.height; y++ {
+			spot, _, _, _ := s.GetContent(player.pos_x+player.dimensions.width+1, player.pos_y+y)
+			if spot == rune('X') {
+				return true
+			}
+		}
+	case 3: // check below the player
+		for x := 0; x < player.dimensions.width; x++ {
+			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y+player.dimensions.height+1)
+			if spot == rune('X') {
+				return true
+			}
+		}
+	case 4: // check left of the player
+		for y := 0; y < player.dimensions.height; y++ {
+			spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y+y)
+			if spot == rune('X') {
+				return true
+			}
+		}
+	}
+	// if all idrections free we you shall pass
+	return false
 }

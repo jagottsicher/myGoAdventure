@@ -39,7 +39,7 @@ var roomYellowCastle = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxCastle,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorYellow),
 	up:    nil,
 	down:  &roomStartRoomTopEntryRoom,
@@ -51,7 +51,7 @@ var roomBlackCastle = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxCastle,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorBlack),
 	up:    nil,
 	down:  nil,
@@ -63,7 +63,7 @@ var roomWhiteCastle = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxCastle,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorWhite),
 	up:    nil,
 	down:  nil,
@@ -75,7 +75,7 @@ var roomStartRoomTopEntryRoom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBelowYellowCastle,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorGreen),
 	up:    nil,
 	down:  nil,
@@ -87,7 +87,7 @@ var roomPurpleEasterEggTopEntryRoom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxTopEntryRoom,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorPurple),
 	up:    nil,
 	down:  nil,
@@ -99,7 +99,7 @@ var roomNumberRoom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxNumberRoom,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorPurple),
 	up:    nil,
 	down:  nil,
@@ -111,7 +111,7 @@ var roomOnTopOfYellowCastle = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxNumberRoom,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorYellow),
 	up:    nil,
 	down:  nil,
@@ -123,7 +123,7 @@ var roomLeftOfStartRoom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBelowYellowCastle,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorDarkGreen),
 	up:    nil,
 	down:  nil,
@@ -135,7 +135,7 @@ var roomTwoBelowWhiteCastleRoomTopEntryRoom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxTopEntryRoom,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorDarkGreen),
 	up:    nil,
 	down:  nil,
@@ -147,7 +147,7 @@ var roomLowerRedRoomTopEntryRoom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxTopEntryRoom,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorRed),
 	up:    nil,
 	down:  nil,
@@ -159,7 +159,7 @@ var roomLeftOfNameRoom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxLeftOfName,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorGreenYellow),
 	up:    nil,
 	down:  nil,
@@ -171,7 +171,7 @@ var roomOnTopOfBlackCastle = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxSideCorridor,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorRed),
 	up:    nil,
 	down:  nil,
@@ -183,7 +183,7 @@ var roomBelowWhiteCastle = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxSideCorridor,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorGreen),
 	up:    nil,
 	down:  nil,
@@ -195,7 +195,7 @@ var roomBelowNumberRoom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxSideCorridor,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorLightBlue),
 	up:    nil,
 	down:  nil,
@@ -207,7 +207,7 @@ var roomBlueMazeEntry = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlueMazeEntry,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorBlue),
 	up:    nil,
 	down:  nil,
@@ -219,7 +219,7 @@ var roomBlueMazeCenter = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlueMazeCenter,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorBlue),
 	up:    nil,
 	down:  nil,
@@ -231,7 +231,7 @@ var roomBlueMazeBottom = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlueMazeBottom,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorBlue),
 	up:    nil,
 	down:  nil,
@@ -243,7 +243,7 @@ var roomBlueMazeLeft = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlueMaze1,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorBlue),
 	up:    nil,
 	down:  nil,
@@ -255,7 +255,7 @@ var roomBlueMazeTop = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlueMazeTop,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorBlue),
 	up:    nil,
 	down:  nil,
@@ -268,7 +268,7 @@ var roomMazeMiddle = rooms{
 	compressedRoomData: roomGfxMazeMiddle,
 	roomStyle: tcell.StyleDefault.
 		Background(tcell.ColorOrange).
-		Foreground(tcell.ColorGray),
+		Foreground(tcell.ColorDarkGray),
 	up:    nil,
 	down:  nil,
 	left:  nil,
@@ -280,7 +280,7 @@ var roomMazeSide = rooms{
 	compressedRoomData: roomGfxMazeSide,
 	roomStyle: tcell.StyleDefault.
 		Background(tcell.ColorOrange).
-		Foreground(tcell.ColorGray),
+		Foreground(tcell.ColorDarkGray),
 	up:    nil,
 	down:  nil,
 	left:  nil,
@@ -292,7 +292,7 @@ var roomMazeEntry = rooms{
 	compressedRoomData: roomGfxMazeEntry,
 	roomStyle: tcell.StyleDefault.
 		Background(tcell.ColorOrange).
-		Foreground(tcell.ColorGray),
+		Foreground(tcell.ColorDarkGray),
 	up:    nil,
 	down:  nil,
 	left:  nil,
@@ -303,7 +303,7 @@ var roomRedMazeTopLeft = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxRedMaze1,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorRed),
 	up:    nil,
 	down:  nil,
@@ -315,7 +315,7 @@ var roomRedMazeBottomLeft = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxRedMazeBottom,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorRed),
 	up:    nil,
 	down:  nil,
@@ -327,7 +327,7 @@ var roomRedMazeTopRight = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxRedMazeTop,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorRed),
 	up:    nil,
 	down:  nil,
@@ -339,7 +339,7 @@ var roomRedMazeEntryBottomRight = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxWhiteCastleEntry,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorRed),
 	up:    nil,
 	down:  nil,
@@ -351,7 +351,7 @@ var roomBlackMazeTopLeft = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlackMaze1,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorOrange),
 	up:    nil,
 	down:  nil,
@@ -363,7 +363,7 @@ var roomBlackMazeBottomLeft = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlackMaze3,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorOrange),
 	up:    nil,
 	down:  nil,
@@ -375,7 +375,7 @@ var roomBlackMazeTopRight = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlackMaze2,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorOrange),
 	up:    nil,
 	down:  nil,
@@ -387,7 +387,7 @@ var roomBlackMazeEntryBottomRight = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxBlackMazeEntry,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorGray).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorOrange),
 	up:    nil,
 	down:  nil,
