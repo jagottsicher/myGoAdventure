@@ -71,7 +71,7 @@ func main() {
 		display(s, currentRoom)
 		player.display(s, currentRoom)
 		spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y-1)
-		s.SetContent(10, 5, spot, nil, player.style)
+		s.SetContent(5, 47, spot, nil, menuStyle)
 		s.Sync()
 	}
 }
