@@ -81,19 +81,19 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 
 	// check for collision
 	// above the player (includes left and right corner)
-	var wallRune rune
-	y := player.pos_y - 1
-	checkXWidth := player.pos_x + player.dimensions.width + 1
-	for x := player.pos_x - 1; x < checkXWidth; x++ {
-		spot, _, _, _ := s.GetContent(x, y)
-		s.SetContent(10, 5, spot, nil, player.style)
-		s.SetContent(10, 6, wallRune, nil, player.style)
+	// var wallRune rune
+	// y := player.pos_y - 1
+	// checkXWidth := player.pos_x + player.dimensions.width + 1
+	// for x := player.pos_x - 1; x < checkXWidth; x++ {
+	// 	spot, _, _, _ := s.GetContent(x, y)
+	// 	s.SetContent(10, 5, spot, nil, player.style)
+	// 	s.SetContent(10, 6, wallRune, nil, player.style)
 
-		// s.Sync()
-		if spot == wallRune {
-			return
-		}
-	}
+	// 	// s.Sync()
+	// 	if spot == wallRune {
+	// 		return
+	// 	}
+	// }
 
 	// x := 0
 	// // left and right of the player (only the sides)
