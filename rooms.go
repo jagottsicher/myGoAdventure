@@ -592,5 +592,5 @@ func display(s tcell.Screen, r *rooms) {
 			}
 		}
 	}
-	emitStr(s, (0), (r.allRoomDimensions.dimensions.height - 4), roomStyle, "[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset / Retry")
+	emitStr(s, (r.allRoomDimensions.dimensions.width-len("[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset / Retry"))/2, (r.allRoomDimensions.dimensions.height - 3), roomStyle, "[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset / Retry")
 }
