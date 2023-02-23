@@ -1,24 +1,20 @@
-// TO-DO
-// own struct for sizes
-// add all screens
-// add and initialize all directions
-// monolithisch erstellen
-
 package main
 
-import "github.com/gdamore/tcell"
+import (
+	"github.com/gdamore/tcell"
+)
 
 type compressedRoom []string
 
 type roomDimensions struct {
-	dimensions                                          size
-	defaultXFactor, defaultYFactor, defaultYInnerFactor int
+	dimensions                                                               size
+	defaultXFactor, defaultYFactor, defaultYInnerFactor, defaultYOffsetBelow int
 }
 
 // type size declared in graphics.go
 var defaultRoomSize = size{
 	width:  160,
-	height: 44,
+	height: 48,
 }
 
 var defaultDimensions = roomDimensions{
@@ -26,6 +22,7 @@ var defaultDimensions = roomDimensions{
 	defaultXFactor:      4,
 	defaultYFactor:      2,
 	defaultYInnerFactor: 4,
+	defaultYOffsetBelow: 4,
 }
 
 type rooms struct {
@@ -590,9 +587,10 @@ func display(s tcell.Screen, r *rooms) {
 			for columns, char := range content {
 				// output each char x times
 				for xScale := 0; xScale < r.allRoomDimensions.defaultXFactor; xScale++ {
-					emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.dimensions.height) - r.allRoomDimensions.defaultYFactor + yScale), roomStyle, string(char))
+					emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.dimensions.height) - r.allRoomDimensions.defaultYFactor + yScale - 4), roomStyle, string(char))
 				}
 			}
 		}
 	}
+	emitStr(s, (0), (r.allRoomDimensions.dimensions.height - 4), roomStyle, "[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset / Retry")
 }

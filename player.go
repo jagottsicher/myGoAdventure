@@ -38,7 +38,13 @@ func (player *playBall) display(s tcell.Screen, r *rooms) {
 }
 
 func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
-	w, h := s.Size()
+
+	// Valid for terminal Size, but we move on screens only
+	// w, h := s.Size()
+
+	// this is the stagesize
+	w := 160
+	h := 44
 
 	// turn right
 	if player.pos_x+deltaX >= w {
@@ -73,6 +79,47 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 		}
 	}
 
+	// check for collision
+	// above the player (includes left and right corner)
+	var wallRune rune
+	y := player.pos_y - 1
+	checkXWidth := player.pos_x + player.dimensions.width + 1
+	for x := player.pos_x - 1; x < checkXWidth; x++ {
+		spot, _, _, _ := s.GetContent(x, y)
+		s.SetContent(10, 5, spot, nil, player.style)
+		s.SetContent(10, 6, wallRune, nil, player.style)
+
+		// s.Sync()
+		if spot == wallRune {
+			return
+		}
+	}
+
+	// x := 0
+	// // left and right of the player (only the sides)
+	// for y = 0; y < player.dimensions.height; y++ {
+	// 	x = player.pos_x - 1
+	// 	spot, _, _, _ := s.GetContent(x, y)
+	// 	if spot == 'X' {
+	// 		return
+	// 	}
+	// 	x = player.pos_x + player.dimensions.width + 1
+	// 	spot, _, _, _ = s.GetContent(x, y)
+	// 	if spot == 'X' {
+	// 		return
+	// 	}
+	// }
+
+	// //below the player (includes left and right corner)
+	// y = player.dimensions.height + 1
+	// for x := player.pos_x - 1; x < (x + player.dimensions.width + 1); x++ {
+	// 	spot, _, _, _ := s.GetContent(x, y)
+	// 	if spot == 'X' {
+	// 		return
+	// 	}
+	// }
+
+	// only move if not a wall
 	player.pos_x += deltaX
 	player.pos_y += deltaY
 }
