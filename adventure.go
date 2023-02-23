@@ -61,7 +61,7 @@ func main() {
 				}
 			} else if ev.Rune() == 'a' || ev.Key() == tcell.KeyLeft {
 				if checkPlayerWallCollision(s, 4) != true {
-					player.movement(s, -2, 0)
+					player.movement(s, -4, 0)
 				}
 			} else if ev.Rune() == 's' || ev.Key() == tcell.KeyDown {
 				if checkPlayerWallCollision(s, 3) != true {
@@ -69,7 +69,7 @@ func main() {
 				}
 			} else if ev.Rune() == 'd' || ev.Key() == tcell.KeyRight {
 				if checkPlayerWallCollision(s, 2) != true {
-					player.movement(s, 2, 0)
+					player.movement(s, 4, 0)
 				}
 			}
 		}

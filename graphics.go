@@ -40,11 +40,11 @@ var roomGfxDragonAggressive = spriteGfx{
 }
 
 var roomGfxDragonDead = spriteGfx{
-	"   DD   ",
-	"   DD   ",
-	"   DDD  ",
-	"  D  D  ",
-	"   DD   ",
+	"    DD  ",
+	"    DD  ",
+	"    DDD ",
+	"   D  D ",
+	"  DD    ",
 	" DDDDDD ",
 	"DD    DD",
 	"DD    DD",
