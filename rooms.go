@@ -267,7 +267,7 @@ var roomMazeMiddle = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxMazeMiddle,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorOrange).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorDarkGray),
 	up:    nil,
 	down:  nil,
@@ -279,7 +279,7 @@ var roomMazeSide = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxMazeSide,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorOrange).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorDarkGray),
 	up:    nil,
 	down:  nil,
@@ -291,7 +291,7 @@ var roomMazeEntry = rooms{
 	allRoomDimensions:  defaultDimensions,
 	compressedRoomData: roomGfxMazeEntry,
 	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorOrange).
+		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorDarkGray),
 	up:    nil,
 	down:  nil,
@@ -555,6 +555,8 @@ func display(s tcell.Screen, r *rooms) {
 	roomStyle := r.roomStyle
 	s.SetStyle(roomStyle)
 
+	// Any maze
+
 	// line by line
 	// top and last lines repeat twice, the inner lines 8 times
 	for lines, content := range r.compressedRoomData[0:1] {
@@ -593,10 +595,35 @@ func display(s tcell.Screen, r *rooms) {
 		}
 	}
 
+	if r == &roomMazeEntry || r == &roomMazeMiddle || r == &roomMazeSide {
+		// print the player surrounding
+		roomUncoveredStyle := tcell.StyleDefault.
+			Background(tcell.ColorOrange).
+			Foreground(tcell.ColorDarkGray)
+
+		const surroundingDimX = 36
+		const surroundingDimY = 18
+
+		var surroundingContent [surroundingDimY][surroundingDimX]rune
+
+		for surY := 0; surY < surroundingDimY; surY++ {
+			for surX := 0; surX < surroundingDimX; surX++ {
+				surroundingContent[surY][surX], _, _, _ = s.GetContent(player.pos_x-16+surX, player.pos_y-8+surY)
+			}
+		}
+
+		for surY := 0; surY < surroundingDimY; surY++ {
+			for surX := 0; surX < surroundingDimX; surX++ {
+				emitStr(s, player.pos_x-16+surX, player.pos_y-8+surY, roomUncoveredStyle, string(surroundingContent[surY][surX]))
+			}
+		}
+	}
+
 	// fill area black
 	for i := 0; i < 4; i++ {
 		emitStr(s, 0, (r.allRoomDimensions.dimensions.height - 4 + i), menuStyle, "                                                                                                                                                                ")
 	}
 
 	emitStr(s, (r.allRoomDimensions.dimensions.width-len("[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset/Retry"))/2, (r.allRoomDimensions.dimensions.height - 3), menuStyle, "[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset/Retry")
+
 }
