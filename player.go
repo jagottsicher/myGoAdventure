@@ -34,6 +34,9 @@ func (player *playBall) display(s tcell.Screen, r *rooms) {
 
 	// player has same color as actual room
 	player.style = r.roomStyle
+	// player.style = tcell.StyleDefault.
+	// 	Background(tcell.ColorBlack).
+	// 	Foreground(tcell.ColorBlack)
 
 	// print the player
 	emitStr(s, player.pos_x, player.pos_y, player.style, "████")
