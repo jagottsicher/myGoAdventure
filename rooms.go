@@ -571,13 +571,21 @@ func display(s tcell.Screen, r *rooms) {
 		}
 	}
 
+	var barsStyle = tcell.StyleDefault.
+		Background(tcell.ColorDarkGray).
+		Foreground(tcell.ColorBlack)
+
 	for lines, content := range r.compressedRoomData[1:11] {
 		for yScale := 0; yScale < r.allRoomDimensions.defaultYInnerFactor; yScale++ {
 			// column by column
 			for columns, char := range content {
 				// output each char x times
 				for xScale := 0; xScale < r.allRoomDimensions.defaultXFactor; xScale++ {
-					emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.defaultYInnerFactor * (lines)) + r.allRoomDimensions.defaultYFactor + yScale), roomStyle, string(char))
+					if string(char) != "+" {
+						emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.defaultYInnerFactor * (lines)) + r.allRoomDimensions.defaultYFactor + yScale), roomStyle, string(char))
+					} else {
+						emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.defaultYInnerFactor * (lines)) + r.allRoomDimensions.defaultYFactor + yScale), barsStyle, string(char))
+					}
 				}
 			}
 		}

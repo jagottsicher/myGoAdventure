@@ -273,7 +273,7 @@ var roomGfxCastle = compressedRoom{
 	"X         XXXXXXX      XXXXXXX         X",
 	"X         XXXXXXXXXXXXXXXXXXXX         X",
 	"X           XXXXXXXXXXXXXXXX           X",
-	"X           XXXXXX    XXXXXX           X",
+	"X           XXXXXX ++ XXXXXX           X",
 	"X                                      X",
 	"X                                      X",
 	"X                                      X",
