@@ -24,21 +24,13 @@ func display(s tcell.Screen, r *rooms) {
 		}
 	}
 
-	// var barsStyle = tcell.StyleDefault.
-	// 	Background(tcell.ColorDarkGray).
-	// 	Foreground(tcell.ColorBlack)
-
 	for lines, content := range r.compressedRoomData[1:11] {
 		for yScale := 0; yScale < r.allRoomDimensions.defaultYInnerFactor; yScale++ {
 			// column by column
 			for columns, char := range content {
 				// output each char x times
 				for xScale := 0; xScale < r.allRoomDimensions.defaultXFactor; xScale++ {
-					if string(char) != "+" {
-						emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.defaultYInnerFactor * (lines)) + r.allRoomDimensions.defaultYFactor + yScale), roomStyle, string(char))
-					} else {
-						// emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.defaultYInnerFactor * (lines)) + r.allRoomDimensions.defaultYFactor + yScale), barsStyle, string(char))
-					}
+					emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.defaultYInnerFactor * (lines)) + r.allRoomDimensions.defaultYFactor + yScale), roomStyle, string(char))
 				}
 			}
 		}
@@ -80,19 +72,28 @@ func display(s tcell.Screen, r *rooms) {
 		}
 	}
 
+	// build the gates
 	if r == &roomYellowCastle {
 		// output gates
-		displayObject(s, &yellowCastleGate)
+		displayGate(s, &yellowCastleGate)
 	}
 
 	if r == &roomBlackCastle {
 		// output gates
-		displayObject(s, &blackCastleGate)
+		displayGate(s, &blackCastleGate)
 	}
 
 	if r == &roomWhiteCastle {
 		// output gates
-		displayObject(s, &whiteCastleGate)
+		displayGate(s, &whiteCastleGate)
+	}
+
+	// render the bars, if needed
+	if r.barLeft == true {
+		displayBar(s, &leftBar)
+	}
+	if r.barRight == true {
+		displayBar(s, &rightBar)
 	}
 
 	// fill area black
@@ -104,10 +105,17 @@ func display(s tcell.Screen, r *rooms) {
 
 }
 
-func displayObject(s tcell.Screen, g *gate) {
+func displayGate(s tcell.Screen, g *gate) {
 	for h := 0; h < g.height; h++ {
 		for w := 0; w < g.width; w++ {
 			emitStr(s, g.pos_x+w, g.pos_y+h, g.objectStyle, string(g.buildRune))
+		}
+	}
+}
+func displayBar(s tcell.Screen, b *bar) {
+	for h := 0; h < b.height; h++ {
+		for w := 0; w < b.width; w++ {
+			emitStr(s, b.pos_x+w, h, b.objectStyle, string(b.buildRune))
 		}
 	}
 }

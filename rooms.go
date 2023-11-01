@@ -29,6 +29,8 @@ type rooms struct {
 	allRoomDimensions  roomDimensions
 	compressedRoomData compressedRoom
 	roomStyle          tcell.Style
+	barLeft            bool
+	barRight           bool
 	up                 *rooms
 	down               *rooms
 	left               *rooms
@@ -125,10 +127,11 @@ var roomLeftOfStartRoom = rooms{
 	roomStyle: tcell.StyleDefault.
 		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorDarkGreen),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
+	barLeft: true,
+	up:      nil,
+	down:    nil,
+	left:    nil,
+	right:   nil,
 }
 
 var roomTwoBelowWhiteCastleRoomTopEntryRoom = rooms{
@@ -161,10 +164,11 @@ var roomLeftOfNameRoom = rooms{
 	roomStyle: tcell.StyleDefault.
 		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorGreenYellow),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
+	barRight: true,
+	up:       nil,
+	down:     nil,
+	left:     nil,
+	right:    nil,
 }
 
 var roomOnTopOfBlackCastle = rooms{
@@ -185,10 +189,11 @@ var roomBelowWhiteCastle = rooms{
 	roomStyle: tcell.StyleDefault.
 		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorGreen),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
+	barLeft: true,
+	up:      nil,
+	down:    nil,
+	left:    nil,
+	right:   nil,
 }
 
 var roomBelowNumberRoom = rooms{
@@ -197,10 +202,11 @@ var roomBelowNumberRoom = rooms{
 	roomStyle: tcell.StyleDefault.
 		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorLightBlue),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
+	barRight: true,
+	up:       nil,
+	down:     nil,
+	left:     nil,
+	right:    nil,
 }
 
 var roomBlueMazeEntry = rooms{

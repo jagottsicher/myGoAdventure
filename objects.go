@@ -56,3 +56,35 @@ var blackCastleGate = gate{
 		Background(tcell.ColorDarkGray).
 		Foreground(tcell.ColorBlack),
 }
+
+// Bars
+type bar struct {
+	buildRune   rune
+	pos_x       int
+	width       int
+	height      int
+	unlocked    bool
+	objectStyle tcell.Style
+}
+
+var leftBar = bar{
+	buildRune: 'X',
+	pos_x:     6,
+	width:     2,
+	height:    h,
+	unlocked:  false,
+	objectStyle: tcell.StyleDefault.
+		Background(tcell.ColorDarkGray).
+		Foreground(tcell.ColorBlack),
+}
+
+var rightBar = bar{
+	buildRune: 'X',
+	pos_x:     w - 8,
+	width:     2,
+	height:    h,
+	unlocked:  false,
+	objectStyle: tcell.StyleDefault.
+		Background(tcell.ColorDarkGray).
+		Foreground(tcell.ColorBlack),
+}

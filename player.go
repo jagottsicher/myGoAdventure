@@ -4,6 +4,10 @@ import (
 	"github.com/gdamore/tcell"
 )
 
+// this is the stagesize
+var w = 160
+var h = 44
+
 // Player needed to be globally available
 var player playBall
 
@@ -51,10 +55,6 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 	// Valid for terminal Size, but we move on screens only
 	// w, h := s.Size()
 
-	// this is the stagesize
-	w := 160
-	h := 44
-
 	// turn right
 	if player.pos_x+deltaX >= w {
 		// move player to the left side
@@ -70,6 +70,17 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 		if currentRoom.down != nil {
 			currentRoom = currentRoom.down
 		}
+
+		if currentRoom == &roomYellowCastle || currentRoom == &roomWhiteCastle || currentRoom == &roomBlackCastle {
+			player.pos_y += 18
+			if player.pos_x > (w / 2) {
+				player.pos_x = (w / 2)
+			} else {
+				player.pos_x = (w / 2) - player.dimensions.width
+			}
+
+		}
+
 	}
 
 	// turn left
@@ -95,41 +106,63 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 
 func checkPlayerWallCollision(s tcell.Screen, intendedDirection uint8) bool {
 	// check for collision
-	// intendedDirection above = 1
-	// intendedDirection above = 2
-	// intendedDirection above = 3
-	// intendedDirection above = 4
 
 	switch intendedDirection {
 	case 1: // check above the player
 		for x := 0; x < player.dimensions.width; x++ {
 			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y-1)
-			if spot == rune('X') || spot == rune('┼') {
+
+			if spot == rune('x') || spot == rune('┼') {
+				if currentRoom == &roomYellowCastle {
+					if yellowCastleGate.unlocked == false {
+						currentRoom = currentRoom.up
+						player.pos_y = h - player.dimensions.height
+						return true
+					}
+				}
+				if currentRoom == &roomWhiteCastle {
+					if yellowCastleGate.unlocked == false {
+						currentRoom = currentRoom.up
+						player.pos_y = h - player.dimensions.height
+						return true
+					}
+				}
+				if currentRoom == &roomBlackCastle {
+					if yellowCastleGate.unlocked == false {
+						currentRoom = currentRoom.up
+						player.pos_y = h - player.dimensions.height
+						return true
+					}
+				}
+			}
+
+			if spot == rune('X') {
 				return true
 			}
 		}
 	case 2: // check right of the player
 		for y := 0; y < player.dimensions.height; y++ {
 			spot, _, _, _ := s.GetContent(player.pos_x+player.dimensions.width+1, player.pos_y+y)
-			if spot == rune('X') || spot == rune('┼') {
+			if spot == rune('X') {
 				return true
 			}
 		}
 	case 3: // check below the player
 		for x := 0; x < player.dimensions.width; x++ {
 			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y+player.dimensions.height+1)
-			if spot == rune('X') || spot == rune('┼') {
+			if spot == rune('X') {
 				return true
 			}
 		}
 	case 4: // check left of the player
 		for y := 0; y < player.dimensions.height; y++ {
 			spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y+y)
-			if spot == rune('X') || spot == rune('┼') {
+			if spot == rune('X') {
 				return true
 			}
 		}
 	}
+
 	// if all idrections free we you shall pass
 	return false
 }
