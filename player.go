@@ -104,28 +104,28 @@ func checkPlayerWallCollision(s tcell.Screen, intendedDirection uint8) bool {
 	case 1: // check above the player
 		for x := 0; x < player.dimensions.width; x++ {
 			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y-1)
-			if spot == rune('X') {
+			if spot == rune('X') || spot == rune('+') {
 				return true
 			}
 		}
 	case 2: // check right of the player
 		for y := 0; y < player.dimensions.height; y++ {
 			spot, _, _, _ := s.GetContent(player.pos_x+player.dimensions.width+1, player.pos_y+y)
-			if spot == rune('X') {
+			if spot == rune('X') || spot == rune('+') {
 				return true
 			}
 		}
 	case 3: // check below the player
 		for x := 0; x < player.dimensions.width; x++ {
 			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y+player.dimensions.height+1)
-			if spot == rune('X') {
+			if spot == rune('X') || spot == rune('+') {
 				return true
 			}
 		}
 	case 4: // check left of the player
 		for y := 0; y < player.dimensions.height; y++ {
 			spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y+y)
-			if spot == rune('X') {
+			if spot == rune('X') || spot == rune('+') {
 				return true
 			}
 		}
