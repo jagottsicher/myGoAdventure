@@ -6,6 +6,7 @@ import (
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/encoding"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // room needed to be globally available
@@ -76,8 +77,12 @@ func main() {
 
 		display(s, currentRoom)
 		player.display(s, currentRoom)
-		spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y-1)
-		s.SetContent(5, 47, spot, nil, menuStyle)
+		fd := int(os.Stdin.Fd())
+		width, height, _ := terminal.GetSize(fd)
+		emitStr(s, 5, 47, menuStyle, fmt.Sprintf("%d/%d", width, height))
+
+		// spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y-1)
+		// s.SetContent(5, 47, spot, nil, menuStyle)
 		s.Sync()
 	}
 }
