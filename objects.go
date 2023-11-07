@@ -71,7 +71,7 @@ var leftBar = bar{
 	buildRune: 'X',
 	pos_x:     6,
 	width:     2,
-	height:    h,
+	height:    stageHeight,
 	unlocked:  false,
 	objectStyle: tcell.StyleDefault.
 		Background(tcell.ColorDarkGray).
@@ -80,9 +80,9 @@ var leftBar = bar{
 
 var rightBar = bar{
 	buildRune: 'X',
-	pos_x:     w - 8,
+	pos_x:     stageWidth - 8,
 	width:     2,
-	height:    h,
+	height:    stageHeight,
 	unlocked:  false,
 	objectStyle: tcell.StyleDefault.
 		Background(tcell.ColorDarkGray).
