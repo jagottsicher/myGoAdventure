@@ -7,22 +7,22 @@ import (
 type compressedRoom []string
 
 type roomDimensions struct {
-	dimensions                                                               size
-	defaultXFactor, defaultYFactor, defaultYInnerFactor, defaultYOffsetBelow int
+	dimensions          size
+	defaultYInnerFactor int
 }
 
 // type size declared in graphics.go
 var defaultRoomSize = size{
-	width:  160,
-	height: 48,
+	width:  stageWidth,
+	height: stageHeight,
 }
+
+// Scaling the rooms
+var defaultXFactor, defaultYFactor int
 
 var defaultDimensions = roomDimensions{
 	dimensions:          defaultRoomSize,
-	defaultXFactor:      4,
-	defaultYFactor:      2,
 	defaultYInnerFactor: 4,
-	defaultYOffsetBelow: 4,
 }
 
 type rooms struct {
