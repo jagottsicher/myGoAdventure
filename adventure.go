@@ -49,7 +49,9 @@ func main() {
 	display(s, currentRoom)
 
 	// displayPlayer
-	player.display(s, currentRoom)
+	// player.display(s, currentRoom)
+
+	display(s, currentRoom)
 
 	for {
 		switch ev := s.PollEvent().(type) {
@@ -84,7 +86,6 @@ func main() {
 
 		stageWidth, stageHeight, _ = terminal.GetSize(fd)
 
-		display(s, currentRoom)
 		player.display(s, currentRoom)
 		emitStr(s, 5, 47, menuStyle, fmt.Sprintf("Stage: %d/%d", stageWidth, stageHeight))
 		emitStr(s, 20, 47, menuStyle, fmt.Sprintf("Player: %d/%d/%d", player.pos_x, player.pos_y, player.pos_x&1))

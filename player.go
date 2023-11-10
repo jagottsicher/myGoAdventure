@@ -6,7 +6,7 @@ import (
 
 // this is the stagesize
 // var w = stageWidth
-var h = 44
+// var h = 44
 
 // player needed to be globally available
 var player playBall
@@ -66,26 +66,17 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 		// switch room
 		if currentRoom.right != nil {
 			currentRoom = currentRoom.right
+			display(s, currentRoom)
 		}
 	}
 
 	// turn down
-	if player.pos_y+deltaY >= h {
-		player.pos_y -= h
+	if player.pos_y+deltaY >= stageHeight {
+		player.pos_y -= stageHeight
 		if currentRoom.down != nil {
 			currentRoom = currentRoom.down
+			display(s, currentRoom)
 		}
-
-		if currentRoom == &roomYellowCastle || currentRoom == &roomWhiteCastle || currentRoom == &roomBlackCastle {
-			player.pos_y += 18
-			if player.pos_x > (stageWidth / 2) {
-				player.pos_x = (stageWidth / 2)
-			} else {
-				player.pos_x = (stageWidth / 2) - player.dimensions.width
-			}
-
-		}
-
 	}
 
 	// turn left
@@ -98,14 +89,16 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 
 		if currentRoom.left != nil {
 			currentRoom = currentRoom.left
+			display(s, currentRoom)
 		}
 	}
 
 	// turn up
 	if player.pos_y+deltaY < 0 {
-		player.pos_y += h
+		player.pos_y += stageHeight
 		if currentRoom.up != nil {
 			currentRoom = currentRoom.up
+			display(s, currentRoom)
 		}
 	}
 
@@ -122,29 +115,29 @@ func checkPlayerWallCollision(s tcell.Screen, intendedDirection uint8) bool {
 		for x := 0; x < player.dimensions.width; x++ {
 			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y-1)
 
-			if spot == rune('x') || spot == rune('┼') {
-				if currentRoom == &roomYellowCastle {
-					if yellowCastleGate.unlocked == false {
-						currentRoom = currentRoom.up
-						player.pos_y = h - player.dimensions.height
-						return true
-					}
-				}
-				if currentRoom == &roomWhiteCastle {
-					if yellowCastleGate.unlocked == false {
-						currentRoom = currentRoom.up
-						player.pos_y = h - player.dimensions.height
-						return true
-					}
-				}
-				if currentRoom == &roomBlackCastle {
-					if yellowCastleGate.unlocked == false {
-						currentRoom = currentRoom.up
-						player.pos_y = h - player.dimensions.height
-						return true
-					}
-				}
-			}
+			// if spot == rune('x') || spot == rune('┼') {
+			// 	if currentRoom == &roomYellowCastle {
+			// 		if yellowCastleGate.unlocked == false {
+			// 			currentRoom = currentRoom.up
+			// 			player.pos_y = h - player.dimensions.height
+			// 			return true
+			// 		}
+			// 	}
+			// 	if currentRoom == &roomWhiteCastle {
+			// 		if yellowCastleGate.unlocked == false {
+			// 			currentRoom = currentRoom.up
+			// 			player.pos_y = h - player.dimensions.height
+			// 			return true
+			// 		}
+			// 	}
+			// 	if currentRoom == &roomBlackCastle {
+			// 		if yellowCastleGate.unlocked == false {
+			// 			currentRoom = currentRoom.up
+			// 			player.pos_y = h - player.dimensions.height
+			// 			return true
+			// 		}
+			// 	}
+			// }
 
 			if spot == rune('X') {
 				return true
