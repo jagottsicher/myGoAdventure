@@ -1,6 +1,11 @@
 package main
 
-import "github.com/gdamore/tcell"
+import (
+	"fmt"
+	"math"
+
+	"github.com/gdamore/tcell"
+)
 
 func display(s tcell.Screen, r *rooms) {
 
@@ -10,43 +15,100 @@ func display(s tcell.Screen, r *rooms) {
 
 	// Any maze
 
+	// defaultXFactor = int(math.Round(float64(stageWidth) / 40))
+	// defaultYFactor = 2
+
+	stageYFactor = int(math.Floor(float64(stageHeight) / 12))
+
+	var percentageY float64
+	var rowValue int
+	MaxRowValue := len(r.compressedRoomData)
+	var percentageX float64
+	var columnValue int
+	MaxColumnValue := 40
+
+	var theRow string
+	var theSpot rune
+
+	for y := 0; y < stageHeight; y++ {
+		percentageY = float64((y * 100) / (stageHeight - 1))
+		rowValue = int(12 * int(percentageY) / 100)
+		if rowValue == MaxRowValue {
+			rowValue = MaxRowValue - 1
+		}
+		theRow = r.compressedRoomData[rowValue]
+
+		for x := 0; x < stageWidth; x++ {
+			percentageX = float64((x * 100) / (stageWidth - 1))
+			columnValue = int(40 * int(percentageX) / 100)
+			if columnValue == MaxColumnValue {
+				columnValue = MaxColumnValue - 1
+			}
+
+			theSpot = rune(theRow[columnValue])
+
+			s.SetContent(x, y, theSpot, nil, roomStyle)
+
+			// theRow = "abc"
+			// theRow = theRow + " " + fmt.Sprintf("%d", int(percentageX)) + " "
+			// emitStr(s, 0, x, roomStyle, theRow)
+		}
+
+		fmt.Print(theRow)
+	}
+
 	// line by line
 	// top and last lines repeat twice, the inner lines 8 times
-	for lines, content := range r.compressedRoomData[0:1] {
-		for yScale := 0; yScale < r.allRoomDimensions.defaultYFactor; yScale++ {
-			// column by column
-			for columns, char := range content {
-				// output each char x times
-				for xScale := 0; xScale < r.allRoomDimensions.defaultXFactor; xScale++ {
-					emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), (lines + yScale), roomStyle, string(char))
-				}
-			}
-		}
-	}
+	// for lines, content := range r.compressedRoomData[0:1] {
+	// 	for yScale := 0; yScale < defaultYFactor; yScale++ {
+	// 		// column by column
+	// 		for columns, char := range content {
+	// 			// output each char x times
+	// 			for xScale := 0; xScale < defaultXFactor; xScale++ {
+	// 				emitStr(s, ((defaultXFactor * columns) + xScale), (lines + yScale), roomStyle, string(char))
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	for lines, content := range r.compressedRoomData[1:11] {
-		for yScale := 0; yScale < r.allRoomDimensions.defaultYInnerFactor; yScale++ {
-			// column by column
-			for columns, char := range content {
-				// output each char x times
-				for xScale := 0; xScale < r.allRoomDimensions.defaultXFactor; xScale++ {
-					emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.defaultYInnerFactor * (lines)) + r.allRoomDimensions.defaultYFactor + yScale), roomStyle, string(char))
-				}
-			}
-		}
-	}
+	// for lines, content := range r.compressedRoomData[1:11] {
+	// for lines, content := range r.compressedRoomData {
 
-	for _, content := range r.compressedRoomData[11:] {
-		for yScale := 0; yScale < r.allRoomDimensions.defaultYFactor; yScale++ {
-			// column by column
-			for columns, char := range content {
-				// output each char x times
-				for xScale := 0; xScale < r.allRoomDimensions.defaultXFactor; xScale++ {
-					emitStr(s, ((r.allRoomDimensions.defaultXFactor * columns) + xScale), ((r.allRoomDimensions.dimensions.height) - r.allRoomDimensions.defaultYFactor + yScale - 4), roomStyle, string(char))
-				}
-			}
-		}
-	}
+	// 	for yScale := 0; yScale < r.allRoomDimensions.defaultYInnerFactor; yScale++ {
+	// 		// column by column
+	// 		for columns, char := range content {
+	// 			// output each char x times
+	// 			for xScale := 0; xScale < defaultXFactor; xScale++ {
+	// 				emitStr(s, ((defaultXFactor * columns) + xScale), ((r.allRoomDimensions.defaultYInnerFactor * (lines)) + defaultYFactor + yScale), roomStyle, string(char))
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	// for lines, content := range r.compressedRoomData[11:] {
+	// 	for yScale := 0; yScale < defaultYFactor; yScale++ {
+	// 		// column by column
+	// 		for columns, char := range content {
+	// 			// output each char x times
+	// 			for xScale := 0; xScale < defaultXFactor; xScale++ {
+	// 				emitStr(s, ((defaultXFactor * columns) + xScale), (lines + yScale), roomStyle, string(char))
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	// for _, content := range r.compressedRoomData[11:] {
+	// 	for yScale := 0; yScale < defaultYFactor; yScale++ {
+	// 		// column by column
+	// 		for columns, char := range content {
+	// 			// output each char x times
+	// 			for xScale := 0; xScale < defaultXFactor; xScale++ {
+	// 				// emitStr(s, ((defaultXFactor * columns) + xScale), ((r.allRoomDimensions.dimensions.height) - defaultYFactor + yScale - 4), roomStyle, string(char))
+	// 				emitStr(s, ((defaultXFactor * columns) + xScale), (lines + yScale), roomStyle, string(char))
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	if r == &roomMazeEntry || r == &roomMazeMiddle || r == &roomMazeSide {
 		// print the player surrounding
@@ -96,12 +158,12 @@ func display(s tcell.Screen, r *rooms) {
 		displayBar(s, &rightBar)
 	}
 
-	// fill area black
-	for i := 0; i < 4; i++ {
-		emitStr(s, 0, (r.allRoomDimensions.dimensions.height - 4 + i), menuStyle, "                                                                                                                                                                ")
-	}
+	// // fill area black
+	// for i := 0; i < 4; i++ {
+	// 	emitStr(s, 0, (r.allRoomDimensions.dimensions.height - 4 + i), menuStyle, "                                                                                                                                                                ")
+	// }
 
-	emitStr(s, (r.allRoomDimensions.dimensions.width-len("[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset/Retry"))/2, (r.allRoomDimensions.dimensions.height - 3), menuStyle, "[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset/Retry")
+	// emitStr(s, (r.allRoomDimensions.dimensions.width-len("[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset/Retry"))/2, (r.allRoomDimensions.dimensions.height - 3), menuStyle, "[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset/Retry")
 
 }
 

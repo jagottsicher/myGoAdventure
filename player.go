@@ -5,19 +5,19 @@ import (
 )
 
 // this is the stagesize
-var w = 160
+// var w = stageWidth
 var h = 44
 
-// Player needed to be globally available
+// player needed to be globally available
 var player playBall
 
-// Player-Wall collision
+// player-Wall collision
 var playerWallCollsion bool
 
 // type size declared in graphics.go
 var defaultPlayerSize = size{
-	width:  4,
-	height: 2,
+	width:  2,
+	height: 1,
 }
 
 type playBall struct {
@@ -28,10 +28,14 @@ type playBall struct {
 }
 
 func (player *playBall) init() {
-	player.dimensions.width = 4
-	player.dimensions.height = 2
-	player.pos_x = 80
-	player.pos_y = 30
+	player.dimensions.width = 2
+	player.dimensions.height = 1
+	player.pos_x = stageWidth / 2
+	// we insist on even player position
+	if player.pos_x&1 == 1 {
+		player.pos_x = player.pos_x - 1
+	}
+	player.pos_y = (stageHeight / 3) * 2
 }
 
 func (player *playBall) display(s tcell.Screen, r *rooms) {
@@ -43,8 +47,11 @@ func (player *playBall) display(s tcell.Screen, r *rooms) {
 	// 	Foreground(tcell.ColorBlack)
 
 	// print the player
-	emitStr(s, player.pos_x, player.pos_y, player.style, "████")
-	emitStr(s, player.pos_x, player.pos_y+1, player.style, "████")
+	// if player.pos_x&1 == 1 {
+	// 	player.pos_x = player.pos_x - 1
+	// }
+	emitStr(s, player.pos_x, player.pos_y, player.style, "██")
+	// emitStr(s, player.pos_x, player.pos_y+1, player.style, "████")
 }
 
 func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
@@ -52,18 +59,16 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 	// assume the way is not blocked
 	playerWallCollsion = false
 
-	// Valid for terminal Size, but we move on screens only
-	// w, h := s.Size()
-
 	// turn right
-	if player.pos_x+deltaX >= w {
+	if player.pos_x+deltaX > stageWidth-player.dimensions.width {
 		// move player to the left side
-		player.pos_x -= w
+		player.pos_x = 0 - player.dimensions.width
 		// switch room
 		if currentRoom.right != nil {
 			currentRoom = currentRoom.right
 		}
 	}
+
 	// turn down
 	if player.pos_y+deltaY >= h {
 		player.pos_y -= h
@@ -73,10 +78,10 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 
 		if currentRoom == &roomYellowCastle || currentRoom == &roomWhiteCastle || currentRoom == &roomBlackCastle {
 			player.pos_y += 18
-			if player.pos_x > (w / 2) {
-				player.pos_x = (w / 2)
+			if player.pos_x > (stageWidth / 2) {
+				player.pos_x = (stageWidth / 2)
 			} else {
-				player.pos_x = (w / 2) - player.dimensions.width
+				player.pos_x = (stageWidth / 2) - player.dimensions.width
 			}
 
 		}
@@ -85,7 +90,12 @@ func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
 
 	// turn left
 	if player.pos_x+deltaX < 0 {
-		player.pos_x += w
+		if stageWidth&1 == 1 {
+			player.pos_x += stageWidth - 1
+		} else {
+			player.pos_x += stageWidth
+		}
+
 		if currentRoom.left != nil {
 			currentRoom = currentRoom.left
 		}
@@ -142,14 +152,14 @@ func checkPlayerWallCollision(s tcell.Screen, intendedDirection uint8) bool {
 		}
 	case 2: // check right of the player
 		for y := 0; y < player.dimensions.height; y++ {
-			spot, _, _, _ := s.GetContent(player.pos_x+player.dimensions.width+1, player.pos_y+y)
+			spot, _, _, _ := s.GetContent(player.pos_x+player.dimensions.width, player.pos_y+y)
 			if spot == rune('X') {
 				return true
 			}
 		}
 	case 3: // check below the player
 		for x := 0; x < player.dimensions.width; x++ {
-			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y+player.dimensions.height+1)
+			spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y+player.dimensions.height)
 			if spot == rune('X') {
 				return true
 			}

@@ -9,12 +9,18 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+// global size of terminal windows
+var stageWidth, stageHeight, fd, stageXFactor, stageYFactor int
+
 // room needed to be globally available
 var currentRoom *rooms = nil
 
 // This program just prints "Hello, World!".  Press ESC to exit.
 func main() {
 	encoding.Register()
+
+	// init handler to get determinate screensize
+	fd = int(os.Stdin.Fd())
 
 	// init the room colors
 	// roomColorInit()
@@ -23,6 +29,7 @@ func main() {
 	initDirections()
 
 	// player init
+	stageWidth, stageHeight, _ = terminal.GetSize(fd)
 	player.init()
 
 	s, err := tcell.NewScreen()
@@ -58,28 +65,30 @@ func main() {
 				os.Exit(0)
 			} else if ev.Rune() == 'w' || ev.Key() == tcell.KeyUp {
 				if checkPlayerWallCollision(s, 1) != true {
-					player.movement(s, 0, -2)
+					player.movement(s, 0, -1)
 				}
 			} else if ev.Rune() == 'a' || ev.Key() == tcell.KeyLeft {
 				if checkPlayerWallCollision(s, 4) != true {
-					player.movement(s, -4, 0)
+					player.movement(s, -2, 0)
 				}
 			} else if ev.Rune() == 's' || ev.Key() == tcell.KeyDown {
 				if checkPlayerWallCollision(s, 3) != true {
-					player.movement(s, 0, 2)
+					player.movement(s, 0, 1)
 				}
 			} else if ev.Rune() == 'd' || ev.Key() == tcell.KeyRight {
 				if checkPlayerWallCollision(s, 2) != true {
-					player.movement(s, 4, 0)
+					player.movement(s, 2, 0)
 				}
 			}
 		}
 
+		stageWidth, stageHeight, _ = terminal.GetSize(fd)
+
 		display(s, currentRoom)
 		player.display(s, currentRoom)
-		fd := int(os.Stdin.Fd())
-		width, height, _ := terminal.GetSize(fd)
-		emitStr(s, 5, 47, menuStyle, fmt.Sprintf("%d/%d", width, height))
+		emitStr(s, 5, 47, menuStyle, fmt.Sprintf("Stage: %d/%d", stageWidth, stageHeight))
+		emitStr(s, 20, 47, menuStyle, fmt.Sprintf("Player: %d/%d/%d", player.pos_x, player.pos_y, player.pos_x&1))
+		emitStr(s, 40, 47, menuStyle, fmt.Sprintf("Room: %d/%d", stageXFactor, stageYFactor))
 
 		// spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y-1)
 		// s.SetContent(5, 47, spot, nil, menuStyle)
