@@ -6,39 +6,22 @@ import (
 
 	"github.com/gdamore/tcell"
 	"github.com/gdamore/tcell/encoding"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 // global size of terminal windows
-var stageWidth, stageHeight, fd, stageXFactor, stageYFactor int
-
-// room needed to be globally available
-var currentRoom *rooms = nil
-
-// what's under the player
-var playerLeft = ' '
-var playerRight = ' '
-
-var playerSpaceStyleLeft tcell.Style
-var playerSpaceStyleRight tcell.Style
+// var stageWidth, stageHeight, fd int
 
 // This program just prints "Hello, World!".  Press ESC to exit.
 func main() {
 	encoding.Register()
 
 	// init handler to get determinate screensize
-	fd = int(os.Stdin.Fd())
+	// fd = int(os.Stdin.Fd())
 
-	// init the room colors
-	// roomColorInit()
+	// get terminal dimensions for the first time
+	// stageWidth, stageHeight, _ = terminal.GetSize(fd)
 
-	// init direction to avoid init error
-	initDirections()
-
-	// player init
-	stageWidth, stageHeight, _ = terminal.GetSize(fd)
-	player.init()
-
+	// init all screens
 	s, err := tcell.NewScreen()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
@@ -48,27 +31,24 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
+	// s.SetStyle(tcell.StyleDefault.
+	// 	Background(tcell.ColorDarkGray).
+	// 	Foreground(tcell.ColorYellow))
 
-	// init the startroom
-	currentRoom = &roomStartRoomTopEntryRoom
+	player.init()
 
-	// show the room for the first time
-	display(s, currentRoom)
+	render(s)
 
-	// displayPlayer
-	// player.display(s, currentRoom)
+	// initStages(rooms)
 
-	// remember content under player
-	playerLeft, _, playerSpaceStyleLeft, _ = s.GetContent(player.pos_x, player.pos_y)
-	playerRight, _, playerSpaceStyleRight, _ = s.GetContent(player.pos_x+1, player.pos_y)
+	// init a player for the first time
+	// player.init()
 
 	for {
-
 		switch ev := s.PollEvent().(type) {
 		case *tcell.EventResize:
-			display(s, currentRoom)
-			player.display(s, currentRoom)
-			s.Sync()
+			// reinit all screens in new sizes
+			render(s)
 		case *tcell.EventKey:
 			if ev.Key() == tcell.KeyEscape {
 				s.Fini()
@@ -77,33 +57,26 @@ func main() {
 				os.Exit(0)
 			} else if ev.Rune() == 'w' || ev.Key() == tcell.KeyUp {
 				// if checkPlayerWallCollision(s, 1) != true {
-				player.movement(s, 0, -1)
+				player.pos_y -= 1
 				// }
 			} else if ev.Rune() == 'a' || ev.Key() == tcell.KeyLeft {
 				// if checkPlayerWallCollision(s, 4) != true {
-				player.movement(s, -2, 0)
+				player.pos_x -= 2
 				// }
 			} else if ev.Rune() == 's' || ev.Key() == tcell.KeyDown {
 				// if checkPlayerWallCollision(s, 3) != true {
-				player.movement(s, 0, 1)
+				player.pos_y += 1
 				// }
 			} else if ev.Rune() == 'd' || ev.Key() == tcell.KeyRight {
 				// if checkPlayerWallCollision(s, 2) != true {
-				player.movement(s, 2, 0)
+				player.pos_x += 2
 				// }
 			}
 		}
-
-		stageWidth, stageHeight, _ = terminal.GetSize(fd)
-
-		player.display(s, currentRoom)
-
-		emitStr(s, 5, 5, menuStyle, fmt.Sprintf("Stage: %d/%d", stageWidth, stageHeight))
-		emitStr(s, 20, 5, menuStyle, fmt.Sprintf("Player: %d/%d/%d", player.pos_x, player.pos_y, player.pos_x&1))
-		emitStr(s, 40, 5, menuStyle, fmt.Sprintf("Room: %d/%d", stageXFactor, stageYFactor))
-
-		// spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y-1)
-		// s.SetContent(5, 47, spot, nil, menuStyle)
-		s.Sync()
+		for i := 0; i < player.width; i++ {
+			s.SetContent(player.pos_x+i, player.pos_y, player.contentX[i], nil, player.contentStyle[i])
+		}
+		player.display(s)
+		s.Show()
 	}
 }

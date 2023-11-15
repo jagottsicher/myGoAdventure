@@ -1,156 +1,102 @@
 package main
 
-import (
-	"github.com/gdamore/tcell"
-)
-
-// this is the stagesize
-// var w = stageWidth
-// var h = 44
+import "github.com/gdamore/tcell"
 
 // player needed to be globally available
 var player playBall
 
-// player-Wall collision
-var playerWallCollsion bool
-
-// type size declared in graphics.go
-var defaultPlayerSize = size{
-	width:  2,
-	height: 1,
-}
-
 type playBall struct {
-	dimensions size
-	pos_x      int
-	pos_y      int
-	style      tcell.Style
+	// room   *rooms
+	contentX     [2]rune
+	contentStyle [2]tcell.Style
+	content_Y    rune
+	pos_x        int
+	pos_y        int
+	width        int
+	height       int
+	style        tcell.Style
 }
 
 func (player *playBall) init() {
-	player.dimensions.width = 2
-	player.dimensions.height = 1
-	player.pos_x = stageWidth / 2
+	player.style = tcell.StyleDefault.
+		Background(tcell.ColorWhite).
+		Foreground(tcell.ColorBlack)
+	// player.room = &roomStartRoomTopEntryRoom
+	player.pos_x = 80
 	// we insist on even player position
 	if player.pos_x&1 == 1 {
 		player.pos_x = player.pos_x - 1
 	}
-	player.pos_y = (stageHeight / 3) * 2
+	player.pos_y = (48 / 3) * 2
+	player.width = 2
+	player.height = 1
 }
 
-func (player *playBall) display(s tcell.Screen, r *rooms) {
+func (player *playBall) display(s tcell.Screen) {
 
-	// player has same color as actual room
-	player.style = r.roomStyle
-	// player.style = tcell.StyleDefault.
-	// 	Background(tcell.ColorBlack).
-	// 	Foreground(tcell.ColorBlack)
+	for i := 0; i < player.width; i++ {
+		player.contentX[i], _, player.contentStyle[i], _ = s.GetContent(player.pos_x+i, player.pos_y)
+	}
 
-	// print the player
-	// if player.pos_x&1 == 1 {
-	// 	player.pos_x = player.pos_x - 1
+	for i := 0; i < player.width; i++ {
+		s.SetContent(player.pos_x+i, player.pos_y, ' ', nil, player.style)
+	}
+	// 	emitStr(s, player.pos_x, player.pos_y, player.style, "██")
 	// }
 
-	emitStr(s, player.pos_x, player.pos_y, player.style, "██")
+	// func (player *playBal, ' ', nil, player.stylel) movement(s tcell.Screen, deltaX, deltaY int) {
 
-	// emitStr(s, player.pos_x, player.pos_y+1, player.style, "████")
+	// 	// turn to right
+	// 	if player.pos_x+deltaX > stageWidth-player.width {
+	// 		// move player to the left side
+	// 		player.pos_x = 0 - player.width
+	// 		// switch room
+	// 		if currentRoom.right != nil {
+	// 			currentRoom = currentRoom.right
+	// 			display(s, currentRoom)
+	// 		}
+	// 	}
+
+	// 	// turn to bottom stage
+	// 	if player.pos_y+deltaY >= stageHeight {
+	// 		player.pos_y -= stageHeight
+	// 		if currentRoom.down != nil {
+	// 			currentRoom = currentRoom.down
+	// 			display(s, currentRoom)
+	// 		}
+	// 	}
+
+	// 	// turn to left stage
+	// 	if player.pos_x+deltaX < 0 {
+	// 		if stageWidth&1 == 1 {
+	// 			player.pos_x += stageWidth - 1
+	// 		} else {
+	// 			player.pos_x += stageWidth
+	// 		}
+
+	// 		if currentRoom.left != nil {
+	// 			currentRoom = currentRoom.left
+	// 			display(s, currentRoom)
+	// 		}
+	// 	}
+
+	// 	// turn to upper room
+	// 	if player.pos_y+deltaY < 0 {
+	// 		player.pos_y += stageHeight
+	// 		if currentRoom.up != nil {
+	// 			currentRoom = currentRoom.up
+	// 			display(s, currentRoom)
+	// 		}
+	// 	}
+
+	// 	// remove the player and put what was there before
+	// 	s.SetContent(player.pos_x, player.pos_y, playerLeft, nil, playerSpaceStyleLeft)
+	// 	s.SetContent(player.pos_x+1, player.pos_y, playerRight, nil, playerSpaceStyleRight)
+
+	// 	player.pos_x += deltaX
+	// 	player.pos_y += deltaY
+
+	// // remember content under player
+	// playerLeft, _, playerSpaceStyleLeft, _ = s.GetContent(player.pos_x, player.pos_y)
+	// playerRight, _, playerSpaceStyleRight, _ = s.GetContent(player.pos_x+1, player.pos_y)
 }
-
-func (player *playBall) movement(s tcell.Screen, deltaX, deltaY int) {
-
-	// assume the way is not blocked
-	playerWallCollsion = false
-
-	// turn to right
-	if player.pos_x+deltaX > stageWidth-player.dimensions.width {
-		// move player to the left side
-		player.pos_x = 0 - player.dimensions.width
-		// switch room
-		if currentRoom.right != nil {
-			currentRoom = currentRoom.right
-			display(s, currentRoom)
-		}
-	}
-
-	// turn to bottom stage
-	if player.pos_y+deltaY >= stageHeight {
-		player.pos_y -= stageHeight
-		if currentRoom.down != nil {
-			currentRoom = currentRoom.down
-			display(s, currentRoom)
-		}
-	}
-
-	// turn to left stage
-	if player.pos_x+deltaX < 0 {
-		if stageWidth&1 == 1 {
-			player.pos_x += stageWidth - 1
-		} else {
-			player.pos_x += stageWidth
-		}
-
-		if currentRoom.left != nil {
-			currentRoom = currentRoom.left
-			display(s, currentRoom)
-		}
-	}
-
-	// turn to upper room
-	if player.pos_y+deltaY < 0 {
-		player.pos_y += stageHeight
-		if currentRoom.up != nil {
-			currentRoom = currentRoom.up
-			display(s, currentRoom)
-		}
-	}
-
-	// remove the player and put what was there before
-	s.SetContent(player.pos_x, player.pos_y, playerLeft, nil, playerSpaceStyleLeft)
-	s.SetContent(player.pos_x+1, player.pos_y, playerRight, nil, playerSpaceStyleRight)
-
-	player.pos_x += deltaX
-	player.pos_y += deltaY
-
-	// remember content under player
-	playerLeft, _, playerSpaceStyleLeft, _ = s.GetContent(player.pos_x, player.pos_y)
-	playerRight, _, playerSpaceStyleRight, _ = s.GetContent(player.pos_x+1, player.pos_y)
-}
-
-// func checkPlayerWallCollision(s tcell.Screen, intendedDirection uint8) bool {
-// 	// check for collision
-
-// 	// switch intendedDirection {
-// 	// case 1: // check above the player
-// 	// 	for x := 0; x < player.dimensions.width; x++ {
-// 	// 		spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y-1)
-
-// 	// 		if spot == rune('X') {
-// 	// 			return true
-// 	// 		}
-// 	// 	}
-// 	// case 2: // check right of the player
-// 	// 	for y := 0; y < player.dimensions.height; y++ {
-// 	// 		spot, _, _, _ := s.GetContent(player.pos_x+player.dimensions.width, player.pos_y+y)
-// 	// 		if spot == rune('X') {
-// 	// 			return true
-// 	// 		}
-// 	// 	}
-// 	// case 3: // check below the player
-// 	// 	for x := 0; x < player.dimensions.width; x++ {
-// 	// 		spot, _, _, _ := s.GetContent(player.pos_x+x, player.pos_y+player.dimensions.height)
-// 	// 		if spot == rune('X') {
-// 	// 			return true
-// 	// 		}
-// 	// 	}
-// 	// case 4: // check left of the player
-// 	// 	for y := 0; y < player.dimensions.height; y++ {
-// 	// 		spot, _, _, _ := s.GetContent(player.pos_x-1, player.pos_y+y)
-// 	// 		if spot == rune('X') {
-// 	// 			return true
-// 	// 		}
-// 	// 	}
-// 	// }
-
-// 	// if all directions free we you shall pass
-// 	return false
-// }
