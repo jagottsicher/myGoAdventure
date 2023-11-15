@@ -11,3 +11,7 @@ package main
 // 	Background(tcell.ColorLightGray).
 // 	Foreground(tcell.ColorBlack)
 // s.SetStyle(defStyle)
+
+// var menuStyle tcell.Style = tcell.StyleDefault.
+// 	Background(tcell.ColorGray).
+// 	Foreground(tcell.ColorBlack)

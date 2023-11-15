@@ -1,81 +1,103 @@
 package main
 
 import (
-	"math"
+	"math/rand"
 
 	"github.com/gdamore/tcell"
 )
 
-func display(s tcell.Screen, r *rooms) {
+var someContent rune
+
+func render(screen tcell.Screen) {
+
+	width, height := screen.Size()
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			someContent = rune(rand.Intn(92) + 32)
+			screen.SetContent(x, y, someContent, nil, tcell.StyleDefault.
+				Background(tcell.ColorBlack).
+				Foreground(tcell.ColorYellow))
+		}
+	}
+
+	player.display(screen)
+
+	screen.Show()
 
 	// set the room colors
-	roomStyle := r.roomStyle
-	s.SetStyle(roomStyle)
+	// roomStyle := tcell.StyleDefault.
+	// 	Background(tcell.ColorDarkGray).
+	// 	Foreground(tcell.ColorDarkGray)
+	// screen.SetStyle(roomStyle)
 
-	// Any maze
+	// display room
 
-	// defaultXFactor = int(math.Round(float64(stageWidth) / 40))
-	// defaultYFactor = 2
+	// remember what under player
 
-	stageYFactor = int(math.Floor(float64(stageHeight) / 12))
+	// emit player
+	// player.display(screen)
+	// 	screen.Sync()
 
-	var percentageY float64
-	var rowValue int
-	MaxRowValue := len(r.compressedRoomData)
-	var percentageX float64
-	var columnValue int
-	MaxColumnValue := 40
+	// // Any maze
 
-	var theRow string
-	var theSpot rune
+	// // defaultXFactor = int(math.Round(float64(stageWidth) / 40))
+	// // defaultYFactor = 2
 
-	for y := 0; y < stageHeight; y++ {
-		percentageY = float64((y * 100) / (stageHeight - 1))
-		rowValue = int(12 * int(percentageY) / 100)
-		if rowValue == MaxRowValue {
-			rowValue = MaxRowValue - 1
-		}
-		theRow = r.compressedRoomData[rowValue]
+	// stageYFactor = int(math.Floor(float64(stageHeight) / 12))
 
-		for x := 0; x < stageWidth; x++ {
-			percentageX = float64((x * 100) / (stageWidth - 1))
-			columnValue = int(40 * int(percentageX) / 100)
-			if columnValue == MaxColumnValue {
-				columnValue = MaxColumnValue - 1
-			}
+	// var percentageY float64
+	// var rowValue int
+	// MaxRowValue := len(r.compressedRoomData)
+	// var percentageX float64
+	// var columnValue int
+	// MaxColumnValue := 40
 
-			theSpot = rune(theRow[columnValue])
+	// var theRow string
+	// var theSpot rune
 
-			s.SetContent(x, y, theSpot, nil, roomStyle)
-		}
+	// for y := 0; y < stageHeight; y++ {
+	// 	percentageY = float64((y * 100) / (stageHeight - 1))
+	// 	rowValue = int(12 * int(percentageY) / 100)
+	// 	if rowValue == MaxRowValue {
+	// 		rowValue = MaxRowValue - 1
+	// 	}
+	// 	theRow = r.compressedRoomData[rowValue]
 
-		//fmt.Print(theRow)
-	}
+	// 	for x := 0; x < stageWidth; x++ {
+	// 		percentageX = float64((x * 100) / (stageWidth - 1))
+	// 		columnValue = int(40 * int(percentageX) / 100)
+	// 		if columnValue == MaxColumnValue {
+	// 			columnValue = MaxColumnValue - 1
+	// 		}
 
-	if r == &roomMazeEntry || r == &roomMazeMiddle || r == &roomMazeSide {
-		// print the player surrounding
-		roomUncoveredStyle := tcell.StyleDefault.
-			Background(tcell.ColorOrange).
-			Foreground(tcell.ColorDarkGray)
+	// 		theSpot = rune(theRow[columnValue])
 
-		const surroundingDimX = 36
-		const surroundingDimY = 18
+	// 		s.SetContent(x, y, theSpot, nil, roomStyle)
+	// 	}
+	// }
 
-		var surroundingContent [surroundingDimY][surroundingDimX]rune
+	// if r == &roomMazeEntry || r == &roomMazeMiddle || r == &roomMazeSide {
+	// 	// print the player surrounding
+	// 	roomUncoveredStyle := tcell.StyleDefault.
+	// 		Background(tcell.ColorOrange).
+	// 		Foreground(tcell.ColorDarkGray)
 
-		for surY := 0; surY < surroundingDimY; surY++ {
-			for surX := 0; surX < surroundingDimX; surX++ {
-				surroundingContent[surY][surX], _, _, _ = s.GetContent(player.pos_x-16+surX, player.pos_y-8+surY)
-			}
-		}
+	// 	const surroundingDimX = 36
+	// 	const surroundingDimY = 18
 
-		for surY := 0; surY < surroundingDimY; surY++ {
-			for surX := 0; surX < surroundingDimX; surX++ {
-				emitStr(s, player.pos_x-16+surX, player.pos_y-8+surY, roomUncoveredStyle, string(surroundingContent[surY][surX]))
-			}
-		}
-	}
+	// 	var surroundingContent [surroundingDimY][surroundingDimX]rune
 
-	// emitStr(s, (r.allRoomDimensions.dimensions.width-len("[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset/Retry"))/2, (r.allRoomDimensions.dimensions.height - 3), menuStyle, "[ESC] Quit   [F9] Color Mode   [F10] Game Type   [F11] Difficulty   [F12] Reset/Retry")
+	// 	for surY := 0; surY < surroundingDimY; surY++ {
+	// 		for surX := 0; surX < surroundingDimX; surX++ {
+	// 			surroundingContent[surY][surX], _, _, _ = s.GetContent(player.pos_x-16+surX, player.pos_y-8+surY)
+	// 		}
+	// 	}
 
+	// 	for surY := 0; surY < surroundingDimY; surY++ {
+	// 		for surX := 0; surX < surroundingDimX; surX++ {
+	// 			emitStr(s, player.pos_x-16+surX, player.pos_y-8+surY, roomUncoveredStyle, string(surroundingContent[surY][surX]))
+	// 		}
+	// 	}
+	// }
 }

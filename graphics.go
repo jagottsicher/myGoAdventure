@@ -1,59 +1,5 @@
 package main
 
-// Dragons graphics
-type size struct {
-	width  int
-	height int
-}
-
-type spriteGfx []string
-
-// Dragon gfx definition
-var roomGfxDragonCalm = spriteGfx{
-	"    DDD ",
-	"DDDDD  D",
-	"DDDDDDDD",
-	"    DD  ",
-	" DDDDDD ",
-	"DD    DD",
-	"DD    DD",
-	" DDDDDD ",
-	"    DD  ",
-	"DD  DD   ",
-	" DD DD   ",
-	"  DDD   ",
-}
-
-var roomGfxDragonAggressive = spriteGfx{
-	"D   DDD ",
-	" D DD  D",
-	"  DDDDDD",
-	" D  DD  ",
-	"D DDDDD ",
-	"DD    DD",
-	"DD    DD",
-	" DDDDDD ",
-	"  DDD   ",
-	" DD    ",
-	"  DD    ",
-	"   DDDD ",
-}
-
-var roomGfxDragonDead = spriteGfx{
-	"    DD  ",
-	"    DD  ",
-	"    DDD ",
-	"   D  D ",
-	"  DD    ",
-	" DDDDDD ",
-	"DD    DD",
-	"DD    DD",
-	" DDDDDD ",
-	"  DDD   ",
-	" DD   D ",
-	"  DDDD  ",
-}
-
 //
 // Room graphics
 //
@@ -77,16 +23,16 @@ var roomGfxLeftOfName = compressedRoom{
 // Below Yellow Castle
 var roomGfxBelowYellowCastle = compressedRoom{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
-	"                                        ",
-	"                                        ",
-	"                                        ",
-	"                                        ",
-	"                                        ",
-	"                                        ",
-	"                                        ",
-	"                                        ",
-	"                                        ",
-	"                                        ",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
+	"1234567890123456789012345678901234567890",
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 }
 
@@ -424,4 +370,58 @@ var roomGfxBlackMazeEntry = compressedRoom{
 	"                                        ",
 	"                                        ",
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
+}
+
+// Dragons graphics
+type size struct {
+	width  int
+	height int
+}
+
+type spriteGfx []string
+
+// Dragon gfx definition
+var roomGfxDragonCalm = spriteGfx{
+	"    DDD ",
+	"DDDDD  D",
+	"DDDDDDDD",
+	"    DD  ",
+	" DDDDDD ",
+	"DD    DD",
+	"DD    DD",
+	" DDDDDD ",
+	"    DD  ",
+	"DD  DD   ",
+	" DD DD   ",
+	"  DDD   ",
+}
+
+var roomGfxDragonAggressive = spriteGfx{
+	"D   DDD ",
+	" D DD  D",
+	"  DDDDDD",
+	" D  DD  ",
+	"D DDDDD ",
+	"DD    DD",
+	"DD    DD",
+	" DDDDDD ",
+	"  DDD   ",
+	" DD    ",
+	"  DD    ",
+	"   DDDD ",
+}
+
+var roomGfxDragonDead = spriteGfx{
+	"    DD  ",
+	"    DD  ",
+	"    DDD ",
+	"   D  D ",
+	"  DD    ",
+	" DDDDDD ",
+	"DD    DD",
+	"DD    DD",
+	" DDDDDD ",
+	"  DDD   ",
+	" DD   D ",
+	"  DDDD  ",
 }

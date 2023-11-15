@@ -1,7 +1,11 @@
 package main
 
-import "github.com/gdamore/tcell"
+type gameInfo struct {
+	gameType uint8
+}
 
-var menuStyle tcell.Style = tcell.StyleDefault.
-	Background(tcell.ColorGray).
-	Foreground(tcell.ColorBlack)
+var game = gameInfo{
+	gameType: 2,
+}
+
+var err error
