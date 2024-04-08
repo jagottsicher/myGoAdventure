@@ -1,11 +1,15 @@
 package main
 
-type gameInfo struct {
+import "time"
+
+type Game struct {
 	gameType uint8
+	FPS      time.Duration
 }
 
-var game = gameInfo{
+var game = Game{
 	gameType: 2,
+	FPS:      60,
 }
 
 var err error

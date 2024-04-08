@@ -1,103 +1,124 @@
 package main
 
 import (
-	"math/rand"
+	"fmt"
+	"os"
 
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
+	"github.com/mattn/go-runewidth"
 )
 
 var someContent rune
 
-func render(screen tcell.Screen) {
+func DrawState() {
+	// if isGamePaused {
+	// 	return
+	// }
 
-	width, height := screen.Size()
+	// screen.Clear()
 
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			someContent = rune(rand.Intn(92) + 32)
-			screen.SetContent(x, y, someContent, nil, tcell.StyleDefault.
-				Background(tcell.ColorBlack).
-				Foreground(tcell.ColorYellow))
-		}
+	// PrintString(0, 0, debugLog)
+	//
+
+	for _, point := range currentScreen {
+		screen.SetContent(point.x, point.y, point.symbol, nil, tcell.StyleDefault.
+			Background(roomYellowCastle.background).
+			Foreground(roomYellowCastle.foreground))
 	}
 
-	player.display(screen)
+	for _, obj := range allObjects {
+		drawObject(obj)
+	}
+
+}
+
+func drawObject(obj *object) {
+
+	for _, point := range obj.shape {
+		screen.SetContent(obj.posX+point.x, obj.posY+point.y, point.symbol, nil, obj.style)
+	}
+	// screen.Sync()
+
+}
+
+func initGamestate() {
+	initDirections()
+	uncompressRooms()
+	initPlayer()
+}
+
+func initScreen() {
+	var err error
+	screen, err = tcell.NewScreen()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+
+	if err := screen.Init(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+
+	fillTheScreen()
 
 	screen.Show()
+}
 
-	// set the room colors
-	// roomStyle := tcell.StyleDefault.
-	// 	Background(tcell.ColorDarkGray).
-	// 	Foreground(tcell.ColorDarkGray)
-	// screen.SetStyle(roomStyle)
+func fillTheScreen() {
+	// width, height := screen.Size()
 
-	// display room
-
-	// remember what under player
-
-	// emit player
-	// player.display(screen)
-	// 	screen.Sync()
-
-	// // Any maze
-
-	// // defaultXFactor = int(math.Round(float64(stageWidth) / 40))
-	// // defaultYFactor = 2
-
-	// stageYFactor = int(math.Floor(float64(stageHeight) / 12))
-
-	// var percentageY float64
-	// var rowValue int
-	// MaxRowValue := len(r.compressedRoomData)
-	// var percentageX float64
-	// var columnValue int
-	// MaxColumnValue := 40
-
-	// var theRow string
-	// var theSpot rune
-
-	// for y := 0; y < stageHeight; y++ {
-	// 	percentageY = float64((y * 100) / (stageHeight - 1))
-	// 	rowValue = int(12 * int(percentageY) / 100)
-	// 	if rowValue == MaxRowValue {
-	// 		rowValue = MaxRowValue - 1
-	// 	}
-	// 	theRow = r.compressedRoomData[rowValue]
-
-	// 	for x := 0; x < stageWidth; x++ {
-	// 		percentageX = float64((x * 100) / (stageWidth - 1))
-	// 		columnValue = int(40 * int(percentageX) / 100)
-	// 		if columnValue == MaxColumnValue {
-	// 			columnValue = MaxColumnValue - 1
-	// 		}
-
-	// 		theSpot = rune(theRow[columnValue])
-
-	// 		s.SetContent(x, y, theSpot, nil, roomStyle)
+	// fill screen with random content
+	// for y := 0; y < height; y++ {
+	// 	for x := 0; x < width; x++ {
+	// 		someContent = rune(rand.Intn(92) + 32)
+	// 		screen.SetContent(x, y, someContent, nil, tcell.StyleDefault.
+	// 			Background(tcell.ColorBlack).
+	// 			Foreground(tcell.ColorYellow))
+	// 		aPoint := point{x, y, someContent}
+	// 		currentScreen = append(currentScreen, &aPoint)
 	// 	}
 	// }
 
-	// if r == &roomMazeEntry || r == &roomMazeMiddle || r == &roomMazeSide {
-	// 	// print the player surrounding
-	// 	roomUncoveredStyle := tcell.StyleDefault.
-	// 		Background(tcell.ColorOrange).
-	// 		Foreground(tcell.ColorDarkGray)
+	// fill screen with yellow castle content
 
-	// 	const surroundingDimX = 36
-	// 	const surroundingDimY = 18
-
-	// 	var surroundingContent [surroundingDimY][surroundingDimX]rune
-
-	// 	for surY := 0; surY < surroundingDimY; surY++ {
-	// 		for surX := 0; surX < surroundingDimX; surX++ {
-	// 			surroundingContent[surY][surX], _, _, _ = s.GetContent(player.pos_x-16+surX, player.pos_y-8+surY)
-	// 		}
-	// 	}
-
-	// 	for surY := 0; surY < surroundingDimY; surY++ {
-	// 		for surX := 0; surX < surroundingDimX; surX++ {
-	// 			emitStr(s, player.pos_x-16+surX, player.pos_y-8+surY, roomUncoveredStyle, string(surroundingContent[surY][surX]))
-	// 		}
-	// 	}
+	// currentScreen = nil
+	// for _, cell := range roomYellowCastle.uncompressedRoomData {
+	// 	screen.SetContent(cell.x, cell.y, cell.symbol, nil, tcell.StyleDefault.
+	// 		Background(tcell.ColorBlack).
+	// 		Foreground(tcell.ColorYellow))
+	// 	currentScreen = append(currentScreen, cell)
 	// }
+
+	currentScreen = nil
+	// y := 0
+	// for _, cell := range *roomYellowCastle.compressedRoomData {
+	// 	emitStr(screen, 0, y, tcell.StyleDefault.
+	// 		Background(tcell.ColorBlack).
+	// 		Foreground(tcell.ColorYellow), cell)
+	// 	y += 1
+	// 	// currentScreen = append(currentScreen, cell)
+	// }
+
+	for _, cell := range roomYellowCastle.uncompressedRoomData {
+		emitStr(screen, cell.x, cell.y, tcell.StyleDefault.
+			Background(tcell.ColorBlack).
+			Foreground(tcell.ColorYellow), string(cell.symbol))
+
+	}
+
+}
+
+func emitStr(s tcell.Screen, x, y int, style tcell.Style, str string) {
+	for _, c := range str {
+		var comb []rune
+		w := runewidth.RuneWidth(c)
+		if w == 0 {
+			comb = []rune{c}
+			c = ' '
+			w = 1
+		}
+		s.SetContent(x, y, c, comb, style)
+		x += w
+	}
 }

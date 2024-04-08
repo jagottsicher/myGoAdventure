@@ -1,27 +1,70 @@
 package main
 
 import (
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 )
-
-type compressedRoom []string
 
 // Scaling the room
 var defaultXFactor, defaultYFactor int
 
-// Internal scaling factor
-// const defaultYInnerFactor = 4
+type room struct {
+	compressedRoomData   *[]string
+	uncompressedRoomData []*cell
+	background           tcell.Color
+	foreground           tcell.Color
+	barLeft              bool
+	barRight             bool
+	up                   *room
+	down                 *room
+	left                 *room
+	right                *room
+}
 
-var stages []tcell.Screen
+func (r room) UncompressedRoomDat() []*cell {
+	return r.uncompressedRoomData
+}
 
-func initStages(r []room) {
+var rooms = []room{
+	roomYellowCastle,
+	// roomBlackCastle,
+	// roomWhiteCastle,
+	// roomStartRoomTopEntryRoom,
+	// roomPurpleEasterEggTopEntryRoom,
+	// roomNumberRoom,
+	// roomOnTopOfYellowCastle,
+	// roomLeftOfStartRoom,
+	// roomTwoBelowWhiteCastleRoomTopEntryRoom,
+	// roomLowerRedRoomTopEntryRoom,
+	// roomLeftOfNameRoom,
+	// roomOnTopOfBlackCastle,
+	// roomBelowWhiteCastle,
+	// roomBelowNumberRoom,
+	// roomBlueMazeEntry,
+	// roomBlueMazeCenter,
+	// roomBlueMazeBottom,
+	// roomBlueMazeLeft,
+	// roomBlueMazeTop,
+	// roomMazeMiddle,
+	// roomMazeSide,
+	// roomMazeEntry,
+	// roomRedMazeTopLeft,
+	// roomRedMazeBottomLeft,
+	// roomRedMazeTopRight,
+	// roomRedMazeEntryBottomRight,
+	// roomBlackMazeTopLeft,
+	// roomBlackMazeBottomLeft,
+	// roomBlackMazeTopRight,
+	// roomBlackMazeEntryBottomRight,
+}
 
-	// Any maze
+func uncompressRooms() {
 
-	// defaultXFactor = int(math.Round(float64(stageWidth) / 40))
-	// defaultYFactor = 2
+	// screensize feststellen
+	screenWidth, screenHeight := screen.Size()
+	// 	var uncompressedCell cell
 
-	// stageYFactor := int(math.Floor(float64(stageHeight) / 12))
+	// 	defaultXFactor = int(math.Round(float64(screenWidth) / 40))
+	// 	defaultYFactor = 2
 
 	// 	var percentageY float64
 	// 	var rowValue int
@@ -29,33 +72,31 @@ func initStages(r []room) {
 	// 	var percentageX float64
 	// 	var columnValue int
 	// 	MaxColumnValue := 40
-
 	// 	var theRow string
 	// 	var theSpot rune
 
-	// 	for i := 0; i < 30; i++ {
-	// 		// create one screen indexed by id
-	// 		stages[i], err = tcell.NewScreen()
-	// 		if err != nil {
-	// 			fmt.Fprintf(os.Stderr, "%v\n", err)
-	// 			os.Exit(1)
-	// 		}
-	// 		if err := stages[i].Init(); err != nil {
-	// 			fmt.Fprintf(os.Stderr, "%v\n", err)
-	// 			os.Exit(1)
-	// 		}
+	for _, room := range rooms {
+		room.uncompressedRoomData = []*cell{
+			{1, 1, 'X'},
+			{screenWidth, screenHeight, 'Y'},
+		}
+	}
 
-	// 		// fill all screens
-	// 		for y := 0; y < stageHeight; y++ {
-	// 			percentageY = float64((y * 100) / (stageHeight - 1))
+	// for _, room := range rooms {
+	// 		room.uncompressedRoomData = nil
+
+	// 		// fill all rooms with uncompressed screendata
+	// 		for y := 0; y < screenHeight; y++ {
+	// 			percentageY = float64((y * 100) / (screenHeight - 1))
 	// 			rowValue = int(12 * int(percentageY) / 100)
 	// 			if rowValue == MaxRowValue {
 	// 				rowValue = MaxRowValue - 1
 	// 			}
-	// 			theRow = r[i].compressedRoomData[rowValue]
 
-	// 			for x := 0; x < stageWidth; x++ {
-	// 				percentageX = float64((x * 100) / (stageWidth - 1))
+	// 			theRow = room.compressedRoomData[rowValue].(*strings)
+
+	// 			for x := 0; x < screenWidth; x++ {
+	// 				percentageX = float64((x * 100) / (screenWidth - 1))
 	// 				columnValue = int(40 * int(percentageX) / 100)
 	// 				if columnValue == MaxColumnValue {
 	// 					columnValue = MaxColumnValue - 1
@@ -63,573 +104,532 @@ func initStages(r []room) {
 
 	// 				theSpot = rune(theRow[columnValue])
 
-	//				stages[i].SetContent(x, y, theSpot, nil, tcell.StyleDefault.
-	//					Background(tcell.ColorDarkGray).
-	//					Foreground(tcell.ColorYellow))
+	//				uncompressedCell.x = x
+	//				uncompressedCell.y = y
+	//				uncompressedCell.symbol = theSpot
+	//				room.uncompressedRoomData = append(room.uncompressedRoomData, &uncompressedCell)
 	//			}
+	//			var tempdata = &cell{x: uncompressedCell.x, y: uncompressedCell.y, symbol: 'X'}
+	//			room.uncompressedRoomData = append(room.uncompressedRoomData, tempdata)
 	//		}
-	//	}
+	// }
 }
-
-type room struct {
-	id                 uint8
-	compressedRoomData compressedRoom
-	uncompressedData   *tcell.Screen
-	roomStyle          tcell.Style
-	barLeft            bool
-	barRight           bool
-	up                 *room
-	down               *room
-	left               *room
-	right              *room
-}
-
-var rooms []room
 
 var roomYellowCastle = room{
-	id:                 0,
-	compressedRoomData: roomGfxCastle,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorYellow),
-	up:    nil,
-	down:  &roomStartRoomTopEntryRoom,
-	left:  nil,
-	right: nil,
+	compressedRoomData:   roomGfxCastle,
+	uncompressedRoomData: nil,
+	background:           tcell.ColorDarkGray,
+	foreground:           tcell.ColorYellow,
+	up:                   nil,
+	down:                 nil,
+	left:                 nil,
+	right:                nil,
 }
 
-var roomBlackCastle = room{
-	id:                 1,
-	compressedRoomData: roomGfxCastle,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorBlack),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlackCastle = room{
+// 	compressedRoomData:   roomGfxCastle,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorBlack),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomWhiteCastle = room{
-	id:                 2,
-	compressedRoomData: roomGfxCastle,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorWhite),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomWhiteCastle = room{
+// 	compressedRoomData:   roomGfxCastle,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorWhite),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomStartRoomTopEntryRoom = room{
-	id:                 3,
-	compressedRoomData: roomGfxBelowYellowCastle,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorGreen),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomStartRoomTopEntryRoom = room{
+// 	compressedRoomData:   roomGfxBelowYellowCastle,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorGreen),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomPurpleEasterEggTopEntryRoom = room{
-	id:                 4,
-	compressedRoomData: roomGfxTopEntryRoom,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorPurple),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomPurpleEasterEggTopEntryRoom = room{
+// 	compressedRoomData:   roomGfxTopEntryRoom,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorPurple),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomNumberRoom = room{
-	id:                 5,
-	compressedRoomData: roomGfxNumberRoom,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorPurple),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomNumberRoom = room{
+// 	compressedRoomData:   roomGfxNumberRoom,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorPurple),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomOnTopOfYellowCastle = room{
-	id:                 6,
-	compressedRoomData: roomGfxNumberRoom,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorYellow),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomOnTopOfYellowCastle = room{
+// 	compressedRoomData:   roomGfxNumberRoom,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorYellow),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomLeftOfStartRoom = room{
-	id:                 7,
-	compressedRoomData: roomGfxBelowYellowCastle,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorDarkGreen),
-	barLeft: true,
-	up:      nil,
-	down:    nil,
-	left:    nil,
-	right:   nil,
-}
+// var roomLeftOfStartRoom = room{
+// 	compressedRoomData:   roomGfxBelowYellowCastle,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorDarkGreen),
+// 	barLeft: true,
+// 	up:      nil,
+// 	down:    nil,
+// 	left:    nil,
+// 	right:   nil,
+// }
 
-var roomTwoBelowWhiteCastleRoomTopEntryRoom = room{
-	id:                 8,
-	compressedRoomData: roomGfxTopEntryRoom,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorDarkGreen),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomTwoBelowWhiteCastleRoomTopEntryRoom = room{
+// 	compressedRoomData:   roomGfxTopEntryRoom,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorDarkGreen),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomLowerRedRoomTopEntryRoom = room{
-	id:                 9,
-	compressedRoomData: roomGfxTopEntryRoom,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorRed),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomLowerRedRoomTopEntryRoom = room{
+// 	compressedRoomData:   roomGfxTopEntryRoom,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorRed),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomLeftOfNameRoom = room{
-	id:                 10,
-	compressedRoomData: roomGfxLeftOfName,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorGreenYellow),
-	barRight: true,
-	up:       nil,
-	down:     nil,
-	left:     nil,
-	right:    nil,
-}
+// var roomLeftOfNameRoom = room{
+// 	compressedRoomData:   roomGfxLeftOfName,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorGreenYellow),
+// 	barRight: true,
+// 	up:       nil,
+// 	down:     nil,
+// 	left:     nil,
+// 	right:    nil,
+// }
 
-var roomOnTopOfBlackCastle = room{
-	id:                 11,
-	compressedRoomData: roomGfxSideCorridor,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorRed),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomOnTopOfBlackCastle = room{
+// 	compressedRoomData:   roomGfxSideCorridor,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorRed),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBelowWhiteCastle = room{
-	id:                 12,
-	compressedRoomData: roomGfxSideCorridor,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorGreen),
-	barLeft: true,
-	up:      nil,
-	down:    nil,
-	left:    nil,
-	right:   nil,
-}
+// var roomBelowWhiteCastle = room{
+// 	compressedRoomData:   roomGfxSideCorridor,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorGreen),
+// 	barLeft: true,
+// 	up:      nil,
+// 	down:    nil,
+// 	left:    nil,
+// 	right:   nil,
+// }
 
-var roomBelowNumberRoom = room{
-	id:                 13,
-	compressedRoomData: roomGfxSideCorridor,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorLightBlue),
-	barRight: true,
-	up:       nil,
-	down:     nil,
-	left:     nil,
-	right:    nil,
-}
+// var roomBelowNumberRoom = room{
+// 	compressedRoomData:   roomGfxSideCorridor,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorLightBlue),
+// 	barRight: true,
+// 	up:       nil,
+// 	down:     nil,
+// 	left:     nil,
+// 	right:    nil,
+// }
 
-var roomBlueMazeEntry = room{
-	id:                 14,
-	compressedRoomData: roomGfxBlueMazeEntry,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorBlue),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlueMazeEntry = room{
+// 	compressedRoomData:   roomGfxBlueMazeEntry,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorBlue),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBlueMazeCenter = room{
-	id:                 15,
-	compressedRoomData: roomGfxBlueMazeCenter,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorBlue),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlueMazeCenter = room{
+// 	compressedRoomData:   roomGfxBlueMazeCenter,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorBlue),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBlueMazeBottom = room{
-	id:                 16,
-	compressedRoomData: roomGfxBlueMazeBottom,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorBlue),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlueMazeBottom = room{
+// 	compressedRoomData:   roomGfxBlueMazeBottom,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorBlue),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBlueMazeLeft = room{
-	id:                 17,
-	compressedRoomData: roomGfxBlueMaze1,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorBlue),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlueMazeLeft = room{
+// 	compressedRoomData:   roomGfxBlueMaze1,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorBlue),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBlueMazeTop = room{
-	id:                 18,
-	compressedRoomData: roomGfxBlueMazeTop,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorBlue),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlueMazeTop = room{
+// 	compressedRoomData:   roomGfxBlueMazeTop,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorBlue),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomMazeMiddle = room{
-	id:                 19,
-	compressedRoomData: roomGfxMazeMiddle,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorDarkGray),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomMazeMiddle = room{
+// 	compressedRoomData:   roomGfxMazeMiddle,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorDarkGray),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomMazeSide = room{
-	id:                 20,
-	compressedRoomData: roomGfxMazeSide,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorDarkGray),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomMazeSide = room{
+// 	compressedRoomData:   roomGfxMazeSide,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorDarkGray),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomMazeEntry = room{
-	id:                 21,
-	compressedRoomData: roomGfxMazeEntry,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorDarkGray),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomMazeEntry = room{
+// 	compressedRoomData:   roomGfxMazeEntry,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorDarkGray),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomRedMazeTopLeft = room{
-	id:                 22,
-	compressedRoomData: roomGfxRedMaze1,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorRed),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomRedMazeTopLeft = room{
+// 	compressedRoomData:   roomGfxRedMaze1,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorRed),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomRedMazeBottomLeft = room{
-	id:                 23,
-	compressedRoomData: roomGfxRedMazeBottom,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorRed),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomRedMazeBottomLeft = room{
+// 	compressedRoomData:   roomGfxRedMazeBottom,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorRed),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomRedMazeTopRight = room{
-	id:                 23,
-	compressedRoomData: roomGfxRedMazeTop,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorRed),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomRedMazeTopRight = room{
+// 	compressedRoomData:   roomGfxRedMazeTop,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorRed),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomRedMazeEntryBottomRight = room{
-	id:                 25,
-	compressedRoomData: roomGfxWhiteCastleEntry,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorRed),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomRedMazeEntryBottomRight = room{
+// 	compressedRoomData:   roomGfxWhiteCastleEntry,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorRed),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBlackMazeTopLeft = room{
-	id:                 26,
-	compressedRoomData: roomGfxBlackMaze1,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorOrange),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlackMazeTopLeft = room{
+// 	compressedRoomData:   roomGfxBlackMaze1,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorOrange),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBlackMazeBottomLeft = room{
-	id:                 27,
-	compressedRoomData: roomGfxBlackMaze3,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorOrange),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlackMazeBottomLeft = room{
+// 	compressedRoomData:   roomGfxBlackMaze3,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorOrange),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBlackMazeTopRight = room{
-	id:                 28,
-	compressedRoomData: roomGfxBlackMaze2,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorOrange),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlackMazeTopRight = room{
+// 	compressedRoomData:   roomGfxBlackMaze2,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorOrange),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
-var roomBlackMazeEntryBottomRight = room{
-	id:                 29,
-	compressedRoomData: roomGfxBlackMazeEntry,
-	uncompressedData:   nil,
-	roomStyle: tcell.StyleDefault.
-		Background(tcell.ColorDarkGray).
-		Foreground(tcell.ColorOrange),
-	up:    nil,
-	down:  nil,
-	left:  nil,
-	right: nil,
-}
+// var roomBlackMazeEntryBottomRight = room{
+// 	compressedRoomData:   roomGfxBlackMazeEntry,
+// 	uncompressedRoomData: nil,
+// 	roomStyle: tcell.StyleDefault.
+// 		Background(tcell.ColorDarkGray).
+// 		Foreground(tcell.ColorOrange),
+// 	up:    nil,
+// 	down:  nil,
+// 	left:  nil,
+// 	right: nil,
+// }
 
 // this function is needed to avoid errors in assignment order
 func initDirections() {
-	roomYellowCastle.up = &roomOnTopOfYellowCastle
-	roomYellowCastle.down = &roomStartRoomTopEntryRoom
+	// roomYellowCastle.up = &roomOnTopOfYellowCastle
+	// roomYellowCastle.down = &roomStartRoomTopEntryRoom
+	roomYellowCastle.up = nil
+	roomYellowCastle.down = nil
 	roomYellowCastle.left = nil
 	roomYellowCastle.right = nil
 
-	roomBlackCastle.up = &roomOnTopOfBlackCastle
-	roomBlackCastle.down = &roomBlueMazeTop
-	roomBlackCastle.left = nil
-	roomBlackCastle.right = nil
+	// roomBlackCastle.up = &roomOnTopOfBlackCastle
+	// roomBlackCastle.down = &roomBlueMazeTop
+	// roomBlackCastle.left = nil
+	// roomBlackCastle.right = nil
 
-	roomWhiteCastle.up = &roomRedMazeEntryBottomRight
-	roomWhiteCastle.down = &roomBelowWhiteCastle
-	roomWhiteCastle.left = nil
-	roomWhiteCastle.right = nil
+	// roomWhiteCastle.up = &roomRedMazeEntryBottomRight
+	// roomWhiteCastle.down = &roomBelowWhiteCastle
+	// roomWhiteCastle.left = nil
+	// roomWhiteCastle.right = nil
 
-	roomStartRoomTopEntryRoom.up = &roomYellowCastle
-	roomStartRoomTopEntryRoom.down = nil
-	roomStartRoomTopEntryRoom.left = &roomLeftOfStartRoom
-	roomStartRoomTopEntryRoom.right = &roomLeftOfNameRoom
+	// roomStartRoomTopEntryRoom.up = &roomYellowCastle
+	// roomStartRoomTopEntryRoom.down = nil
+	// roomStartRoomTopEntryRoom.left = &roomLeftOfStartRoom
+	// roomStartRoomTopEntryRoom.right = &roomLeftOfNameRoom
 
-	roomPurpleEasterEggTopEntryRoom.up = nil
-	roomPurpleEasterEggTopEntryRoom.down = nil
-	roomPurpleEasterEggTopEntryRoom.left = &roomLeftOfNameRoom
-	roomPurpleEasterEggTopEntryRoom.right = &roomPurpleEasterEggTopEntryRoom
+	// roomPurpleEasterEggTopEntryRoom.up = nil
+	// roomPurpleEasterEggTopEntryRoom.down = nil
+	// roomPurpleEasterEggTopEntryRoom.left = &roomLeftOfNameRoom
+	// roomPurpleEasterEggTopEntryRoom.right = &roomPurpleEasterEggTopEntryRoom
 
-	roomNumberRoom.up = nil
-	roomNumberRoom.down = &roomBelowNumberRoom
-	roomNumberRoom.left = nil
-	roomNumberRoom.right = nil
+	// roomNumberRoom.up = nil
+	// roomNumberRoom.down = &roomBelowNumberRoom
+	// roomNumberRoom.left = nil
+	// roomNumberRoom.right = nil
 
-	roomOnTopOfYellowCastle.up = nil
-	roomOnTopOfYellowCastle.down = &roomYellowCastle
-	roomOnTopOfYellowCastle.left = nil
-	roomOnTopOfYellowCastle.right = nil
+	// roomOnTopOfYellowCastle.up = nil
+	// roomOnTopOfYellowCastle.down = &roomYellowCastle
+	// roomOnTopOfYellowCastle.left = nil
+	// roomOnTopOfYellowCastle.right = nil
 
-	roomLeftOfStartRoom.up = &roomBlueMazeEntry
-	roomLeftOfStartRoom.down = nil
-	roomLeftOfStartRoom.left = nil
-	roomLeftOfStartRoom.right = &roomStartRoomTopEntryRoom
+	// roomLeftOfStartRoom.up = &roomBlueMazeEntry
+	// roomLeftOfStartRoom.down = nil
+	// roomLeftOfStartRoom.left = nil
+	// roomLeftOfStartRoom.right = &roomStartRoomTopEntryRoom
 
-	roomTwoBelowWhiteCastleRoomTopEntryRoom.up = &roomBelowWhiteCastle
-	roomTwoBelowWhiteCastleRoomTopEntryRoom.down = nil
-	roomTwoBelowWhiteCastleRoomTopEntryRoom.left = nil
-	roomTwoBelowWhiteCastleRoomTopEntryRoom.right = nil
+	// roomTwoBelowWhiteCastleRoomTopEntryRoom.up = &roomBelowWhiteCastle
+	// roomTwoBelowWhiteCastleRoomTopEntryRoom.down = nil
+	// roomTwoBelowWhiteCastleRoomTopEntryRoom.left = nil
+	// roomTwoBelowWhiteCastleRoomTopEntryRoom.right = nil
 
-	roomLowerRedRoomTopEntryRoom.up = &roomBelowNumberRoom
-	roomLowerRedRoomTopEntryRoom.down = nil
-	roomLowerRedRoomTopEntryRoom.left = nil
-	roomLowerRedRoomTopEntryRoom.right = nil
+	// roomLowerRedRoomTopEntryRoom.up = &roomBelowNumberRoom
+	// roomLowerRedRoomTopEntryRoom.down = nil
+	// roomLowerRedRoomTopEntryRoom.left = nil
+	// roomLowerRedRoomTopEntryRoom.right = nil
 
-	roomLeftOfNameRoom.up = nil
-	roomLeftOfNameRoom.down = &roomMazeEntry
-	roomLeftOfNameRoom.left = &roomStartRoomTopEntryRoom
-	roomLeftOfNameRoom.right = &roomPurpleEasterEggTopEntryRoom
+	// roomLeftOfNameRoom.up = nil
+	// roomLeftOfNameRoom.down = &roomMazeEntry
+	// roomLeftOfNameRoom.left = &roomStartRoomTopEntryRoom
+	// roomLeftOfNameRoom.right = &roomPurpleEasterEggTopEntryRoom
 
-	roomOnTopOfBlackCastle.up = &roomBlackMazeEntryBottomRight
-	roomOnTopOfBlackCastle.down = &roomBlackCastle
-	roomOnTopOfBlackCastle.left = nil
-	roomOnTopOfBlackCastle.right = nil
+	// roomOnTopOfBlackCastle.up = &roomBlackMazeEntryBottomRight
+	// roomOnTopOfBlackCastle.down = &roomBlackCastle
+	// roomOnTopOfBlackCastle.left = nil
+	// roomOnTopOfBlackCastle.right = nil
 
-	roomBelowWhiteCastle.up = &roomWhiteCastle
-	roomBelowWhiteCastle.down = &roomTwoBelowWhiteCastleRoomTopEntryRoom
-	roomBelowWhiteCastle.left = nil
-	roomBelowWhiteCastle.right = &roomMazeSide
+	// roomBelowWhiteCastle.up = &roomWhiteCastle
+	// roomBelowWhiteCastle.down = &roomTwoBelowWhiteCastleRoomTopEntryRoom
+	// roomBelowWhiteCastle.left = nil
+	// roomBelowWhiteCastle.right = &roomMazeSide
 
-	roomBelowNumberRoom.up = &roomNumberRoom
-	roomBelowNumberRoom.down = &roomLowerRedRoomTopEntryRoom
-	roomBelowNumberRoom.left = &roomMazeSide
-	roomBelowNumberRoom.right = nil
+	// roomBelowNumberRoom.up = &roomNumberRoom
+	// roomBelowNumberRoom.down = &roomLowerRedRoomTopEntryRoom
+	// roomBelowNumberRoom.left = &roomMazeSide
+	// roomBelowNumberRoom.right = nil
 
-	roomBlueMazeEntry.up = &roomBlueMazeLeft
-	roomBlueMazeEntry.down = &roomLeftOfStartRoom
-	roomBlueMazeEntry.left = &roomBlueMazeCenter
-	roomBlueMazeEntry.right = &roomBlueMazeCenter
+	// roomBlueMazeEntry.up = &roomBlueMazeLeft
+	// roomBlueMazeEntry.down = &roomLeftOfStartRoom
+	// roomBlueMazeEntry.left = &roomBlueMazeCenter
+	// roomBlueMazeEntry.right = &roomBlueMazeCenter
 
-	roomBlueMazeCenter.up = &roomBlueMazeTop
-	roomBlueMazeCenter.down = &roomBlueMazeBottom
-	roomBlueMazeCenter.left = &roomBlueMazeEntry
-	roomBlueMazeCenter.right = &roomBlueMazeEntry
+	// roomBlueMazeCenter.up = &roomBlueMazeTop
+	// roomBlueMazeCenter.down = &roomBlueMazeBottom
+	// roomBlueMazeCenter.left = &roomBlueMazeEntry
+	// roomBlueMazeCenter.right = &roomBlueMazeEntry
 
-	roomBlueMazeBottom.up = &roomBlueMazeCenter
-	roomBlueMazeBottom.down = nil
-	roomBlueMazeBottom.left = &roomBlueMazeLeft
-	roomBlueMazeBottom.right = &roomBlueMazeTop
+	// roomBlueMazeBottom.up = &roomBlueMazeCenter
+	// roomBlueMazeBottom.down = nil
+	// roomBlueMazeBottom.left = &roomBlueMazeLeft
+	// roomBlueMazeBottom.right = &roomBlueMazeTop
 
-	roomBlueMazeLeft.up = nil
-	roomBlueMazeLeft.down = &roomBlueMazeEntry
-	roomBlueMazeLeft.left = &roomBlueMazeTop
-	roomBlueMazeLeft.right = &roomBlueMazeBottom
+	// roomBlueMazeLeft.up = nil
+	// roomBlueMazeLeft.down = &roomBlueMazeEntry
+	// roomBlueMazeLeft.left = &roomBlueMazeTop
+	// roomBlueMazeLeft.right = &roomBlueMazeBottom
 
-	roomBlueMazeTop.up = &roomBlackCastle
-	roomBlueMazeTop.down = &roomBlueMazeCenter
-	roomBlueMazeTop.left = &roomBlueMazeEntry
-	roomBlueMazeTop.right = &roomBlueMazeLeft
+	// roomBlueMazeTop.up = &roomBlackCastle
+	// roomBlueMazeTop.down = &roomBlueMazeCenter
+	// roomBlueMazeTop.left = &roomBlueMazeEntry
+	// roomBlueMazeTop.right = &roomBlueMazeLeft
 
-	roomMazeMiddle.up = &roomMazeEntry
-	roomMazeMiddle.down = &roomMazeSide
-	roomMazeMiddle.left = &roomMazeEntry
-	roomMazeMiddle.right = &roomMazeEntry
+	// roomMazeMiddle.up = &roomMazeEntry
+	// roomMazeMiddle.down = &roomMazeSide
+	// roomMazeMiddle.left = &roomMazeEntry
+	// roomMazeMiddle.right = &roomMazeEntry
 
-	roomMazeSide.up = &roomMazeMiddle
-	roomMazeSide.down = nil
-	roomMazeSide.left = &roomBelowWhiteCastle
-	roomMazeSide.right = &roomBelowNumberRoom
+	// roomMazeSide.up = &roomMazeMiddle
+	// roomMazeSide.down = nil
+	// roomMazeSide.left = &roomBelowWhiteCastle
+	// roomMazeSide.right = &roomBelowNumberRoom
 
-	roomMazeEntry.up = &roomLeftOfNameRoom
-	roomMazeEntry.down = &roomMazeMiddle
-	roomMazeEntry.left = &roomMazeMiddle
-	roomMazeEntry.right = &roomMazeMiddle
+	// roomMazeEntry.up = &roomLeftOfNameRoom
+	// roomMazeEntry.down = &roomMazeMiddle
+	// roomMazeEntry.left = &roomMazeMiddle
+	// roomMazeEntry.right = &roomMazeMiddle
 
-	roomRedMazeTopLeft.up = nil
-	roomRedMazeTopLeft.down = &roomRedMazeBottomLeft
-	roomRedMazeTopLeft.left = &roomRedMazeTopRight
-	roomRedMazeTopLeft.right = &roomRedMazeTopRight
+	// roomRedMazeTopLeft.up = nil
+	// roomRedMazeTopLeft.down = &roomRedMazeBottomLeft
+	// roomRedMazeTopLeft.left = &roomRedMazeTopRight
+	// roomRedMazeTopLeft.right = &roomRedMazeTopRight
 
-	roomRedMazeBottomLeft.up = &roomRedMazeTopLeft
-	roomRedMazeBottomLeft.down = nil
-	roomRedMazeBottomLeft.left = &roomRedMazeEntryBottomRight
-	roomRedMazeBottomLeft.right = &roomRedMazeEntryBottomRight
+	// roomRedMazeBottomLeft.up = &roomRedMazeTopLeft
+	// roomRedMazeBottomLeft.down = nil
+	// roomRedMazeBottomLeft.left = &roomRedMazeEntryBottomRight
+	// roomRedMazeBottomLeft.right = &roomRedMazeEntryBottomRight
 
-	roomRedMazeTopRight.up = nil
-	roomRedMazeTopRight.down = &roomRedMazeEntryBottomRight
-	roomRedMazeTopRight.left = &roomRedMazeTopLeft
-	roomRedMazeTopRight.right = &roomRedMazeTopLeft
+	// roomRedMazeTopRight.up = nil
+	// roomRedMazeTopRight.down = &roomRedMazeEntryBottomRight
+	// roomRedMazeTopRight.left = &roomRedMazeTopLeft
+	// roomRedMazeTopRight.right = &roomRedMazeTopLeft
 
-	roomRedMazeEntryBottomRight.up = &roomRedMazeTopRight
-	roomRedMazeEntryBottomRight.down = &roomWhiteCastle
-	roomRedMazeEntryBottomRight.left = &roomRedMazeBottomLeft
-	roomRedMazeEntryBottomRight.right = &roomRedMazeBottomLeft
+	// roomRedMazeEntryBottomRight.up = &roomRedMazeTopRight
+	// roomRedMazeEntryBottomRight.down = &roomWhiteCastle
+	// roomRedMazeEntryBottomRight.left = &roomRedMazeBottomLeft
+	// roomRedMazeEntryBottomRight.right = &roomRedMazeBottomLeft
 
-	roomBlackMazeTopLeft.up = &roomBlackMazeBottomLeft
-	roomBlackMazeTopLeft.down = &roomBlackMazeBottomLeft
-	roomBlackMazeTopLeft.left = &roomBlackMazeEntryBottomRight
-	roomBlackMazeTopLeft.right = &roomBlackMazeTopRight
+	// roomBlackMazeTopLeft.up = &roomBlackMazeBottomLeft
+	// roomBlackMazeTopLeft.down = &roomBlackMazeBottomLeft
+	// roomBlackMazeTopLeft.left = &roomBlackMazeEntryBottomRight
+	// roomBlackMazeTopLeft.right = &roomBlackMazeTopRight
 
-	roomBlackMazeBottomLeft.up = &roomBlackMazeTopLeft
-	roomBlackMazeBottomLeft.down = &roomBlackMazeTopLeft
-	roomBlackMazeBottomLeft.left = &roomBlackMazeTopRight
-	roomBlackMazeBottomLeft.right = &roomBlackMazeEntryBottomRight
+	// roomBlackMazeBottomLeft.up = &roomBlackMazeTopLeft
+	// roomBlackMazeBottomLeft.down = &roomBlackMazeTopLeft
+	// roomBlackMazeBottomLeft.left = &roomBlackMazeTopRight
+	// roomBlackMazeBottomLeft.right = &roomBlackMazeEntryBottomRight
 
-	roomBlackMazeTopRight.up = nil
-	roomBlackMazeTopRight.down = &roomBlackMazeEntryBottomRight
-	roomBlackMazeTopRight.left = &roomBlackMazeTopLeft
-	roomBlackMazeTopRight.right = &roomBlackMazeBottomLeft
+	// roomBlackMazeTopRight.up = nil
+	// roomBlackMazeTopRight.down = &roomBlackMazeEntryBottomRight
+	// roomBlackMazeTopRight.left = &roomBlackMazeTopLeft
+	// roomBlackMazeTopRight.right = &roomBlackMazeBottomLeft
 
-	roomBlackMazeEntryBottomRight.up = &roomBlackMazeTopRight
-	roomBlackMazeEntryBottomRight.down = &roomBlackCastle
-	roomBlackMazeEntryBottomRight.left = &roomBlackMazeBottomLeft
-	roomBlackMazeEntryBottomRight.right = &roomBlackMazeTopLeft
+	// roomBlackMazeEntryBottomRight.up = &roomBlackMazeTopRight
+	// roomBlackMazeEntryBottomRight.down = &roomBlackCastle
+	// roomBlackMazeEntryBottomRight.left = &roomBlackMazeBottomLeft
+	// roomBlackMazeEntryBottomRight.right = &roomBlackMazeTopLeft
 
 }
