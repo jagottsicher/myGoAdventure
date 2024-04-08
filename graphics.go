@@ -1,11 +1,25 @@
 package main
 
 //
+// player graphics
+//
+
+var playerGfx = []*cell{
+	{x: 0, y: 0, symbol: 'L'},
+	{x: 1, y: 0, symbol: 'R'},
+}
+
+var playerGfxBefore = []*cell{
+	{x: 0, y: 0, symbol: 'B'},
+	{x: 1, y: 0, symbol: '4'},
+}
+
+//
 // Room graphics
 //
 
 // Left of Name Room
-var roomGfxLeftOfName = compressedRoom{
+var roomGfxLeftOfName = []string{
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	"                                        ",
 	"                                        ",
@@ -21,23 +35,23 @@ var roomGfxLeftOfName = compressedRoom{
 }
 
 // Below Yellow Castle
-var roomGfxBelowYellowCastle = compressedRoom{
+var roomGfxBelowYellowCastle = []string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
-	"1234567890123456789012345678901234567890",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 }
 
 // Side CoXXidor
-var roomGfxSideCorridor = compressedRoom{
+var roomGfxSideCorridor = []string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 	"                                        ",
 	"                                        ",
@@ -53,7 +67,7 @@ var roomGfxSideCorridor = compressedRoom{
 }
 
 // Number Room Definition
-var roomGfxNumberRoom = compressedRoom{
+var roomGfxNumberRoom = []string{
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	"X                                      X",
 	"X                                      X",
@@ -69,7 +83,7 @@ var roomGfxNumberRoom = compressedRoom{
 }
 
 // `
-var roomGfxTwoExitRoom = compressedRoom{
+var roomGfxTwoExitRoom = []string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 	"X                                      X",
 	"X                                      X",
@@ -85,7 +99,7 @@ var roomGfxTwoExitRoom = compressedRoom{
 }
 
 // Top of Blue Maze
-var roomGfxBlueMazeTop = compressedRoom{
+var roomGfxBlueMazeTop = []string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 	"        XX    XX        XX    XX        ",
 	"        XX    XX        XX    XX        ",
@@ -101,7 +115,7 @@ var roomGfxBlueMazeTop = compressedRoom{
 }
 
 // Blue Maze #1
-var roomGfxBlueMaze1 = compressedRoom{
+var roomGfxBlueMaze1 = []string{
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	"                                        ",
 	"                                        ",
@@ -117,7 +131,7 @@ var roomGfxBlueMaze1 = compressedRoom{
 }
 
 // Bottom of Blue Maze
-var roomGfxBlueMazeBottom = compressedRoom{
+var roomGfxBlueMazeBottom = []string{
 	"XXXXXXXX  XX  XX        XX  XX  XXXXXXXX",
 	"      XX      XX        XX      XX      ",
 	"      XX      XX        XX      XX      ",
@@ -133,7 +147,7 @@ var roomGfxBlueMazeBottom = compressedRoom{
 }
 
 // Center of Blue Maze
-var roomGfxBlueMazeCenter = compressedRoom{
+var roomGfxBlueMazeCenter = []string{
 	"XXXX  XX  XXXXXXXX    XXXXXXXX  XX  XXXX",
 	"      XX      XXXX    XXXX      XX      ",
 	"      XX      XXXX    XXXX      XX      ",
@@ -149,7 +163,7 @@ var roomGfxBlueMazeCenter = compressedRoom{
 }
 
 // Blue Maze Entry
-var roomGfxBlueMazeEntry = compressedRoom{
+var roomGfxBlueMazeEntry = []string{
 	"XXXXXXXX  XX  XX  XXXX  XX  XX  XXXXXXXX",
 	"      XX  XX  XX        XX  XX  XX      ",
 	"      XX  XX  XX        XX  XX  XX      ",
@@ -165,7 +179,7 @@ var roomGfxBlueMazeEntry = compressedRoom{
 }
 
 // Maze Middle
-var roomGfxMazeMiddle = compressedRoom{
+var roomGfxMazeMiddle = []string{
 	"XXXXXXXXXXXX  XX  XXXX  XX  XXXXXXXXXXXX",
 	"              XX  XXXX  XX              ",
 	"              XX  XXXX  XX              ",
@@ -181,7 +195,7 @@ var roomGfxMazeMiddle = compressedRoom{
 }
 
 // Maze Side
-var roomGfxMazeSide = compressedRoom{
+var roomGfxMazeSide = []string{
 	"XXXX  XX  XX  XX  XXXX  XX  XX  XX  XXXX",
 	"      XX      XX  XXXX  XX      XX      ",
 	"      XX      XX  XXXX  XX      XX      ",
@@ -197,7 +211,7 @@ var roomGfxMazeSide = compressedRoom{
 }
 
 // Maze Entry
-var roomGfxMazeEntry = compressedRoom{
+var roomGfxMazeEntry = []string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 	"      XX                        XX      ",
 	"      XX                        XX      ",
@@ -213,7 +227,7 @@ var roomGfxMazeEntry = compressedRoom{
 }
 
 // Castle
-var roomGfxCastle = compressedRoom{
+var roomGfxCastle = &[]string{
 	"XXXXXXXXXXX X X X      X X X XXXXXXXXXXX",
 	"X         X X X X      X X X X         X",
 	"X         XXXXXXX      XXXXXXX         X",
@@ -228,8 +242,19 @@ var roomGfxCastle = compressedRoom{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 }
 
+func convertToBinary(data string) int64 {
+	binary := int64(0)
+	for _, char := range data {
+		binary <<= 1
+		if char == 'X' {
+			binary |= 1
+		}
+	}
+	return binary
+}
+
 // Red Maze #1
-var roomGfxRedMaze1 = compressedRoom{
+var roomGfxRedMaze1 = []string{
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	"                                        ",
 	"                                        ",
@@ -245,7 +270,7 @@ var roomGfxRedMaze1 = compressedRoom{
 }
 
 // Bottom of Red Maze
-var roomGfxRedMazeBottom = compressedRoom{
+var roomGfxRedMazeBottom = []string{
 	"XXXX  XX  XXXXXX  XXXX  XXXXXX  XX  XXXX",
 	"XXXX  XX                        XX  XXXX",
 	"XXXX  XX                        XX  XXXX",
@@ -261,7 +286,7 @@ var roomGfxRedMazeBottom = compressedRoom{
 }
 
 // Top of Red Maze
-var roomGfxRedMazeTop = compressedRoom{
+var roomGfxRedMazeTop = []string{
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	"                  XXXX                  ",
 	"                  XXXX                  ",
@@ -277,7 +302,7 @@ var roomGfxRedMazeTop = compressedRoom{
 }
 
 // White Castle Entry
-var roomGfxWhiteCastleEntry = compressedRoom{
+var roomGfxWhiteCastleEntry = []string{
 	"XXXX  XXXXXX  XX        XX  XXXXXX  XXXX",
 	"XXXX          XX        XX          XXXX",
 	"XXXX          XX        XX          XXXX",
@@ -293,7 +318,7 @@ var roomGfxWhiteCastleEntry = compressedRoom{
 }
 
 // Top Entry Room
-var roomGfxTopEntryRoom = compressedRoom{
+var roomGfxTopEntryRoom = []string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 	"X                                      X",
 	"X                                      X",
@@ -309,7 +334,7 @@ var roomGfxTopEntryRoom = compressedRoom{
 }
 
 // Black Maze #1
-var roomGfxBlackMaze1 = compressedRoom{
+var roomGfxBlackMaze1 = []string{
 	"XXXXXXXX    XXXXXXXXXXXXXXXX    XXXXXXXX",
 	"            XX            XX            ",
 	"            XX            XX            ",
@@ -325,7 +350,7 @@ var roomGfxBlackMaze1 = compressedRoom{
 }
 
 // Black Maze #3
-var roomGfxBlackMaze3 = compressedRoom{
+var roomGfxBlackMaze3 = []string{
 	"XXXXXXXX    XXXXXXXXXXXXXXXX    XXXXXXXX",
 	"XX                  XX                  ",
 	"XX                  XX                  ",
@@ -341,7 +366,7 @@ var roomGfxBlackMaze3 = compressedRoom{
 }
 
 // Black Maze #2
-var roomGfxBlackMaze2 = compressedRoom{
+var roomGfxBlackMaze2 = []string{
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	"                  XX                  XX",
 	"                  XX                  XX",
@@ -357,7 +382,7 @@ var roomGfxBlackMaze2 = compressedRoom{
 }
 
 // Black Maze Entry
-var roomGfxBlackMazeEntry = compressedRoom{
+var roomGfxBlackMazeEntry = []string{
 	"XX  XX  XXXX  XX  XXXX  XX  XXXX  XX  XX",
 	"    XX        XX  XXXX  XX        XX    ",
 	"    XX        XX  XXXX  XX        XX    ",
