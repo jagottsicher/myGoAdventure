@@ -1,122 +1,140 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"time"
-
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
 )
 
+// needsRedraw is set to true by the resize handler so the main loop knows to
+// rebuild the stage geometry on the next frame.
+var needsRedraw bool
+
+// gridToScreen maps a room grid coordinate to terminal cell coordinates.
+// Room grid: gridCols × gridRows (40 × 7).
+// Result is clamped to the current terminal dimensions.
+func gridToScreen(gx, gy float64, termW, termH int) (int, int) {
+	sx := int(gx / float64(gridCols) * float64(termW))
+	sy := int(gy / float64(gridRows) * float64(termH))
+	return sx, sy
+}
+
+// drawStage renders the walls of the current player's room.
+// It iterates over the room's decoded wall map and paints each cell.
 func drawStage() {
-	// if isGamePaused {
-	// 	return
-	// }
-
-	// screen.Clear()
-
-	// PrintString(0, 0, debugLog)
-	//
-
-	for _, point := range currentScreen {
-		screen.SetContent(point.x, point.y, point.symbol, nil, tcell.StyleDefault.
-			Background(roomYellowCastle.background).
-			Foreground(roomYellowCastle.foreground))
-	}
-}
-
-func drawAllVisibleobjects() {
-	// TODO: later only the ones which are visible
-	for _, obj := range allObjects {
-		drawObject(obj)
-	}
-}
-
-func drawObject(obj *object) {
 	termW, termH := screen.Size()
-	template := *roomYellowCastle.compressedRoomData
-	templateH := float64(len(template))
-	templateW := float64(len([]rune(template[0])))
-
-	screenX := int(obj.posX / templateW * float64(termW))
-	screenY := int(obj.posY / templateH * float64(termH))
-
-	for _, point := range obj.shape {
-		screen.SetContent(screenX+point.x, screenY+point.y, point.symbol, nil, obj.style)
-	}
-}
-
-func initGamestate() {
-	initDirections()
-	// uncompressRooms()
-	initPlayer()
-}
-
-func initScreen() {
-	var err error
-	screen, err = tcell.NewScreen()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
-
-	if err := screen.Init(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
-	}
-
-	screen.SetStyle(tcell.StyleDefault.
-		Background(roomSplashScreen.background).
-		Foreground(roomSplashScreen.foreground))
-
-	for i := 0; i < 256; i++ {
-
-		screen.SetStyle(tcell.StyleDefault.
-			Background(roomSplashScreen.background).
-			Foreground(tcell.NewRGBColor(int32(i), int32(i), int32(i))))
-
-		screenWidth, screenHeight := screen.Size()
-		title := "An Adventure - dedicated to Warren Robinett"
-		subline := "Press [Q] to exit."
-		emitStr(screen, screenWidth/2-len(title)/2, screenHeight/2-1, tcell.StyleDefault, title)
-		emitStr(screen, screenWidth/2-len(subline)/2, screenHeight/2, tcell.StyleDefault, subline)
-
-		time.Sleep(time.Millisecond * 10)
-		screen.Show()
-	}
-	time.Sleep(time.Second * 3)
-
-	fillTheScreen()
-}
-
-func fillTheScreen() {
-	termW, termH := screen.Size()
-	template := *roomYellowCastle.compressedRoomData
-	templateH := len(template)
-	if templateH == 0 {
-		return
-	}
-	templateW := len([]rune(template[0]))
-	if templateW == 0 {
+	r := roomByID(player.roomID)
+	if r == nil {
 		return
 	}
 
-	currentScreen = nil
-	for ty := 0; ty < termH; ty++ {
-		srcY := ty * templateH / termH
-		row := []rune(template[srcY])
-		for tx := 0; tx < termW; tx++ {
-			srcX := tx * templateW / termW
-			var ch rune = ' '
-			if srcX < len(row) {
-				ch = row[srcX]
+	bg := tcell.ColorBlack
+	fg := r.color
+
+	wallStyle := tcell.StyleDefault.Background(bg).Foreground(fg)
+	emptyStyle := tcell.StyleDefault.Background(bg).Foreground(bg)
+
+	// Calculate cell dimensions for the current terminal size.
+	cellW := termW / gridCols // terminal columns per grid column (may be 0 for tiny terminals)
+	cellH := termH / gridRows // terminal rows per grid row
+	if cellW < 1 {
+		cellW = 1
+	}
+	if cellH < 1 {
+		cellH = 1
+	}
+
+	// Paint each grid cell individually.
+	for row := 0; row < gridRows; row++ {
+		for col := 0; col < gridCols; col++ {
+			// Top-left terminal coordinate for this grid cell.
+			startX, startY := gridToScreen(float64(col), float64(row), termW, termH)
+
+			// Determine how many terminal cells this grid cell occupies.
+			endX, endY := gridToScreen(float64(col+1), float64(row+1), termW, termH)
+
+			var style tcell.Style
+			var ch rune
+			if r.walls[row][col] {
+				style = wallStyle
+				ch = '█'
+			} else {
+				style = emptyStyle
+				ch = ' '
 			}
-			currentScreen = append(currentScreen, &cell{x: tx, y: ty, symbol: ch})
+
+			for ty := startY; ty < endY && ty < termH; ty++ {
+				for tx := startX; tx < endX && tx < termW; tx++ {
+					screen.SetContent(tx, ty, ch, nil, style)
+				}
+			}
+		}
+	}
+
+	// Fill any remaining terminal area not covered by the grid with background.
+	// (Happens when termW or termH is not evenly divisible by gridCols/gridRows.)
+	_ = cellW
+	_ = cellH
+}
+
+// drawAllVisibleObjects renders every object in allObjects whose roomID
+// matches the player's current room.
+func drawAllVisibleObjects() {
+	for _, obj := range allObjects {
+		if obj.roomID == player.roomID {
+			drawObject(obj)
 		}
 	}
 }
 
+// drawObject paints a single object at its current grid position,
+// scaled to the current terminal size.
+func drawObject(obj *object) {
+	termW, termH := screen.Size()
+	sx, sy := gridToScreen(obj.posX, obj.posY, termW, termH)
+
+	for _, pt := range obj.shape {
+		tx := sx + pt.x
+		ty := sy + pt.y
+		if tx >= 0 && tx < termW && ty >= 0 && ty < termH {
+			screen.SetContent(tx, ty, pt.symbol, nil, obj.style)
+		}
+	}
+}
+
+// drawSplash renders the animated startup/title screen and waits for the user
+// to press a key or for a brief timeout.
+func drawSplash() {
+	termW, termH := screen.Size()
+
+	title := "An Adventure – dedicated to Warren Robinett"
+	sub := "Use [WASD] or arrow keys to move. Press [Q] to quit."
+
+	titleX := termW/2 - len(title)/2
+	subX := termW/2 - len(sub)/2
+	titleY := termH/2 - 1
+	subY := termH / 2
+
+	screen.Clear()
+	emitStr(screen, titleX, titleY, tcell.StyleDefault.Bold(true), title)
+	emitStr(screen, subX, subY, tcell.StyleDefault, sub)
+	screen.Show()
+}
+
+// initScreen initialises the tcell screen, displays the splash screen, and
+// returns when the user is ready to play.
+func initScreen() {
+	var err error
+	screen, err = newScreen()
+	if err != nil {
+		panic(err)
+	}
+	screen.SetStyle(tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorWhite))
+	screen.Clear()
+	drawSplash()
+}
+
+// emitStr writes a string at (x, y) using the given style, handling
+// multi-column Unicode characters via go-runewidth.
 func emitStr(s tcell.Screen, x, y int, style tcell.Style, str string) {
 	for _, c := range str {
 		var comb []rune
