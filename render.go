@@ -34,8 +34,16 @@ func drawAllVisibleobjects() {
 }
 
 func drawObject(obj *object) {
+	termW, termH := screen.Size()
+	template := *roomYellowCastle.compressedRoomData
+	templateH := float64(len(template))
+	templateW := float64(len([]rune(template[0])))
+
+	screenX := int(obj.posX / templateW * float64(termW))
+	screenY := int(obj.posY / templateH * float64(termH))
+
 	for _, point := range obj.shape {
-		screen.SetContent(obj.posX+point.x, obj.posY+point.y, point.symbol, nil, obj.style)
+		screen.SetContent(screenX+point.x, screenY+point.y, point.symbol, nil, obj.style)
 	}
 }
 

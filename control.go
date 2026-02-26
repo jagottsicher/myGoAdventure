@@ -45,6 +45,15 @@ func ReadInput(inputChan chan string) string {
 // HandleUserInput processes a key name and updates game state accordingly.
 func HandleUserInput(key string) {
 
+	template := *roomYellowCastle.compressedRoomData
+	templateH := float64(len(template))
+	templateW := float64(len([]rune(template[0])))
+	termW, termH := screen.Size()
+
+	// Convert screen-pixel steps to template-unit steps
+	stepX := player.stepX * templateW / float64(termW)
+	stepY := player.stepY * templateH / float64(termH)
+
 	if key == "Rune[q]" {
 		screen.Fini()
 		clearScreen()
@@ -53,27 +62,23 @@ func HandleUserInput(key string) {
 		fmt.Println(roomYellowCastle.uncompressedRoomData)
 		os.Exit(0)
 	} else if key == "Rune[w]" || key == "Up" {
-		player.posY -= player.stepY
-		_, screenHeight := screen.Size()
+		player.posY -= stepY
 		if player.posY < 0 {
-			player.posY = screenHeight - 1
+			player.posY = templateH - 1.0
 		}
 	} else if key == "Rune[s]" || key == "Down" {
-		player.posY += player.stepY
-		_, screenHeight := screen.Size()
-		if player.posY > screenHeight-1 {
+		player.posY += stepY
+		if player.posY > templateH-1.0 {
 			player.posY = 0
 		}
 	} else if key == "Rune[a]" || key == "Left" {
-		player.posX -= player.stepX
-		screenWidth, _ := screen.Size()
+		player.posX -= stepX
 		if player.posX < 0 {
-			player.posX = screenWidth - 2
+			player.posX = templateW - 2.0
 		}
 	} else if key == "Rune[d]" || key == "Right" {
-		player.posX += player.stepX
-		screenWidth, _ := screen.Size()
-		if player.posX > screenWidth-1 {
+		player.posX += stepX
+		if player.posX > templateW-1.0 {
 			player.posX = 0
 		}
 	}
