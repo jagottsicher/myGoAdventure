@@ -13,10 +13,13 @@ var screen tcell.Screen
 var player *object
 var allObjects []*object
 
-func main() {
+func init() {
 	// encoding.Register()
-	// initDirections()
+	initDirections()
 	// uncompressRoomData()
+}
+
+func main() {
 
 	initScreen()
 	initGamestate()
@@ -25,14 +28,25 @@ func main() {
 	// Calculate the duration of each frame
 	frameDuration := time.Second / game.FPS
 
-	DrawState()
+	drawStage()
 
 	for !IsGameOver() {
 		startTime := time.Now()
 
+		// Handle user input
 		HandleUserInput(ReadInput(inputChan))
-		UpdateState()
-		DrawState()
+
+		// update properties
+		//(game, screen, objects, etc.)
+		UpdateStates()
+
+		// draw screen (background)
+		drawStage()
+
+		// draw objects
+		drawAllVisibleobjects()
+
+		// show screen
 		screen.Show()
 
 		// Calculate the remaining time until the next frame
@@ -45,10 +59,12 @@ func main() {
 	}
 }
 
-func UpdateState() {
+// UpdateStates updates all game object states for the current tick.
+func UpdateStates() {
 
 }
 
+// IsGameOver returns true when the game-ending condition has been met.
 func IsGameOver() bool {
 	return false
 }
