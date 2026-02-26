@@ -3,96 +3,62 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"runtime"
 
 	"github.com/gdamore/tcell/v2"
 )
 
-// InitUserInput starts a goroutine that listens for terminal events and returns a channel of key names.
+// InitUserInput starts a goroutine that listens for terminal events and
+// returns a channel of key names.  Resize events trigger an immediate
+// redraw of the stage geometry.
 func InitUserInput() chan string {
-	inputChan := make(chan string)
+	inputChan := make(chan string, 1)
 	go func() {
 		for {
 			switch ev := screen.PollEvent().(type) {
 			case *tcell.EventKey:
-				inputChan <- ev.Name()
+				// Non-blocking send: drop key if the consumer hasn't caught up yet.
+				select {
+				case inputChan <- ev.Name():
+				default:
+				}
 			case *tcell.EventResize:
-				currentScreen = nil
-				fillTheScreen()
 				screen.Sync()
-				// currentScreen = nil
-				// initScreen()
+				needsRedraw = true
 			}
 		}
 	}()
-
 	return inputChan
 }
 
-// ReadInput performs a non-blocking read from the input channel, returning an empty string if no key is pending.
+// ReadInput does a non-blocking read from the input channel.
+// Returns an empty string when no key is pending.
 func ReadInput(inputChan chan string) string {
-	var key string
 	select {
-	case key = <-inputChan:
+	case key := <-inputChan:
+		return key
 	default:
-		key = ""
+		return ""
 	}
-
-	return key
 }
 
 // HandleUserInput processes a key name and updates game state accordingly.
 func HandleUserInput(key string) {
-
-	template := *roomYellowCastle.compressedRoomData
-	templateH := float64(len(template))
-	templateW := float64(len([]rune(template[0])))
-	termW, termH := screen.Size()
-
-	// Convert screen-pixel steps to template-unit steps
-	stepX := player.stepX * templateW / float64(termW)
-	stepY := player.stepY * templateH / float64(termH)
-
-	if key == "Rune[q]" {
+	switch key {
+	case "Rune[q]", "Ctrl+C":
 		screen.Fini()
-		clearScreen()
-		fmt.Println("Bye.")
-		// fmt.Println(fmt.Sprintf("%b", convertToBinary("XXXXXXXXXXX X X X      X X X XXXXXXXXXXX")))
-		fmt.Println(roomYellowCastle.uncompressedRoomData)
+		fmt.Fprintln(os.Stderr, "Bye.")
 		os.Exit(0)
-	} else if key == "Rune[w]" || key == "Up" {
-		player.posY -= stepY
-		if player.posY < 0 {
-			player.posY = templateH - 1.0
-		}
-	} else if key == "Rune[s]" || key == "Down" {
-		player.posY += stepY
-		if player.posY > templateH-1.0 {
-			player.posY = 0
-		}
-	} else if key == "Rune[a]" || key == "Left" {
-		player.posX -= stepX
-		if player.posX < 0 {
-			player.posX = templateW - 2.0
-		}
-	} else if key == "Rune[d]" || key == "Right" {
-		player.posX += stepX
-		if player.posX > templateW-1.0 {
-			player.posX = 0
-		}
-	}
-}
 
-// clear the screen depending on your OS
-func clearScreen() {
-	if runtime.GOOS != "windows" {
-		cmd := exec.Command("clear")
-		cmd.Stdout = os.Stdout
-		cmd.Run()
-	} else {
-		cmd := exec.Command("cmd", "/c", "cls")
-		cmd.Stdout = os.Stdout
-		cmd.Run()
+	case "Rune[w]", "Up":
+		movePlayer(0, -player.stepY)
+
+	case "Rune[s]", "Down":
+		movePlayer(0, +player.stepY)
+
+	case "Rune[a]", "Left":
+		movePlayer(-player.stepX, 0)
+
+	case "Rune[d]", "Right":
+		movePlayer(+player.stepX, 0)
 	}
 }
