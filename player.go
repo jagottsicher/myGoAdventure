@@ -1,6 +1,10 @@
 package main
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"math"
+
+	"github.com/gdamore/tcell/v2"
+)
 
 // cell is a single terminal character at a fixed offset within a sprite.
 type cell struct {
@@ -124,32 +128,36 @@ func movePlayer(dx, dy float64) {
 // playerCollidesWall returns true if a player at grid position (x, y) would
 // overlap any wall cell in the given room.
 //
-// The player's bounding box spans columns [floor(x), floor(x)+width-1] and
-// rows [floor(y), floor(y)+height-1]. We check all four corners.
+// The player bounding box is [x, x+width) × [y, y+height) in continuous grid
+// coordinates.  We enumerate every discrete grid cell whose [col, col+1) ×
+// [row, row+1) interval overlaps that box.  This handles fractional positions
+// correctly (e.g. posY = 2.5 with height = 1 spans rows 2 and 3).
 func playerCollidesWall(r *room, x, y float64) bool {
-	// Check the leading cells in both axes.
-	// Using integer truncation to map to the discrete wall grid.
-	colLeft := int(x)
-	colRight := int(x) + player.width - 1
-	rowTop := int(y)
-	rowBottom := int(y) + player.height - 1
+	colMin := int(x)
+	colMax := int(math.Ceil(x+float64(player.width))) - 1
+	rowMin := int(y)
+	rowMax := int(math.Ceil(y+float64(player.height))) - 1
 
-	// Clamp to valid range
-	if colLeft < 0 {
-		colLeft = 0
+	// Clamp to valid grid range.
+	if colMin < 0 {
+		colMin = 0
 	}
-	if colRight >= gridCols {
-		colRight = gridCols - 1
+	if colMax >= gridCols {
+		colMax = gridCols - 1
 	}
-	if rowTop < 0 {
-		rowTop = 0
+	if rowMin < 0 {
+		rowMin = 0
 	}
-	if rowBottom >= gridRows {
-		rowBottom = gridRows - 1
+	if rowMax >= gridRows {
+		rowMax = gridRows - 1
 	}
 
-	return r.isWall(colLeft, rowTop) ||
-		r.isWall(colRight, rowTop) ||
-		r.isWall(colLeft, rowBottom) ||
-		r.isWall(colRight, rowBottom)
+	for row := rowMin; row <= rowMax; row++ {
+		for col := colMin; col <= colMax; col++ {
+			if r.isWall(col, row) {
+				return true
+			}
+		}
+	}
+	return false
 }

@@ -56,6 +56,7 @@ func main() {
 
 		drawStage()
 		drawAllVisibleObjects()
+		drawStatusBar()
 		screen.Show()
 
 		if remaining := frameDuration - time.Since(frameStart); remaining > 0 {
