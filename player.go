@@ -11,10 +11,10 @@ type cell struct {
 
 type object struct {
 	// room   *rooms
-	posX   int
-	posY   int
-	stepX  int
-	stepY  int
+	posX   float64
+	posY   float64
+	stepX  float64
+	stepY  float64
 	width  int
 	height int
 	style  tcell.Style
@@ -22,23 +22,24 @@ type object struct {
 }
 
 func initPlayer() {
-	width, height := screen.Size()
+	template := *roomYellowCastle.compressedRoomData
+	templateH := float64(len(template))
+	templateW := float64(len([]rune(template[0])))
 
 	player = &object{
-		posY:   height / 3 * 2,
-		posX:   width / 2,
+		posX:   templateW / 2.0,
+		posY:   templateH / 3.0 * 2.0,
 		width:  2,
 		height: 1,
-		stepX:  2,
-		stepY:  1,
+		stepX:  2.0,
+		stepY:  1.0,
 		style:  tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorPurple),
 		shape:  playerGfx,
 	}
 
-	if player.posX%2 != 0 {
-		player.posX++
+	if int(player.posX)%2 != 0 {
+		player.posX += 1.0
 	}
 
 	allObjects = append(allObjects, player)
-
 }
