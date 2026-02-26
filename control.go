@@ -9,6 +9,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// InitUserInput starts a goroutine that listens for terminal events and returns a channel of key names.
 func InitUserInput() chan string {
 	inputChan := make(chan string)
 	go func() {
@@ -29,6 +30,7 @@ func InitUserInput() chan string {
 	return inputChan
 }
 
+// ReadInput performs a non-blocking read from the input channel, returning an empty string if no key is pending.
 func ReadInput(inputChan chan string) string {
 	var key string
 	select {
@@ -40,6 +42,7 @@ func ReadInput(inputChan chan string) string {
 	return key
 }
 
+// HandleUserInput processes a key name and updates game state accordingly.
 func HandleUserInput(key string) {
 
 	if key == "Rune[q]" {
@@ -47,6 +50,7 @@ func HandleUserInput(key string) {
 		clearScreen()
 		fmt.Println("Bye.")
 		// fmt.Println(fmt.Sprintf("%b", convertToBinary("XXXXXXXXXXX X X X      X X X XXXXXXXXXXX")))
+		fmt.Println(roomYellowCastle.uncompressedRoomData)
 		os.Exit(0)
 	} else if key == "Rune[w]" || key == "Up" {
 		player.posY -= player.stepY
@@ -87,18 +91,3 @@ func clearScreen() {
 		cmd.Run()
 	}
 }
-
-// output a string
-// func emitStr(s tcell.Screen, x, y int, style tcell.Style, str string) {
-// 	for _, c := range str {
-// 		var comb []rune
-// 		w := runewidth.RuneWidth(c)
-// 		if w == 0 {
-// 			comb = []rune{c}
-// 			c = ' '
-// 			w = 1
-// 		}
-// 		s.SetContent(x, y, c, comb, style)
-// 		x += w
-// 	}
-// }

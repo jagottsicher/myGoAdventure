@@ -36,7 +36,7 @@ func initPlayer() {
 	}
 
 	if player.posX%2 != 0 {
-		player.posX += 1
+		player.posX++
 	}
 
 	allObjects = append(allObjects, player)

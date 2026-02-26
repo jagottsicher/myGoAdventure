@@ -3,14 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
 )
 
-var someContent rune
-
-func DrawState() {
+func drawStage() {
 	// if isGamePaused {
 	// 	return
 	// }
@@ -25,25 +24,24 @@ func DrawState() {
 			Background(roomYellowCastle.background).
 			Foreground(roomYellowCastle.foreground))
 	}
+}
 
+func drawAllVisibleobjects() {
+	// TODO: later only the ones which are visible
 	for _, obj := range allObjects {
 		drawObject(obj)
 	}
-
 }
 
 func drawObject(obj *object) {
-
 	for _, point := range obj.shape {
 		screen.SetContent(obj.posX+point.x, obj.posY+point.y, point.symbol, nil, obj.style)
 	}
-	// screen.Sync()
-
 }
 
 func initGamestate() {
 	initDirections()
-	uncompressRooms()
+	// uncompressRooms()
 	initPlayer()
 }
 
@@ -60,53 +58,55 @@ func initScreen() {
 		os.Exit(1)
 	}
 
-	fillTheScreen()
+	screen.SetStyle(tcell.StyleDefault.
+		Background(roomSplashScreen.background).
+		Foreground(roomSplashScreen.foreground))
 
-	screen.Show()
+	for i := 0; i < 256; i++ {
+
+		screen.SetStyle(tcell.StyleDefault.
+			Background(roomSplashScreen.background).
+			Foreground(tcell.NewRGBColor(int32(i), int32(i), int32(i))))
+
+		screenWidth, screenHeight := screen.Size()
+		title := "An Adventure - dedicated to Warren Robinett"
+		subline := "Press [Q] to exit."
+		emitStr(screen, screenWidth/2-len(title)/2, screenHeight/2-1, tcell.StyleDefault, title)
+		emitStr(screen, screenWidth/2-len(subline)/2, screenHeight/2, tcell.StyleDefault, subline)
+
+		time.Sleep(time.Millisecond * 10)
+		screen.Show()
+	}
+	time.Sleep(time.Second * 3)
+
+	fillTheScreen()
 }
 
 func fillTheScreen() {
-	// width, height := screen.Size()
-
-	// fill screen with random content
-	// for y := 0; y < height; y++ {
-	// 	for x := 0; x < width; x++ {
-	// 		someContent = rune(rand.Intn(92) + 32)
-	// 		screen.SetContent(x, y, someContent, nil, tcell.StyleDefault.
-	// 			Background(tcell.ColorBlack).
-	// 			Foreground(tcell.ColorYellow))
-	// 		aPoint := point{x, y, someContent}
-	// 		currentScreen = append(currentScreen, &aPoint)
-	// 	}
-	// }
-
-	// fill screen with yellow castle content
-
-	// currentScreen = nil
-	// for _, cell := range roomYellowCastle.uncompressedRoomData {
-	// 	screen.SetContent(cell.x, cell.y, cell.symbol, nil, tcell.StyleDefault.
-	// 		Background(tcell.ColorBlack).
-	// 		Foreground(tcell.ColorYellow))
-	// 	currentScreen = append(currentScreen, cell)
-	// }
-
-	currentScreen = nil
-	// y := 0
-	// for _, cell := range *roomYellowCastle.compressedRoomData {
-	// 	emitStr(screen, 0, y, tcell.StyleDefault.
-	// 		Background(tcell.ColorBlack).
-	// 		Foreground(tcell.ColorYellow), cell)
-	// 	y += 1
-	// 	// currentScreen = append(currentScreen, cell)
-	// }
-
-	for _, cell := range roomYellowCastle.uncompressedRoomData {
-		emitStr(screen, cell.x, cell.y, tcell.StyleDefault.
-			Background(tcell.ColorBlack).
-			Foreground(tcell.ColorYellow), string(cell.symbol))
-
+	termW, termH := screen.Size()
+	template := *roomYellowCastle.compressedRoomData
+	templateH := len(template)
+	if templateH == 0 {
+		return
+	}
+	templateW := len([]rune(template[0]))
+	if templateW == 0 {
+		return
 	}
 
+	currentScreen = nil
+	for ty := 0; ty < termH; ty++ {
+		srcY := ty * templateH / termH
+		row := []rune(template[srcY])
+		for tx := 0; tx < termW; tx++ {
+			srcX := tx * templateW / termW
+			var ch rune = ' '
+			if srcX < len(row) {
+				ch = row[srcX]
+			}
+			currentScreen = append(currentScreen, &cell{x: tx, y: ty, symbol: ch})
+		}
+	}
 }
 
 func emitStr(s tcell.Screen, x, y int, style tcell.Style, str string) {
