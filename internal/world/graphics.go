@@ -1,4 +1,4 @@
-package main
+package world
 
 // decodeRoomRow decodes one row of Atari 2600 playfield data (3 bytes) into
 // a 40-character string using the original TIA shiftreg bit ordering:
