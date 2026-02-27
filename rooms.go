@@ -285,7 +285,7 @@ func initRooms() {
 		walls: buildWalls(decodeRoom(rawBlackMazeEntry, false)),
 		color: tcell.ColorSilver,
 		flags: RoomFlagNone,
-		upID: 0x14, rightID: 0x13, downID: adjustRoom(0x89), leftID: 0x15,
+		upID: 0x14, rightID: 0x13, downID: 0x1B, leftID: 0x15,
 	}
 
 	// Room 0x17 – Red Maze #1 (red)

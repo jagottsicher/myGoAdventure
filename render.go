@@ -14,17 +14,27 @@ var needsRedraw bool
 
 // gridToScreen maps a room grid coordinate to terminal cell coordinates.
 // Room grid: gridCols × gridRows (40 × 7).
-// Result is clamped to the current terminal dimensions.
+// termW and termH should already account for any reserved rows (e.g. status bar).
 func gridToScreen(gx, gy float64, termW, termH int) (int, int) {
 	sx := int(gx / float64(gridCols) * float64(termW))
 	sy := int(gy / float64(gridRows) * float64(termH))
 	return sx, sy
 }
 
+// gameArea returns the terminal dimensions available for the game field,
+// reserving the last row for the status bar.
+func gameArea() (w, h int) {
+	w, h = screen.Size()
+	if h > 1 {
+		h--
+	}
+	return w, h
+}
+
 // drawStage renders the walls of the current player's room.
 // It iterates over the room's decoded wall map and paints each cell.
 func drawStage() {
-	termW, termH := screen.Size()
+	termW, termH := gameArea()
 	r := roomByID(player.roomID)
 	if r == nil {
 		return
@@ -76,9 +86,9 @@ func drawAllVisibleObjects() {
 }
 
 // drawObject paints a single object at its current grid position,
-// scaled to the current terminal size.
+// scaled to the current game area (excluding status bar).
 func drawObject(obj *object) {
-	termW, termH := screen.Size()
+	termW, termH := gameArea()
 	sx, sy := gridToScreen(obj.posX, obj.posY, termW, termH)
 
 	for _, pt := range obj.shape {
