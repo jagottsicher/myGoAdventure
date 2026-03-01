@@ -1,77 +1,70 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
 
-// screen is the global tcell screen used by all render and input functions.
-var screen tcell.Screen
+var currentScreen []*cell
 
-// newScreen creates and initialises a new tcell screen.
-func newScreen() (tcell.Screen, error) {
-	s, err := tcell.NewScreen()
-	if err != nil {
-		return nil, fmt.Errorf("tcell.NewScreen: %w", err)
-	}
-	if err := s.Init(); err != nil {
-		return nil, fmt.Errorf("screen.Init: %w", err)
-	}
-	return s, nil
-}
+// global vars
+var screen tcell.Screen
+var player *object
+var allObjects []*object
 
 func init() {
-	initRooms()
+	// encoding.Register()
+	initDirections()
+	// uncompressRoomData()
 }
 
 func main() {
+
 	initScreen()
-	defer screen.Fini()
-
-	initPlayer()
-
+	initGamestate()
 	inputChan := InitUserInput()
 
-	frameDuration := time.Second / game.fps
+	// Calculate the duration of each frame
+	frameDuration := time.Second / game.FPS
 
-	// Initial draw
-	screen.Clear()
 	drawStage()
-	drawAllVisibleObjects()
-	screen.Show()
 
 	for !IsGameOver() {
-		frameStart := time.Now()
+		startTime := time.Now()
 
+		// Handle user input
 		HandleUserInput(ReadInput(inputChan))
+
+		// update properties
+		//(game, screen, objects, etc.)
 		UpdateStates()
 
-		if needsRedraw {
-			screen.Clear()
-			needsRedraw = false
-		}
-
+		// draw screen (background)
 		drawStage()
-		drawAllVisibleObjects()
-		drawStatusBar()
+
+		// draw objects
+		drawAllVisibleobjects()
+
+		// show screen
 		screen.Show()
 
-		if remaining := frameDuration - time.Since(frameStart); remaining > 0 {
-			time.Sleep(remaining)
+		// Calculate the remaining time until the next frame
+		remainingTime := frameDuration - time.Since(startTime)
+
+		// If there is remaining time, sleep for that duration
+		if remainingTime > 0 {
+			time.Sleep(remainingTime)
 		}
 	}
 }
 
 // UpdateStates updates all game object states for the current tick.
-// Dragons, bat, magnet etc. will be driven from here in future iterations.
 func UpdateStates() {
+
 }
 
-// clearTerminal clears the terminal using an ANSI escape sequence.
-// Only used outside of the tcell screen (e.g. on exit).
-func clearTerminal() {
-	fmt.Fprint(os.Stdout, "\033[2J\033[H")
+// IsGameOver returns true when the game-ending condition has been met.
+func IsGameOver() bool {
+	return false
 }
