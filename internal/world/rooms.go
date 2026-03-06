@@ -40,6 +40,20 @@ var RoomTopAccessRight = Room{
 	Foreground: tcell.NewRGBColor(0x86, 0xd9, 0x22), // COLOR_LIMEGREEN from original
 }
 
+// Room 5 in C++ — "Blue Maze #1"
+var RoomBlueMaze1 = Room{
+	RoomData:   RoomBlueMaze1Gfx,
+	Background: tcell.ColorDarkGray,
+	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
+}
+
+// Room 7 in C++ — "Center of Blue Maze"
+var RoomBlueMazeCenter = Room{
+	RoomData:   RoomBlueMazeCenterGfx,
+	Background: tcell.ColorDarkGray,
+	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
+}
+
 // Room 3 in C++ — "Left of Name", right of RoomBelowYellowCastle
 var RoomLeftOfName = Room{
 	RoomData:   RoomLeftOfNameGfx,
@@ -68,10 +82,20 @@ func InitDirections() {
 	RoomTopAccessRight.Left = nil
 	RoomTopAccessRight.Right = &RoomBelowYellowCastle
 
-	RoomBlueMazeEntry.Up = nil
+	RoomBlueMazeEntry.Up = &RoomBlueMaze1
 	RoomBlueMazeEntry.Down = &RoomTopAccessRight
-	RoomBlueMazeEntry.Left = nil
-	RoomBlueMazeEntry.Right = nil
+	RoomBlueMazeEntry.Left = &RoomBlueMazeCenter
+	RoomBlueMazeEntry.Right = &RoomBlueMazeCenter
+
+	RoomBlueMaze1.Up = nil
+	RoomBlueMaze1.Down = &RoomBlueMazeEntry
+	RoomBlueMaze1.Left = nil
+	RoomBlueMaze1.Right = nil
+
+	RoomBlueMazeCenter.Up = nil
+	RoomBlueMazeCenter.Down = nil
+	RoomBlueMazeCenter.Left = &RoomBlueMazeEntry
+	RoomBlueMazeCenter.Right = &RoomBlueMazeEntry
 
 	RoomLeftOfName.Up = nil
 	RoomLeftOfName.Down = nil
