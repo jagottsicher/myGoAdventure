@@ -21,8 +21,6 @@ func InitUserInput() chan string {
 				currentScreen = nil
 				fillTheScreen()
 				screen.Sync()
-				// currentScreen = nil
-				// initScreen()
 			}
 		}
 	}()
@@ -49,32 +47,36 @@ func HandleUserInput(key string) {
 		screen.Fini()
 		clearScreen()
 		fmt.Println("Bye.")
-		// fmt.Println(fmt.Sprintf("%b", convertToBinary("XXXXXXXXXXX X X X      X X X XXXXXXXXXXX")))
-		fmt.Println(roomYellowCastle.uncompressedRoomData)
 		os.Exit(0)
 	} else if key == "Rune[w]" || key == "Up" {
-		player.posY -= player.stepY
-		_, screenHeight := screen.Size()
-		if player.posY < 0 {
-			player.posY = screenHeight - 1
+		_, h := screen.Size()
+		player.relY -= float64(player.stepY) / float64(h)
+		if player.relY < 0 {
+			player.relY = float64(h-player.height) / float64(h)
 		}
 	} else if key == "Rune[s]" || key == "Down" {
-		player.posY += player.stepY
-		_, screenHeight := screen.Size()
-		if player.posY > screenHeight-1 {
-			player.posY = 0
+		_, h := screen.Size()
+		player.relY += float64(player.stepY) / float64(h)
+		if player.relY >= 1.0 {
+			player.relY = 0
 		}
 	} else if key == "Rune[a]" || key == "Left" {
-		player.posX -= player.stepX
-		screenWidth, _ := screen.Size()
-		if player.posX < 0 {
-			player.posX = screenWidth - 2
+		w, _ := screen.Size()
+		newRelX := player.relX - float64(player.stepX)/float64(w)
+		newScreenX := int(newRelX * float64(w))
+		if newScreenX < 0 {
+			player.relX = float64(w-player.width) / float64(w)
+		} else {
+			player.relX = float64(newScreenX) / float64(w)
 		}
 	} else if key == "Rune[d]" || key == "Right" {
-		player.posX += player.stepX
-		screenWidth, _ := screen.Size()
-		if player.posX > screenWidth-1 {
-			player.posX = 0
+		w, _ := screen.Size()
+		newRelX := player.relX + float64(player.stepX)/float64(w)
+		newScreenX := int(newRelX * float64(w))
+		if newScreenX >= w {
+			player.relX = 0
+		} else {
+			player.relX = float64(newScreenX) / float64(w)
 		}
 	}
 }
