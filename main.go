@@ -12,6 +12,7 @@ var currentScreen []*cell
 var screen tcell.Screen
 var player *object
 var allObjects []*object
+var currentRoom *room
 
 func init() {
 	// encoding.Register()
