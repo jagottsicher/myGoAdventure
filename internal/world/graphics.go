@@ -86,6 +86,28 @@ var RoomBlueMazeEntryGfx = &[]string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 }
 
+// Blue Maze #1 (Room 5 in C++)
+var RoomBlueMaze1Gfx = &[]string{
+	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+	"                                        ",
+	"XXXXXXXXXX  XXXXXXXXXXXXXXXX  XXXXXXXXXX",
+	"XXXX              XXXX              XXXX",
+	"XXXX  XXXXXXXXXX  XXXX  XXXXXXXXXX  XXXX",
+	"      XX      XX  XXXX  XX      XX      ",
+	"XXXXXXXX  XX  XX  XXXX  XX  XX  XXXXXXXX",
+}
+
+// Blue Maze Center (Room 7 in C++)
+var RoomBlueMazeCenterGfx = &[]string{
+	"XXXX  XX  XXXXXXXX    XXXXXXXX  XX  XXXX",
+	"      XX      XXXX    XXXX      XX      ",
+	"XXXXXXXXXXXX  XXXX    XXXX  XXXXXXXXXXXX",
+	"          XX  XXXX    XXXX  XX          ",
+	"XXXX  XX  XX  XXXX    XXXX  XX  XX  XXXX",
+	"      XX  XX  XX        XX  XX  XX      ",
+	"XXXXXXXX  XX  XX        XX  XX  XXXXXXXX",
+}
+
 // ConvertToBinary converts a row of room graphics to a bitmask for collision detection.
 func ConvertToBinary(data string) int64 {
 	binary := int64(0)
