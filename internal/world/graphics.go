@@ -1,25 +1,18 @@
-package main
+package world
 
-//
-// player graphics
-//
-
-var playerGfx = []*cell{
-	{x: 0, y: 0, symbol: 'L'},
-	{x: 1, y: 0, symbol: 'R'},
+// Player graphics
+var PlayerGfx = []*Cell{
+	{X: 0, Y: 0, Symbol: 'L'},
+	{X: 1, Y: 0, Symbol: 'R'},
 }
 
-var playerGfxBefore = []*cell{
-	{x: 0, y: 0, symbol: 'B'},
-	{x: 1, y: 0, symbol: '4'},
+var PlayerGfxBefore = []*Cell{
+	{X: 0, Y: 0, Symbol: 'B'},
+	{X: 1, Y: 0, Symbol: '4'},
 }
-
-//
-// Room graphics
-//
 
 // Castle
-var roomGfxCastle = &[]string{
+var RoomGfxCastle = &[]string{
 	"XXXXXXXXXXX X X X      X X X XXXXXXXXXXX",
 	"X         X X X X      X X X X         X",
 	"X         XXXXXXX      XXXXXXX         X",
@@ -35,7 +28,7 @@ var roomGfxCastle = &[]string{
 }
 
 // Left of Name room: solid top wall, open sides, opening at bottom
-var roomLeftOfNameGfx = &[]string{
+var RoomLeftOfNameGfx = &[]string{
 	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 	"                                        ",
 	"                                        ",
@@ -50,8 +43,8 @@ var roomLeftOfNameGfx = &[]string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 }
 
-// Room below yellow castle
-var roomBelowYellowCastleGfx = &[]string{
+// Room below yellow castle: opening at top, open sides, solid bottom
+var RoomBelowYellowCastleGfx = &[]string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 	"                                        ",
 	"                                        ",
@@ -67,29 +60,23 @@ var roomBelowYellowCastleGfx = &[]string{
 }
 
 // Room above yellow castle
-var roomAboveYellowCastleGfx = &[]string{
-        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "X                                      X",
-        "X                                      X",
-        "X                                      X",
-        "X                                      X",
-        "X                                      X",
-        "X                                      X",
-        "X                                      X",
-        "X                                      X",
-        "X                                      X",
-        "X                                      X",
-        "XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
+var RoomAboveYellowCastleGfx = &[]string{
+	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+	"X                                      X",
+	"X                                      X",
+	"X                                      X",
+	"X                                      X",
+	"X                                      X",
+	"X                                      X",
+	"X                                      X",
+	"X                                      X",
+	"X                                      X",
+	"X                                      X",
+	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 }
 
-
-func getWidth() int {
-
-	screenWidth, _ := screen.Size()
-	return screenWidth
-}
-
-func convertToBinary(data string) int64 {
+// ConvertToBinary converts a row of room graphics to a bitmask for collision detection.
+func ConvertToBinary(data string) int64 {
 	binary := int64(0)
 	for _, char := range data {
 		binary <<= 1
