@@ -19,10 +19,13 @@ func drawStage() {
 	// PrintString(0, 0, debugLog)
 	//
 
+	if currentRoom == nil {
+		return
+	}
 	for _, point := range currentScreen {
 		screen.SetContent(point.x, point.y, point.symbol, nil, tcell.StyleDefault.
-			Background(roomYellowCastle.background).
-			Foreground(roomYellowCastle.foreground))
+			Background(currentRoom.background).
+			Foreground(currentRoom.foreground))
 	}
 }
 
@@ -50,6 +53,7 @@ func drawObject(obj *object) {
 func initGamestate() {
 	initDirections()
 	// uncompressRooms()
+	currentRoom = &roomYellowCastle
 	initPlayer()
 }
 
@@ -91,8 +95,11 @@ func initScreen() {
 }
 
 func fillTheScreen() {
+	if currentRoom == nil {
+		return
+	}
 	termW, termH := screen.Size()
-	template := *roomYellowCastle.roomData
+	template := *currentRoom.roomData
 	templateH := len(template)
 	if templateH == 0 {
 		return

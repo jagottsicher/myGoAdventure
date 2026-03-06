@@ -52,20 +52,38 @@ func HandleUserInput(key string) {
 		_, h := screen.Size()
 		player.relY -= float64(player.stepY) / float64(h)
 		if player.relY < 0 {
-			player.relY = float64(h-player.height) / float64(h)
+			if currentRoom != nil && currentRoom.up != nil {
+				currentRoom = currentRoom.up
+				player.relY = 1.0 - float64(player.height)/float64(h)
+				fillTheScreen()
+			} else {
+				player.relY = 0
+			}
 		}
 	} else if key == "Rune[s]" || key == "Down" {
 		_, h := screen.Size()
 		player.relY += float64(player.stepY) / float64(h)
 		if player.relY >= 1.0 {
-			player.relY = 0
+			if currentRoom != nil && currentRoom.down != nil {
+				currentRoom = currentRoom.down
+				player.relY = 0
+				fillTheScreen()
+			} else {
+				player.relY = float64(h-player.height) / float64(h)
+			}
 		}
 	} else if key == "Rune[a]" || key == "Left" {
 		w, _ := screen.Size()
 		newRelX := player.relX - float64(player.stepX)/float64(w)
 		newScreenX := int(newRelX * float64(w))
 		if newScreenX < 0 {
-			player.relX = float64(w-player.width) / float64(w)
+			if currentRoom != nil && currentRoom.left != nil {
+				currentRoom = currentRoom.left
+				player.relX = float64(w-player.width) / float64(w)
+				fillTheScreen()
+			} else {
+				player.relX = 0
+			}
 		} else {
 			player.relX = float64(newScreenX) / float64(w)
 		}
@@ -74,7 +92,13 @@ func HandleUserInput(key string) {
 		newRelX := player.relX + float64(player.stepX)/float64(w)
 		newScreenX := int(newRelX * float64(w))
 		if newScreenX >= w {
-			player.relX = 0
+			if currentRoom != nil && currentRoom.right != nil {
+				currentRoom = currentRoom.right
+				player.relX = 0
+				fillTheScreen()
+			} else {
+				player.relX = float64(w-player.width) / float64(w)
+			}
 		} else {
 			player.relX = float64(newScreenX) / float64(w)
 		}
