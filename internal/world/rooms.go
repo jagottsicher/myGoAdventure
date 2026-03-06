@@ -26,6 +26,13 @@ var RoomBelowYellowCastle = Room{
 	Foreground: tcell.NewRGBColor(0xa1, 0xb0, 0x34), // COLOR_OLIVEGREEN from original
 }
 
+// Room 8 in C++ — "Blue Maze Entry", above RoomTopAccessRight
+var RoomBlueMazeEntry = Room{
+	RoomData:   RoomBlueMazeEntryGfx,
+	Background: tcell.ColorDarkGray,
+	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
+}
+
 // Room 2 in C++ — "Top Access", left of RoomBelowYellowCastle
 var RoomTopAccessRight = Room{
 	RoomData:   RoomBelowYellowCastleGfx,
@@ -56,10 +63,15 @@ func InitDirections() {
 	RoomBelowYellowCastle.Left = &RoomTopAccessRight
 	RoomBelowYellowCastle.Right = &RoomLeftOfName
 
-	RoomTopAccessRight.Up = nil
+	RoomTopAccessRight.Up = &RoomBlueMazeEntry
 	RoomTopAccessRight.Down = nil
 	RoomTopAccessRight.Left = nil
 	RoomTopAccessRight.Right = &RoomBelowYellowCastle
+
+	RoomBlueMazeEntry.Up = nil
+	RoomBlueMazeEntry.Down = &RoomTopAccessRight
+	RoomBlueMazeEntry.Left = nil
+	RoomBlueMazeEntry.Right = nil
 
 	RoomLeftOfName.Up = nil
 	RoomLeftOfName.Down = nil

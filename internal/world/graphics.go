@@ -75,6 +75,17 @@ var RoomAboveYellowCastleGfx = &[]string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 }
 
+// Blue Maze Entry: complex maze walls, opening at bottom center
+var RoomBlueMazeEntryGfx = &[]string{
+	"XXXXXXXX  XX  XX  XXXX  XX  XX  XXXXXXXX",
+	"      XX  XX  XX        XX  XX  XX      ",
+	"XXXX  XX  XX  XXXXXXXXXXXX  XX  XX  XXXX",
+	"      XX  XX                XX  XX      ",
+	"XXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXX",
+	"                                        ",
+	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
+}
+
 // ConvertToBinary converts a row of room graphics to a bitmask for collision detection.
 func ConvertToBinary(data string) int64 {
 	binary := int64(0)
