@@ -34,8 +34,16 @@ func drawAllVisibleobjects() {
 }
 
 func drawObject(obj *object) {
+	termW, termH := screen.Size()
+	screenX := int(obj.relX * float64(termW))
+	screenY := int(obj.relY * float64(termH))
 	for _, point := range obj.shape {
-		screen.SetContent(obj.posX+point.x, obj.posY+point.y, point.symbol, nil, obj.style)
+		px := screenX + point.x
+		py := screenY + point.y
+		if px < 0 || px >= termW || py < 0 || py >= termH {
+			continue
+		}
+		screen.SetContent(px, py, point.symbol, nil, obj.style)
 	}
 }
 
@@ -84,7 +92,7 @@ func initScreen() {
 
 func fillTheScreen() {
 	termW, termH := screen.Size()
-	template := *roomYellowCastle.compressedRoomData
+	template := *roomYellowCastle.roomData
 	templateH := len(template)
 	if templateH == 0 {
 		return
@@ -96,10 +104,10 @@ func fillTheScreen() {
 
 	currentScreen = nil
 	for ty := 0; ty < termH; ty++ {
-		srcY := ty * templateH / termH
+		srcY := (2*ty + 1) * templateH / (2 * termH)
 		row := []rune(template[srcY])
 		for tx := 0; tx < termW; tx++ {
-			srcX := tx * templateW / termW
+			srcX := (2*tx + 1) * templateW / (2 * termW)
 			var ch rune = ' '
 			if srcX < len(row) {
 				ch = row[srcX]

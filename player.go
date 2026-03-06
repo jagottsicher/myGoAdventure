@@ -11,9 +11,9 @@ type cell struct {
 
 type object struct {
 	// room   *rooms
-	posX   int
-	posY   int
-	stepX  int
+	relX   float64 // position as fraction of screen (0.0–1.0), converted at render time
+	relY   float64
+	stepX  int // movement step in terminal columns/rows (converted to relative at move time)
 	stepY  int
 	width  int
 	height int
@@ -25,8 +25,8 @@ func initPlayer() {
 	width, height := screen.Size()
 
 	player = &object{
-		posY:   height / 3 * 2,
-		posX:   width / 2,
+		relX:   float64(width/2) / float64(width),
+		relY:   float64(height/3*2) / float64(height),
 		width:  2,
 		height: 1,
 		stepX:  2,
@@ -35,10 +35,7 @@ func initPlayer() {
 		shape:  playerGfx,
 	}
 
-	if player.posX%2 != 0 {
-		player.posX++
-	}
-
 	allObjects = append(allObjects, player)
+
 
 }
