@@ -34,6 +34,55 @@ var roomGfxCastle = &[]string{
 	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
 }
 
+// Left of Name room: solid top wall, open sides, opening at bottom
+var roomLeftOfNameGfx = &[]string{
+	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
+}
+
+// Room below yellow castle
+var roomBelowYellowCastleGfx = &[]string{
+	"XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"                                        ",
+	"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+}
+
+// Room above yellow castle
+var roomAboveYellowCastleGfx = &[]string{
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "X                                      X",
+        "X                                      X",
+        "X                                      X",
+        "X                                      X",
+        "X                                      X",
+        "X                                      X",
+        "X                                      X",
+        "X                                      X",
+        "X                                      X",
+        "X                                      X",
+        "XXXXXXXXXXXXXXXX        XXXXXXXXXXXXXXXX",
+}
+
+
 func getWidth() int {
 
 	screenWidth, _ := screen.Size()
