@@ -2,42 +2,40 @@ package world
 
 import "github.com/gdamore/tcell/v2"
 
+// Room 0x1E in C++ — "Name Room" (Easter Egg, zeigt "Warren Robinett" in Originalfarbe FLASH)
+// In Go als Splashscreen genutzt — gleiche Rolle: Sonder-Anzeigeraum außerhalb des Spielablaufs
 var RoomSplashScreen = Room{
 	RoomData:   RoomGfxCastle,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.ColorAntiqueWhite,
 }
 
+// Room 0x11 in C++ — "Yellow Castle"
 var RoomYellowCastle = Room{
 	RoomData:   RoomGfxCastle,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.ColorYellow,
 }
 
+// Room 0x12 in C++ — "Yellow Castle Entry" (Schloss-Innenraum, alle Verbindungen self-loop solange gesperrt)
 var RoomAboveYellowCastle = Room{
 	RoomData:   RoomAboveYellowCastleGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.ColorYellow,
 }
 
+// Room 0x02 in C++ — "Top Access" (limegreen), direkt unter Yellow Castle
 var RoomBelowYellowCastle = Room{
 	RoomData:   RoomBelowYellowCastleGfx,
 	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xa1, 0xb0, 0x34), // COLOR_OLIVEGREEN from original
+	Foreground: tcell.NewRGBColor(0x86, 0xd9, 0x22), // COLOR_LIMEGREEN from original
 }
 
-// Room 0x00 in C++ — "Number Room" (Easter Egg / Purple)
+// Room 0x00 in C++ — "Number Room" (Game-Select-Screen, zeigt Spielvariante 1/2/3)
 var RoomNumberRoom = Room{
 	RoomData:   RoomEasterEggGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0xa8, 0x00, 0xff), // COLOR_PURPLE
-}
-
-// Room 0x01 in C++ — "Top Access" (olive, LEFTTHINWALL)
-var RoomTopAccess1 = Room{
-	RoomData:   RoomBelowYellowCastleGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xa1, 0xb0, 0x34), // COLOR_OLIVEGREEN
 }
 
 // Room 0x0A in C++ — "Maze Entry" (light gray)
@@ -68,32 +66,11 @@ var RoomSideCorridorCyan = Room{
 	Foreground: tcell.NewRGBColor(0x55, 0xb6, 0xff), // COLOR_LTCYAN
 }
 
-// Room 0x0D in C++ — "Side Corridor" (dark green)
-var RoomSideCorridorGreen = Room{
-	RoomData:   RoomGfxSideCorridor,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x21, 0xd9, 0x1b), // COLOR_DKGREEN
-}
-
-// Room 0x0E in C++ — "Top Entry Room" above White Castle (cyan)
-var RoomWhiteCastleTop = Room{
-	RoomData:   RoomTopEntryRoomGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x61, 0xd0, 0x70), // COLOR_CYAN
-}
-
 // Room 0x0F in C++ — "White Castle"
 var RoomWhiteCastle = Room{
 	RoomData:   RoomGfxCastle,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.ColorWhite,
-}
-
-// Room 0x12 in C++ — "Yellow Castle Entry"
-var RoomYellowCastleEntry = Room{
-	RoomData:   RoomGfxNumberRoom,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.ColorYellow,
 }
 
 // Room 0x13 in C++ — "Black Maze #1" (orange per user request)
@@ -138,13 +115,6 @@ var RoomOtherPurpleRoom = Room{
 	Foreground: tcell.NewRGBColor(0xa8, 0x00, 0xff), // COLOR_PURPLE
 }
 
-// Room 0x1E in C++ — "Name Room" (purple)
-var RoomNameRoom = Room{
-	RoomData:   RoomBelowYellowCastleGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xa8, 0x00, 0xff),
-}
-
 // Room 0x17 in C++ — "Red Maze #1"
 var RoomRedMaze1 = Room{
 	RoomData:   RoomRedMaze1Gfx,
@@ -187,67 +157,70 @@ var RoomBlackCastle = Room{
 	Foreground: tcell.NewRGBColor(0x18, 0x18, 0x18), // COLOR_BLACK — dark walls on gray bg
 }
 
-// Room 8 in C++ — "Blue Maze Entry", above RoomTopAccessRight
+// Room 0x08 in C++ — "Blue Maze Entry"
 var RoomBlueMazeEntry = Room{
 	RoomData:   RoomBlueMazeEntryGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
 }
 
-// Room 2 in C++ — "Top Access", left of RoomBelowYellowCastle
+// Room 0x01 in C++ — "Top Access" (olivegreen), links von RoomBelowYellowCastle
 var RoomTopAccessRight = Room{
 	RoomData:   RoomBelowYellowCastleGfx,
 	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x86, 0xd9, 0x22), // COLOR_LIMEGREEN from original
+	Foreground: tcell.NewRGBColor(0xa1, 0xb0, 0x34), // COLOR_OLIVEGREEN from original
 }
 
-// Room 5 in C++ — "Blue Maze #1"
+// Room 0x05 in C++ — "Blue Maze #1"
 var RoomBlueMaze1 = Room{
 	RoomData:   RoomBlueMaze1Gfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
 }
 
-// Room 6 in C++ — "Bottom of Blue Maze"
+// Room 0x06 in C++ — "Bottom of Blue Maze"
 var RoomBlueMazeBottom = Room{
 	RoomData:   RoomBlueMazeBottomGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
 }
 
-// Room 4 in C++ — "Top of Blue Maze"
+// Room 0x04 in C++ — "Top of Blue Maze"
 var RoomBlueMazeTop = Room{
 	RoomData:   RoomBlueMazeTopGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
 }
 
-// Room 7 in C++ — "Center of Blue Maze"
+// Room 0x07 in C++ — "Center of Blue Maze"
 var RoomBlueMazeCenter = Room{
 	RoomData:   RoomBlueMazeCenterGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
 }
 
-// Room 3 in C++ — "Left of Name", right of RoomBelowYellowCastle
+// Room 0x03 in C++ — "Left of Name"
 var RoomCorridorRight = Room{
 	RoomData:   RoomCorridorRightGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0xd5, 0xb5, 0x43), // COLOR_TAN from original
 }
 
-// Left of RoomMazeSide — same graphic as SideCorridor, olivegreen (same as RoomBelowYellowCastle)
+// Room 0x0D in C++ — "Side Corridor" (COLOR_DKGREEN), links von RoomMazeSide, über RoomWhiteCastle
+// C++-Verbindungen: up=0x0F(WhiteCastle), right=0x0B(MazeSide), down=0x0E(TopEntryRoom CYAN — fehlt in Go!), left=0x0C(SideCorridorCyan)
 var RoomSideCorridorOlive = Room{
 	RoomData:   RoomGfxSideCorridor,
 	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xa1, 0xb0, 0x34), // COLOR_OLIVEGREEN
+	Foreground: tcell.NewRGBColor(0x86, 0xd9, 0x22), // COLOR_LIMEGREEN (C++ hat hier DKGREEN — Abweichung)
 }
 
-// Below RoomSideCorridorOlive — only open upward, dark green
+// Room 0x0E in C++ — "Top Entry Room" (COLOR_CYAN), direkt unter RoomSideCorridorOlive (0x0D)
+// C++-Verbindungen: up=0x0D, right=0x10(BlackCastle), down=0x0F(WhiteCastle), left=0x10(BlackCastle)
+// Grafik und Farbe weichen ab — Verbindungen zu BlackCastle fehlen noch
 var RoomDeadEndDarkGreen = Room{
 	RoomData:   RoomTopEntryRoomGfx,
 	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x0c, 0x6e, 0x0c), // dark green
+	Foreground: tcell.NewRGBColor(0x0c, 0x6e, 0x0c), // dark green (C++ hat COLOR_CYAN)
 }
 
 func InitDirections() {
@@ -344,13 +317,6 @@ func InitDirections() {
 	RoomCorridorRight.Left = &RoomBelowYellowCastle
 	RoomCorridorRight.Right = &RoomNumberRoom
 
-	// --- Neu hinzugefügte Räume: alle disconnected ---
-
-	RoomTopAccess1.Up = nil
-	RoomTopAccess1.Down = nil
-	RoomTopAccess1.Left = nil
-	RoomTopAccess1.Right = nil
-
 	RoomMazeEntry.Up = &RoomCorridorRight
 	RoomMazeEntry.Down = &RoomMazeMiddle
 	RoomMazeEntry.Left = &RoomMazeMiddle
@@ -371,30 +337,15 @@ func InitDirections() {
 	RoomSideCorridorCyan.Left = &RoomMazeSide
 	RoomSideCorridorCyan.Right = nil
 
-	RoomSideCorridorGreen.Up = nil
-	RoomSideCorridorGreen.Down = nil
-	RoomSideCorridorGreen.Left = nil
-	RoomSideCorridorGreen.Right = nil
-
 	RoomNumberRoom.Up = nil
 	RoomNumberRoom.Down = nil
 	RoomNumberRoom.Left = &RoomCorridorRight
 	RoomNumberRoom.Right = nil
 
-	RoomWhiteCastleTop.Up = nil
-	RoomWhiteCastleTop.Down = nil
-	RoomWhiteCastleTop.Left = nil
-	RoomWhiteCastleTop.Right = nil
-
 	RoomWhiteCastle.Up = &RoomWhiteCastleEntry
 	RoomWhiteCastle.Down = &RoomSideCorridorOlive
 	RoomWhiteCastle.Left = nil
 	RoomWhiteCastle.Right = nil
-
-	RoomYellowCastleEntry.Up = nil
-	RoomYellowCastleEntry.Down = nil
-	RoomYellowCastleEntry.Left = nil
-	RoomYellowCastleEntry.Right = nil
 
 	// Room 0x13 — Black Maze #1
 	RoomBlackMaze1.Up = &RoomBlackMaze3
@@ -429,11 +380,6 @@ func InitDirections() {
 	RoomOtherPurpleRoom.Down = &RoomSideCorridorCyan
 	RoomOtherPurpleRoom.Left = nil
 	RoomOtherPurpleRoom.Right = nil
-
-	RoomNameRoom.Up = nil
-	RoomNameRoom.Down = nil
-	RoomNameRoom.Left = nil
-	RoomNameRoom.Right = nil
 
 	RoomSideCorridorOlive.Up = &RoomWhiteCastle
 	RoomSideCorridorOlive.Down = &RoomDeadEndDarkGreen
