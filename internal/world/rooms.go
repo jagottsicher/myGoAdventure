@@ -175,7 +175,7 @@ var RoomWhiteCastleEntry = Room{
 
 // Room 0x1D in C++ — "Top Entry Room" (red), above Black Castle
 var RoomBlackCastleTop = Room{
-	RoomData:   RoomTopEntryRoomGfx,
+	RoomData:   RoomBlackCastleTopGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0xd0, 0x28, 0x20), // COLOR_RED from original
 }
@@ -316,7 +316,7 @@ func InitDirections() {
 	RoomWhiteCastleEntry.Left = &RoomRedMazeBottom
 
 	// Room 0x1D — Black Castle Top
-	RoomBlackCastleTop.Up = &RoomSideCorridorCyan
+	RoomBlackCastleTop.Up = &RoomBlackMazeEntry
 	RoomBlackCastleTop.Down = &RoomBlackCastle
 	RoomBlackCastleTop.Left = nil
 	RoomBlackCastleTop.Right = nil
@@ -367,7 +367,7 @@ func InitDirections() {
 	RoomMazeSide.Right = &RoomSideCorridorCyan
 
 	RoomSideCorridorCyan.Up = &RoomOtherPurpleRoom
-	RoomSideCorridorCyan.Down = &RoomBlackCastleTop
+	RoomSideCorridorCyan.Down = nil
 	RoomSideCorridorCyan.Left = &RoomMazeSide
 	RoomSideCorridorCyan.Right = nil
 
@@ -396,25 +396,29 @@ func InitDirections() {
 	RoomYellowCastleEntry.Left = nil
 	RoomYellowCastleEntry.Right = nil
 
-	RoomBlackMaze1.Up = nil
-	RoomBlackMaze1.Down = nil
-	RoomBlackMaze1.Left = nil
-	RoomBlackMaze1.Right = nil
+	// Room 0x13 — Black Maze #1
+	RoomBlackMaze1.Up = &RoomBlackMaze3
+	RoomBlackMaze1.Right = &RoomBlackMaze2
+	RoomBlackMaze1.Down = &RoomBlackMaze3
+	RoomBlackMaze1.Left = &RoomBlackMazeEntry
 
-	RoomBlackMaze2.Up = nil
-	RoomBlackMaze2.Down = nil
-	RoomBlackMaze2.Left = nil
-	RoomBlackMaze2.Right = nil
+	// Room 0x14 — Black Maze #2
+	RoomBlackMaze2.Up = &RoomBlackMazeEntry
+	RoomBlackMaze2.Right = &RoomBlackMaze3
+	RoomBlackMaze2.Down = &RoomBlackMazeEntry
+	RoomBlackMaze2.Left = &RoomBlackMaze1
 
-	RoomBlackMaze3.Up = nil
-	RoomBlackMaze3.Down = nil
-	RoomBlackMaze3.Left = nil
-	RoomBlackMaze3.Right = nil
+	// Room 0x15 — Black Maze #3
+	RoomBlackMaze3.Up = &RoomBlackMaze1
+	RoomBlackMaze3.Right = &RoomBlackMazeEntry
+	RoomBlackMaze3.Down = &RoomBlackMaze1
+	RoomBlackMaze3.Left = &RoomBlackMaze2
 
-	RoomBlackMazeEntry.Up = nil
-	RoomBlackMazeEntry.Down = nil
-	RoomBlackMazeEntry.Left = nil
-	RoomBlackMazeEntry.Right = nil
+	// Room 0x16 — Black Maze Entry
+	RoomBlackMazeEntry.Up = &RoomBlackMaze2
+	RoomBlackMazeEntry.Right = &RoomBlackMaze1
+	RoomBlackMazeEntry.Down = &RoomBlackCastleTop
+	RoomBlackMazeEntry.Left = &RoomBlackMaze3
 
 	RoomBlackCastleEntry.Up = nil
 	RoomBlackCastleEntry.Down = nil
