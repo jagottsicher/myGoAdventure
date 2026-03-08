@@ -126,7 +126,7 @@ var RoomBlackMazeEntry = Room{
 
 // Room 0x1B in C++ — "Black Castle Entry"
 var RoomBlackCastleEntry = Room{
-	RoomData:   RoomBlackCastleTopGfx,
+	RoomData:   RoomTopEntryRoomGfx,
 	Background: tcell.ColorDarkGray,
 	Foreground: tcell.NewRGBColor(0xd0, 0x28, 0x20), // COLOR_RED
 }
@@ -367,7 +367,7 @@ func InitDirections() {
 	RoomMazeSide.Right = &RoomSideCorridorCyan
 
 	RoomSideCorridorCyan.Up = &RoomOtherPurpleRoom
-	RoomSideCorridorCyan.Down = nil
+	RoomSideCorridorCyan.Down = &RoomBlackCastleEntry
 	RoomSideCorridorCyan.Left = &RoomMazeSide
 	RoomSideCorridorCyan.Right = nil
 
@@ -420,7 +420,7 @@ func InitDirections() {
 	RoomBlackMazeEntry.Down = &RoomBlackCastleTop
 	RoomBlackMazeEntry.Left = &RoomBlackMaze3
 
-	RoomBlackCastleEntry.Up = nil
+	RoomBlackCastleEntry.Up = &RoomSideCorridorCyan
 	RoomBlackCastleEntry.Down = nil
 	RoomBlackCastleEntry.Left = nil
 	RoomBlackCastleEntry.Right = nil
