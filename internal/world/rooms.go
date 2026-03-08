@@ -236,6 +236,20 @@ var RoomCorridorRight = Room{
 	Foreground: tcell.NewRGBColor(0xd5, 0xb5, 0x43), // COLOR_TAN from original
 }
 
+// Left of RoomMazeSide — same graphic as SideCorridor, olivegreen (same as RoomBelowYellowCastle)
+var RoomSideCorridorOlive = Room{
+	RoomData:   RoomGfxSideCorridor,
+	Background: tcell.ColorDarkGray,
+	Foreground: tcell.NewRGBColor(0xa1, 0xb0, 0x34), // COLOR_OLIVEGREEN
+}
+
+// Below RoomSideCorridorOlive — only open upward, dark green
+var RoomDeadEndDarkGreen = Room{
+	RoomData:   RoomTopEntryRoomGfx,
+	Background: tcell.ColorDarkGray,
+	Foreground: tcell.NewRGBColor(0x0c, 0x6e, 0x0c), // dark green
+}
+
 func InitDirections() {
 	// --- Originalverbindungen (vor letztem Arbeitsschritt) ---
 
@@ -279,27 +293,27 @@ func InitDirections() {
 
 	// Room 0x17 — Red Maze #1
 	RoomRedMaze1.Up = &RoomRedMazeBottom
+	RoomRedMaze1.Right = &RoomRedMazeTop
 	RoomRedMaze1.Down = &RoomRedMazeBottom
 	RoomRedMaze1.Left = &RoomRedMazeTop
-	RoomRedMaze1.Right = &RoomRedMazeTop
 
-	// Room 0x18 — Red Maze Top (disconnected)
-	RoomRedMazeTop.Up = nil
-	RoomRedMazeTop.Down = nil
-	RoomRedMazeTop.Left = &RoomRedMaze1
+	// Room 0x18 — Top of Red Maze
+	RoomRedMazeTop.Up = &RoomWhiteCastleEntry
 	RoomRedMazeTop.Right = &RoomRedMaze1
+	RoomRedMazeTop.Down = &RoomWhiteCastleEntry
+	RoomRedMazeTop.Left = &RoomRedMaze1
 
-	// Room 0x19 — Red Maze Bottom (disconnected nach unten)
+	// Room 0x19 — Bottom of Red Maze
 	RoomRedMazeBottom.Up = &RoomRedMaze1
-	RoomRedMazeBottom.Down = nil
-	RoomRedMazeBottom.Left = nil
-	RoomRedMazeBottom.Right = nil
+	RoomRedMazeBottom.Right = &RoomWhiteCastleEntry
+	RoomRedMazeBottom.Down = &RoomRedMaze1
+	RoomRedMazeBottom.Left = &RoomWhiteCastleEntry
 
-	// Room 0x1A — White Castle Entry (vollständig disconnected)
-	RoomWhiteCastleEntry.Up = nil
-	RoomWhiteCastleEntry.Down = nil
-	RoomWhiteCastleEntry.Left = nil
-	RoomWhiteCastleEntry.Right = nil
+	// Room 0x1A — White Castle Entry (Eingang zum Red Maze, über White Castle)
+	RoomWhiteCastleEntry.Up = &RoomRedMazeTop
+	RoomWhiteCastleEntry.Right = &RoomRedMazeBottom
+	RoomWhiteCastleEntry.Down = &RoomWhiteCastle
+	RoomWhiteCastleEntry.Left = &RoomRedMazeBottom
 
 	// Room 0x1D — Black Castle Top
 	RoomBlackCastleTop.Up = &RoomSideCorridorCyan
@@ -349,7 +363,7 @@ func InitDirections() {
 
 	RoomMazeSide.Up = &RoomMazeMiddle
 	RoomMazeSide.Down = nil
-	RoomMazeSide.Left = nil
+	RoomMazeSide.Left = &RoomSideCorridorOlive
 	RoomMazeSide.Right = &RoomSideCorridorCyan
 
 	RoomSideCorridorCyan.Up = &RoomOtherPurpleRoom
@@ -372,8 +386,8 @@ func InitDirections() {
 	RoomWhiteCastleTop.Left = nil
 	RoomWhiteCastleTop.Right = nil
 
-	RoomWhiteCastle.Up = nil
-	RoomWhiteCastle.Down = nil
+	RoomWhiteCastle.Up = &RoomWhiteCastleEntry
+	RoomWhiteCastle.Down = &RoomSideCorridorOlive
 	RoomWhiteCastle.Left = nil
 	RoomWhiteCastle.Right = nil
 
@@ -416,4 +430,14 @@ func InitDirections() {
 	RoomNameRoom.Down = nil
 	RoomNameRoom.Left = nil
 	RoomNameRoom.Right = nil
+
+	RoomSideCorridorOlive.Up = &RoomWhiteCastle
+	RoomSideCorridorOlive.Down = &RoomDeadEndDarkGreen
+	RoomSideCorridorOlive.Left = nil
+	RoomSideCorridorOlive.Right = &RoomMazeSide
+
+	RoomDeadEndDarkGreen.Up = &RoomSideCorridorOlive
+	RoomDeadEndDarkGreen.Down = nil
+	RoomDeadEndDarkGreen.Left = nil
+	RoomDeadEndDarkGreen.Right = nil
 }
