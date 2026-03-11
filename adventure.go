@@ -11,7 +11,7 @@ import (
 func main() {
 	render.InitScreen()
 	render.InitGamestate()
-	inputChan := input.InitUserInput()
+	input.InitUserInput()
 
 	frameDuration := time.Second / game.G.FPS
 
@@ -20,7 +20,7 @@ func main() {
 	for !isGameOver() {
 		startTime := time.Now()
 
-		input.HandleUserInput(input.ReadInput(inputChan))
+		input.HandleUserInput()
 
 		updateStates()
 
