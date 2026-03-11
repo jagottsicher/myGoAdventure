@@ -41,6 +41,7 @@ func InitUserInput() {
 					})
 				}
 				keyMu.Unlock()
+				HandleUserInput()
 			case *tcell.EventResize:
 				render.CurrentScreen = nil
 				render.FillTheScreen()

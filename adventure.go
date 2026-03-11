@@ -20,8 +20,6 @@ func main() {
 	for !isGameOver() {
 		startTime := time.Now()
 
-		input.HandleUserInput()
-
 		updateStates()
 
 		render.DrawStage()
