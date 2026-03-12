@@ -6,221 +6,220 @@ import "github.com/gdamore/tcell/v2"
 // In Go als Splashscreen genutzt — gleiche Rolle: Sonder-Anzeigeraum außerhalb des Spielablaufs
 var RoomSplashScreen = Room{
 	RoomData:   RoomGfxCastle,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.ColorAntiqueWhite,
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xA2, 0x51, 0xD9), // COLOR_PURPLE
 }
 
 // Room 0x11 in C++ — "Yellow Castle"
 var RoomYellowCastle = Room{
 	RoomData:   RoomGfxCastle,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.ColorYellow,
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xFF, 0xD8, 0x4C), // COLOR_YELLOW
 }
 
 // Room 0x12 in C++ — "Yellow Castle Entry" (Schloss-Innenraum, alle Verbindungen self-loop solange gesperrt)
 var RoomAboveYellowCastle = Room{
 	RoomData:   RoomAboveYellowCastleGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.ColorYellow,
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xFF, 0xD8, 0x4C), // COLOR_YELLOW
 }
 
 // Room 0x02 in C++ — "Top Access" (limegreen), direkt unter Yellow Castle
 var RoomBelowYellowCastle = Room{
 	RoomData:   RoomBelowYellowCastleGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x86, 0xd9, 0x22), // COLOR_LIMEGREEN from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x86, 0xd9, 0x22), // COLOR_LIMEGREEN
 }
 
 // Room 0x00 in C++ — "Number Room" (Game-Select-Screen, zeigt Spielvariante 1/2/3)
 var RoomNumberRoom = Room{
 	RoomData:   RoomEasterEggGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xa8, 0x00, 0xff), // COLOR_PURPLE
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xA2, 0x51, 0xD9), // COLOR_PURPLE
 }
 
-// Room 0x0A in C++ — "Maze Entry" (light gray)
+// Room 0x0A in C++ — "Maze Entry" (light gray, unsichtbare Wände — Originalverhalten)
 var RoomMazeEntry = Room{
 	RoomData:   RoomGfxMazeEntry,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x9a, 0x9a, 0x9a),
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xcd, 0xcd, 0xcd), // COLOR_LTGRAY
 }
 
-// Room 0x09 in C++ — "Maze Middle" (light gray)
+// Room 0x09 in C++ — "Maze Middle" (light gray, unsichtbare Wände — Originalverhalten)
 var RoomMazeMiddle = Room{
 	RoomData:   RoomGfxMazeMiddle,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x9a, 0x9a, 0x9a), // COLOR_LTGRAY
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xcd, 0xcd, 0xcd), // COLOR_LTGRAY
 }
 
-// Room 0x0B in C++ — "Maze Side" (light gray)
+// Room 0x0B in C++ — "Maze Side" (light gray, unsichtbare Wände — Originalverhalten)
 var RoomMazeSide = Room{
 	RoomData:   RoomGfxMazeSide,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x9a, 0x9a, 0x9a),
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xcd, 0xcd, 0xcd), // COLOR_LTGRAY
 }
 
 // Room 0x0C in C++ — "Side Corridor" (light cyan)
 var RoomSideCorridorCyan = Room{
 	RoomData:   RoomGfxSideCorridor,
-	Background: tcell.ColorDarkGray,
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
 	Foreground: tcell.NewRGBColor(0x55, 0xb6, 0xff), // COLOR_LTCYAN
 }
 
 // Room 0x0F in C++ — "White Castle"
 var RoomWhiteCastle = Room{
 	RoomData:   RoomGfxCastle,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.ColorWhite,
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xff, 0xff, 0xff), // COLOR_WHITE
 }
 
-// Room 0x13 in C++ — "Black Maze #1" (orange per user request)
+// Room 0x13 in C++ — "Black Maze #1" (light gray, unsichtbare Wände — Originalverhalten)
 var RoomBlackMaze1 = Room{
 	RoomData:   RoomBlackMaze1Gfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x70, 0x00), // orange
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xcd, 0xcd, 0xcd), // COLOR_LTGRAY
 }
 
-// Room 0x14 in C++ — "Black Maze #2" (orange per user request)
+// Room 0x14 in C++ — "Black Maze #2" (light gray, unsichtbare Wände — Originalverhalten)
 var RoomBlackMaze2 = Room{
 	RoomData:   RoomBlackMaze2Gfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x70, 0x00),
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xcd, 0xcd, 0xcd), // COLOR_LTGRAY
 }
 
-// Room 0x15 in C++ — "Black Maze #3" (orange per user request)
+// Room 0x15 in C++ — "Black Maze #3" (light gray, unsichtbare Wände — Originalverhalten)
 var RoomBlackMaze3 = Room{
 	RoomData:   RoomBlackMaze3Gfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x70, 0x00),
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xcd, 0xcd, 0xcd), // COLOR_LTGRAY
 }
 
-// Room 0x16 in C++ — "Black Maze Entry" (orange per user request)
+// Room 0x16 in C++ — "Black Maze Entry" (light gray, unsichtbare Wände — Originalverhalten)
 var RoomBlackMazeEntry = Room{
 	RoomData:   RoomBlackMazeEntryGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x70, 0x00),
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xcd, 0xcd, 0xcd), // COLOR_LTGRAY
 }
 
 // Room 0x1B in C++ — "Black Castle Entry"
 var RoomBlackCastleEntry = Room{
 	RoomData:   RoomTopEntryRoomGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x28, 0x20), // COLOR_RED
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xfa, 0x52, 0x55), // COLOR_RED
 }
 
 // Room 0x1C in C++ — "Other Purple Room"
 var RoomOtherPurpleRoom = Room{
 	RoomData:   RoomGfxNumberRoom,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xa8, 0x00, 0xff), // COLOR_PURPLE
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xA2, 0x51, 0xD9), // COLOR_PURPLE
 }
 
 // Room 0x17 in C++ — "Red Maze #1"
 var RoomRedMaze1 = Room{
 	RoomData:   RoomRedMaze1Gfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x28, 0x20), // COLOR_RED
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xfa, 0x52, 0x55), // COLOR_RED
 }
 
 // Room 0x18 in C++ — "Top of Red Maze"
 var RoomRedMazeTop = Room{
 	RoomData:   RoomRedMazeTopGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x28, 0x20),
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xfa, 0x52, 0x55), // COLOR_RED
 }
 
 // Room 0x19 in C++ — "Bottom of Red Maze"
 var RoomRedMazeBottom = Room{
 	RoomData:   RoomRedMazeBottomGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x28, 0x20),
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xfa, 0x52, 0x55), // COLOR_RED
 }
 
 // Room 0x1A in C++ — "White Castle Entry" (red maze)
 var RoomWhiteCastleEntry = Room{
 	RoomData:   RoomWhiteCastleEntryGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x28, 0x20),
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xfa, 0x52, 0x55), // COLOR_RED
 }
 
 // Room 0x1D in C++ — "Top Entry Room" (red), above Black Castle
 var RoomBlackCastleTop = Room{
 	RoomData:   RoomBlackCastleTopGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd0, 0x28, 0x20), // COLOR_RED from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xfa, 0x52, 0x55), // COLOR_RED
 }
 
 // Room 0x10 in C++ — "Black Castle"
 var RoomBlackCastle = Room{
 	RoomData:   RoomGfxCastle,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x18, 0x18, 0x18), // COLOR_BLACK — dark walls on gray bg
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x00, 0x00, 0x00), // COLOR_BLACK
 }
 
 // Room 0x08 in C++ — "Blue Maze Entry"
 var RoomBlueMazeEntry = Room{
 	RoomData:   RoomBlueMazeEntryGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE
 }
 
 // Room 0x01 in C++ — "Top Access" (olivegreen), links von RoomBelowYellowCastle
 var RoomTopAccessRight = Room{
 	RoomData:   RoomBelowYellowCastleGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xa1, 0xb0, 0x34), // COLOR_OLIVEGREEN from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xa1, 0xb0, 0x34), // COLOR_OLIVEGREEN
 }
 
 // Room 0x05 in C++ — "Blue Maze #1"
 var RoomBlueMaze1 = Room{
 	RoomData:   RoomBlueMaze1Gfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE
 }
 
 // Room 0x06 in C++ — "Bottom of Blue Maze"
 var RoomBlueMazeBottom = Room{
 	RoomData:   RoomBlueMazeBottomGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE
 }
 
 // Room 0x04 in C++ — "Top of Blue Maze"
 var RoomBlueMazeTop = Room{
 	RoomData:   RoomBlueMazeTopGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE
 }
 
 // Room 0x07 in C++ — "Center of Blue Maze"
 var RoomBlueMazeCenter = Room{
 	RoomData:   RoomBlueMazeCenterGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x6b, 0x64, 0xff), // COLOR_BLUE
 }
 
 // Room 0x03 in C++ — "Left of Name"
 var RoomCorridorRight = Room{
 	RoomData:   RoomCorridorRightGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0xd5, 0xb5, 0x43), // COLOR_TAN from original
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0xd5, 0xb5, 0x43), // COLOR_TAN
 }
 
 // Room 0x0D in C++ — "Side Corridor" (COLOR_DKGREEN), links von RoomMazeSide, über RoomWhiteCastle
 // C++-Verbindungen: up=0x0F(WhiteCastle), right=0x0B(MazeSide), down=0x0E(TopEntryRoom CYAN — fehlt in Go!), left=0x0C(SideCorridorCyan)
 var RoomSideCorridorOlive = Room{
 	RoomData:   RoomGfxSideCorridor,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x86, 0xd9, 0x22), // COLOR_LIMEGREEN (C++ hat hier DKGREEN — Abweichung)
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x21, 0xd9, 0x1b), // COLOR_DKGREEN
 }
 
 // Room 0x0E in C++ — "Top Entry Room" (COLOR_CYAN), direkt unter RoomSideCorridorOlive (0x0D)
 // C++-Verbindungen: up=0x0D, right=0x10(BlackCastle), down=0x0F(WhiteCastle), left=0x10(BlackCastle)
-// Grafik und Farbe weichen ab — Verbindungen zu BlackCastle fehlen noch
-var RoomDeadEndDarkGreen = Room{
+var RoomDeadEndCyan = Room{
 	RoomData:   RoomTopEntryRoomGfx,
-	Background: tcell.ColorDarkGray,
-	Foreground: tcell.NewRGBColor(0x0c, 0x6e, 0x0c), // dark green (C++ hat COLOR_CYAN)
+	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
+	Foreground: tcell.NewRGBColor(0x55, 0xb6, 0xff), // COLOR_LTCYAN
 }
 
 func InitDirections() {
@@ -382,12 +381,12 @@ func InitDirections() {
 	RoomOtherPurpleRoom.Right = nil
 
 	RoomSideCorridorOlive.Up = &RoomWhiteCastle
-	RoomSideCorridorOlive.Down = &RoomDeadEndDarkGreen
+	RoomSideCorridorOlive.Down = &RoomDeadEndCyan
 	RoomSideCorridorOlive.Left = nil
 	RoomSideCorridorOlive.Right = &RoomMazeSide
 
-	RoomDeadEndDarkGreen.Up = &RoomSideCorridorOlive
-	RoomDeadEndDarkGreen.Down = nil
-	RoomDeadEndDarkGreen.Left = nil
-	RoomDeadEndDarkGreen.Right = nil
+	RoomDeadEndCyan.Up = &RoomSideCorridorOlive
+	RoomDeadEndCyan.Down = nil
+	RoomDeadEndCyan.Left = nil
+	RoomDeadEndCyan.Right = nil
 }
