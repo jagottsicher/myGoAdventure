@@ -29,8 +29,38 @@ type Object struct {
 }
 
 var Player *Object
+var YellowKey *Object
+var GreenDragon *Object
 var AllObjects []*Object
 var CurrentRoom *world.Room
+
+func InitYellowKey(w, h int) {
+	YellowKey = &Object{
+		RelX:   1.0 / 5.0,
+		RelY:   0.5,
+		Width:  8,
+		Height: 2,
+		StepX:  0,
+		StepY:  0,
+		Style:  tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:  world.KeyGfx,
+	}
+	AllObjects = append(AllObjects, YellowKey)
+}
+
+func InitGreenDragon(w, h int) {
+	GreenDragon = &Object{
+		RelX:   4.0 / 5.0,
+		RelY:   0.5,
+		Width:  8,
+		Height: 10,
+		StepX:  0,
+		StepY:  0,
+		Style:  tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x86, 0xd9, 0x22)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:  world.DragonGfx,
+	}
+	AllObjects = append(AllObjects, GreenDragon)
+}
 
 func InitPlayer(w, h int) {
 	Player = &Object{
