@@ -19,9 +19,17 @@ func DrawStage() {
 		return
 	}
 	for _, point := range CurrentScreen {
-		Screen.SetContent(point.X, point.Y, point.Symbol, nil, tcell.StyleDefault.
-			Background(game.CurrentRoom.Background).
-			Foreground(game.CurrentRoom.Foreground))
+		var style tcell.Style
+		if point.Symbol == 'X' || point.Symbol == 'x' {
+			style = tcell.StyleDefault.
+				Background(game.CurrentRoom.Foreground).
+				Foreground(game.CurrentRoom.Foreground)
+		} else {
+			style = tcell.StyleDefault.
+				Background(game.CurrentRoom.Background).
+				Foreground(game.CurrentRoom.Foreground)
+		}
+		Screen.SetContent(point.X, point.Y, point.Symbol, nil, style)
 	}
 }
 
@@ -35,13 +43,20 @@ func DrawObject(obj *game.Object) {
 	termW, termH := Screen.Size()
 	screenX := int(obj.RelX * float64(termW))
 	screenY := int(obj.RelY * float64(termH))
+	objFg, _, _ := obj.Style.Decompose()
 	for _, point := range obj.Shape {
 		px := screenX + point.X
 		py := screenY + point.Y
 		if px < 0 || px >= termW || py < 0 || py >= termH {
 			continue
 		}
-		Screen.SetContent(px, py, point.Symbol, nil, obj.Style)
+		style := obj.Style
+		if point.Symbol == '▀' || point.Symbol == '▄' {
+			_, _, existingStyle, _ := Screen.GetContent(px, py)
+			_, existingBg, _ := existingStyle.Decompose()
+			style = tcell.StyleDefault.Foreground(objFg).Background(existingBg)
+		}
+		Screen.SetContent(px, py, point.Symbol, nil, style)
 	}
 }
 
@@ -50,6 +65,8 @@ func InitGamestate() {
 	game.CurrentRoom = &world.RoomYellowCastle
 	w, h := Screen.Size()
 	game.InitPlayer(w, h)
+	game.InitYellowKey(w, h)
+	game.InitGreenDragon(w, h)
 	FillTheScreen()
 }
 
