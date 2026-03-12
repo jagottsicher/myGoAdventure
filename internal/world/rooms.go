@@ -227,8 +227,8 @@ func InitDirections() {
 
 	RoomYellowCastle.Up = &RoomAboveYellowCastle
 	RoomYellowCastle.Down = &RoomBelowYellowCastle
-	RoomYellowCastle.Left = nil
-	RoomYellowCastle.Right = nil
+	RoomYellowCastle.Left = &RoomTopAccessRight
+	RoomYellowCastle.Right = &RoomCorridorRight
 
 	RoomAboveYellowCastle.Up = nil
 	RoomAboveYellowCastle.Down = &RoomYellowCastle
@@ -236,13 +236,13 @@ func InitDirections() {
 	RoomAboveYellowCastle.Right = nil
 
 	RoomBelowYellowCastle.Up = &RoomYellowCastle
-	RoomBelowYellowCastle.Down = nil
+	RoomBelowYellowCastle.Down = &RoomYellowCastle
 	RoomBelowYellowCastle.Left = &RoomTopAccessRight
 	RoomBelowYellowCastle.Right = &RoomCorridorRight
 
 	RoomTopAccessRight.Up = &RoomBlueMazeEntry
-	RoomTopAccessRight.Down = nil
-	RoomTopAccessRight.Left = nil
+	RoomTopAccessRight.Down = &RoomWhiteCastle
+	RoomTopAccessRight.Left = &RoomCorridorRight
 	RoomTopAccessRight.Right = &RoomBelowYellowCastle
 
 	// Room 8 — Blue Maze Entry
@@ -252,7 +252,7 @@ func InitDirections() {
 	RoomBlueMazeEntry.Right = &RoomBlueMazeCenter
 
 	// Room 5 — Blue Maze #1
-	RoomBlueMaze1.Up = nil
+	RoomBlueMaze1.Up = &RoomBlackCastleTop
 	RoomBlueMaze1.Down = &RoomBlueMazeEntry
 	RoomBlueMaze1.Left = &RoomBlueMazeTop
 	RoomBlueMaze1.Right = &RoomBlueMazeBottom
@@ -290,14 +290,14 @@ func InitDirections() {
 	// Room 0x1D — Black Castle Top
 	RoomBlackCastleTop.Up = &RoomBlackMazeEntry
 	RoomBlackCastleTop.Down = &RoomBlackCastle
-	RoomBlackCastleTop.Left = nil
-	RoomBlackCastleTop.Right = nil
+	RoomBlackCastleTop.Left = &RoomCorridorRight
+	RoomBlackCastleTop.Right = &RoomTopAccessRight
 
 	// Room 0x10 — Black Castle
 	RoomBlackCastle.Up = &RoomBlackCastleTop
 	RoomBlackCastle.Down = &RoomBlueMazeTop
-	RoomBlackCastle.Left = nil
-	RoomBlackCastle.Right = nil
+	RoomBlackCastle.Left = &RoomOtherPurpleRoom
+	RoomBlackCastle.Right = &RoomOtherPurpleRoom
 
 	// Room 4 — Blue Maze Top
 	RoomBlueMazeTop.Up = &RoomBlackCastle
@@ -311,7 +311,7 @@ func InitDirections() {
 	RoomBlueMazeCenter.Left = &RoomBlueMazeEntry
 	RoomBlueMazeCenter.Right = &RoomBlueMazeEntry
 
-	RoomCorridorRight.Up = nil
+	RoomCorridorRight.Up = &RoomBlueMazeBottom
 	RoomCorridorRight.Down = &RoomMazeEntry
 	RoomCorridorRight.Left = &RoomBelowYellowCastle
 	RoomCorridorRight.Right = &RoomNumberRoom
@@ -327,14 +327,14 @@ func InitDirections() {
 	RoomMazeMiddle.Right = &RoomMazeEntry
 
 	RoomMazeSide.Up = &RoomMazeMiddle
-	RoomMazeSide.Down = nil
+	RoomMazeSide.Down = &RoomOtherPurpleRoom
 	RoomMazeSide.Left = &RoomSideCorridorOlive
 	RoomMazeSide.Right = &RoomSideCorridorCyan
 
 	RoomSideCorridorCyan.Up = &RoomOtherPurpleRoom
 	RoomSideCorridorCyan.Down = &RoomBlackCastleEntry
 	RoomSideCorridorCyan.Left = &RoomMazeSide
-	RoomSideCorridorCyan.Right = nil
+	RoomSideCorridorCyan.Right = &RoomSideCorridorOlive
 
 	RoomNumberRoom.Up = nil
 	RoomNumberRoom.Down = nil
@@ -343,8 +343,8 @@ func InitDirections() {
 
 	RoomWhiteCastle.Up = &RoomWhiteCastleEntry
 	RoomWhiteCastle.Down = &RoomSideCorridorOlive
-	RoomWhiteCastle.Left = nil
-	RoomWhiteCastle.Right = nil
+	RoomWhiteCastle.Left = &RoomWhiteCastle
+	RoomWhiteCastle.Right = &RoomWhiteCastle
 
 	// Room 0x13 — Black Maze #1
 	RoomBlackMaze1.Up = &RoomBlackMaze3
@@ -371,22 +371,22 @@ func InitDirections() {
 	RoomBlackMazeEntry.Left = &RoomBlackMaze3
 
 	RoomBlackCastleEntry.Up = &RoomSideCorridorCyan
-	RoomBlackCastleEntry.Down = nil
-	RoomBlackCastleEntry.Left = nil
-	RoomBlackCastleEntry.Right = nil
+	RoomBlackCastleEntry.Down = &RoomBlackMazeEntry
+	RoomBlackCastleEntry.Left = &RoomBlackMazeEntry
+	RoomBlackCastleEntry.Right = &RoomBlackMazeEntry
 
-	RoomOtherPurpleRoom.Up = nil
+	RoomOtherPurpleRoom.Up = &RoomBlackCastleTop
 	RoomOtherPurpleRoom.Down = &RoomSideCorridorCyan
-	RoomOtherPurpleRoom.Left = nil
-	RoomOtherPurpleRoom.Right = nil
+	RoomOtherPurpleRoom.Left = &RoomBlueMazeEntry
+	RoomOtherPurpleRoom.Right = &RoomBlueMazeCenter
 
 	RoomSideCorridorOlive.Up = &RoomWhiteCastle
 	RoomSideCorridorOlive.Down = &RoomDeadEndCyan
-	RoomSideCorridorOlive.Left = nil
+	RoomSideCorridorOlive.Left = &RoomSideCorridorCyan
 	RoomSideCorridorOlive.Right = &RoomMazeSide
 
 	RoomDeadEndCyan.Up = &RoomSideCorridorOlive
-	RoomDeadEndCyan.Down = nil
-	RoomDeadEndCyan.Left = nil
-	RoomDeadEndCyan.Right = nil
+	RoomDeadEndCyan.Down = &RoomWhiteCastle
+	RoomDeadEndCyan.Left = &RoomBlackCastle
+	RoomDeadEndCyan.Right = &RoomBlackCastle
 }
