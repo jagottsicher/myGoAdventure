@@ -35,8 +35,20 @@ func main() {
 
 func updateStates() {
 	game.GreenDragon.Animate()
+	game.YellowDragon.Animate()
+	game.RedDragon.Animate()
 	game.Bat.Animate()
 	game.Portcullis.Animate()
+	termW, _ := render.Screen.Size()
+	facePlayer(game.GreenDragon, termW)
+	facePlayer(game.YellowDragon, termW)
+	facePlayer(game.RedDragon, termW)
+}
+
+func facePlayer(dragon *game.Object, termW int) {
+	dragonCenterX := dragon.RelX + float64(dragon.Width)/(2*float64(termW))
+	playerCenterX := game.Player.RelX + float64(game.Player.Width)/(2*float64(termW))
+	dragon.Flipped = dragonCenterX < playerCenterX
 }
 
 func isGameOver() bool {
