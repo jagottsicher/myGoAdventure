@@ -33,7 +33,9 @@ func main() {
 	}
 }
 
-func updateStates() {}
+func updateStates() {
+	game.GreenDragon.Animate()
+}
 
 func isGameOver() bool {
 	return false

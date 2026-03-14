@@ -115,6 +115,96 @@ var DragonGfx = []*Cell{
 	{X: 7, Y: 9, Symbol: '█'},
 }
 
+// Dragon State 01 — mouth open, decoded from objectGfxDrag[] State 01 in Adventure.cpp
+// 22 pixel rows → 11 terminal rows via half-block pairs (bit7=leftmost pixel)
+//
+// ▀▄
+//   ▀▄▄██▄
+//     █▄█▀
+//   ▄▀▀█▀
+// ▄▀  ▄█▄
+//   ▄████▄
+//  ███████
+//  ███████
+//   ▀███▀
+// ▄▄▄▄█
+// █▄▄
+var DragonGfxOpen = []*Cell{
+	// All Y values shifted -1 so total height matches DragonGfx (10 rows).
+	// Row -1 (clipped): pixels 0x80+0x40 → ▀▄  (out of bounds, not drawn)
+	{X: 0, Y: -1, Symbol: '▀'},
+	{X: 1, Y: -1, Symbol: '▄'},
+	// Row 0: pixels 0x26+0x1F → ▀▄▄██▄
+	{X: 2, Y: 0, Symbol: '▀'},
+	{X: 3, Y: 0, Symbol: '▄'},
+	{X: 4, Y: 0, Symbol: '▄'},
+	{X: 5, Y: 0, Symbol: '█'},
+	{X: 6, Y: 0, Symbol: '█'},
+	{X: 7, Y: 0, Symbol: '▄'},
+	// Row 1: pixels 0x0B+0x0E → █▄█▀
+	{X: 4, Y: 1, Symbol: '█'},
+	{X: 5, Y: 1, Symbol: '▄'},
+	{X: 6, Y: 1, Symbol: '█'},
+	{X: 7, Y: 1, Symbol: '▀'},
+	// Row 2: pixels 0x1E+0x24 → ▄▀▀█▀
+	{X: 2, Y: 2, Symbol: '▄'},
+	{X: 3, Y: 2, Symbol: '▀'},
+	{X: 4, Y: 2, Symbol: '▀'},
+	{X: 5, Y: 2, Symbol: '█'},
+	{X: 6, Y: 2, Symbol: '▀'},
+	// Row 3: pixels 0x44+0x8E → ▄▀  ▄█▄
+	{X: 0, Y: 3, Symbol: '▄'},
+	{X: 1, Y: 3, Symbol: '▀'},
+	{X: 4, Y: 3, Symbol: '▄'},
+	{X: 5, Y: 3, Symbol: '█'},
+	{X: 6, Y: 3, Symbol: '▄'},
+	// Rows 4–9: body from DragonGfx (rows 4–9), same Y
+	// Row 4:  ▄██████
+	{X: 1, Y: 4, Symbol: '▄'},
+	{X: 2, Y: 4, Symbol: '█'},
+	{X: 3, Y: 4, Symbol: '█'},
+	{X: 4, Y: 4, Symbol: '█'},
+	{X: 5, Y: 4, Symbol: '█'},
+	{X: 6, Y: 4, Symbol: '█'},
+	{X: 7, Y: 4, Symbol: '█'},
+	// Row 5:  ██▀   ██
+	{X: 0, Y: 5, Symbol: '█'},
+	{X: 1, Y: 5, Symbol: '█'},
+	{X: 2, Y: 5, Symbol: '▀'},
+	{X: 6, Y: 5, Symbol: '█'},
+	{X: 7, Y: 5, Symbol: '█'},
+	// Row 6:  ██   ▄██
+	{X: 0, Y: 6, Symbol: '█'},
+	{X: 1, Y: 6, Symbol: '█'},
+	{X: 5, Y: 6, Symbol: '▄'},
+	{X: 6, Y: 6, Symbol: '█'},
+	{X: 7, Y: 6, Symbol: '█'},
+	// Row 7:  ▀▀████▀▀
+	{X: 0, Y: 7, Symbol: '▀'},
+	{X: 1, Y: 7, Symbol: '▀'},
+	{X: 2, Y: 7, Symbol: '█'},
+	{X: 3, Y: 7, Symbol: '█'},
+	{X: 4, Y: 7, Symbol: '█'},
+	{X: 5, Y: 7, Symbol: '█'},
+	{X: 6, Y: 7, Symbol: '▀'},
+	{X: 7, Y: 7, Symbol: '▀'},
+	// Row 8:  ▄   █▄▄▄
+	{X: 0, Y: 8, Symbol: '▄'},
+	{X: 4, Y: 8, Symbol: '█'},
+	{X: 5, Y: 8, Symbol: '▄'},
+	{X: 6, Y: 8, Symbol: '▄'},
+	{X: 7, Y: 8, Symbol: '▄'},
+	// Row 9:  ▀▀█▄▄▄▄█
+	{X: 0, Y: 9, Symbol: '▀'},
+	{X: 1, Y: 9, Symbol: '▀'},
+	{X: 2, Y: 9, Symbol: '█'},
+	{X: 3, Y: 9, Symbol: '▄'},
+	{X: 4, Y: 9, Symbol: '▄'},
+	{X: 5, Y: 9, Symbol: '▄'},
+	{X: 6, Y: 9, Symbol: '▄'},
+	{X: 7, Y: 9, Symbol: '█'},
+}
+
 // Castle
 var RoomGfxCastle = &[]string{
 	"XXXXXXXXXXX X X X      X X X XXXXXXXXXXX",

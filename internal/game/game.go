@@ -18,14 +18,31 @@ var G = Game{
 }
 
 type Object struct {
-	RelX   float64
-	RelY   float64
-	StepX  int
-	StepY  int
-	Width  int
-	Height int
-	Style  tcell.Style
-	Shape  []*world.Cell
+	RelX         float64
+	RelY         float64
+	StepX        int
+	StepY        int
+	Width        int
+	Height       int
+	Style        tcell.Style
+	Shape        []*world.Cell
+	Frames       [][]*world.Cell // animation frames; nil = static
+	AnimInterval int             // game ticks per frame
+	animTick     int
+	animFrame    int
+}
+
+// Animate advances the animation by one tick. Call once per game update.
+func (o *Object) Animate() {
+	if len(o.Frames) < 2 {
+		return
+	}
+	o.animTick++
+	if o.animTick >= o.AnimInterval {
+		o.animTick = 0
+		o.animFrame = (o.animFrame + 1) % len(o.Frames)
+		o.Shape = o.Frames[o.animFrame]
+	}
 }
 
 var Player *Object
@@ -49,15 +66,18 @@ func InitYellowKey(w, h int) {
 }
 
 func InitGreenDragon(w, h int) {
+	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
 	GreenDragon = &Object{
-		RelX:   4.0 / 5.0,
-		RelY:   0.5,
-		Width:  8,
-		Height: 10,
-		StepX:  0,
-		StepY:  0,
-		Style:  tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x86, 0xd9, 0x22)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
-		Shape:  world.DragonGfx,
+		RelX:         4.0 / 5.0,
+		RelY:         0.5,
+		Width:        8,
+		Height:       10,
+		StepX:        0,
+		StepY:        0,
+		Style:        tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x86, 0xd9, 0x22)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:        frames[0],
+		Frames:       frames,
+		AnimInterval: 30, // ~0.5s at 60 FPS
 	}
 	AllObjects = append(AllObjects, GreenDragon)
 }
