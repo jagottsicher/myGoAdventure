@@ -24,6 +24,7 @@ type Object struct {
 	StepY        int
 	Width        int
 	Height       int
+	Flipped      bool // mirror sprite horizontally
 	Style        tcell.Style
 	Shape        []*world.Cell
 	Frames       [][]*world.Cell // animation frames; nil = static
@@ -47,7 +48,11 @@ func (o *Object) Animate() {
 
 var Player *Object
 var YellowKey *Object
+var WhiteKey *Object
+var BlackKey *Object
 var GreenDragon *Object
+var YellowDragon *Object
+var RedDragon *Object
 var Bat *Object
 var Portcullis *Object
 var Bridge *Object
@@ -72,6 +77,30 @@ func InitYellowKey(w, h int) {
 	AllObjects = append(AllObjects, YellowKey)
 }
 
+func InitWhiteKey(w, h int) {
+	WhiteKey = &Object{
+		RelX:   0.15,
+		RelY:   0.25,
+		Width:  8,
+		Height: 2,
+		Style:  tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xFF, 0xFF)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:  world.KeyGfx,
+	}
+	AllObjects = append(AllObjects, WhiteKey)
+}
+
+func InitBlackKey(w, h int) {
+	BlackKey = &Object{
+		RelX:   0.15,
+		RelY:   0.65,
+		Width:  8,
+		Height: 2,
+		Style:  tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x00, 0x00, 0x00)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:  world.KeyGfx,
+	}
+	AllObjects = append(AllObjects, BlackKey)
+}
+
 func InitGreenDragon(w, h int) {
 	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
 	GreenDragon = &Object{
@@ -87,6 +116,36 @@ func InitGreenDragon(w, h int) {
 		AnimInterval: 30, // ~0.5s at 60 FPS
 	}
 	AllObjects = append(AllObjects, GreenDragon)
+}
+
+func InitYellowDragon(w, h int) {
+	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
+	YellowDragon = &Object{
+		RelX:         0.15,
+		RelY:         0.4,
+		Width:        8,
+		Height:       10,
+		Style:        tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:        frames[0],
+		Frames:       frames,
+		AnimInterval: 30,
+	}
+	AllObjects = append(AllObjects, YellowDragon)
+}
+
+func InitRedDragon(w, h int) {
+	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
+	RedDragon = &Object{
+		RelX:         0.75,
+		RelY:         0.65,
+		Width:        8,
+		Height:       10,
+		Style:        tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFA, 0x52, 0x55)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:        frames[0],
+		Frames:       frames,
+		AnimInterval: 30,
+	}
+	AllObjects = append(AllObjects, RedDragon)
 }
 
 func InitBat(w, h int) {

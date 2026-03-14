@@ -46,6 +46,9 @@ func DrawObject(obj *game.Object) {
 	objFg, _, _ := obj.Style.Decompose()
 	for _, point := range obj.Shape {
 		px := screenX + point.X
+		if obj.Flipped {
+			px = screenX + (obj.Width - 1 - point.X)
+		}
 		py := screenY + point.Y
 		if px < 0 || px >= termW || py < 0 || py >= termH {
 			continue
@@ -66,7 +69,11 @@ func InitGamestate() {
 	w, h := Screen.Size()
 	game.InitPlayer(w, h)
 	game.InitYellowKey(w, h)
+	game.InitWhiteKey(w, h)
+	game.InitBlackKey(w, h)
 	game.InitGreenDragon(w, h)
+	game.InitYellowDragon(w, h)
+	game.InitRedDragon(w, h)
 	game.InitBat(w, h)
 	game.InitPortcullis(w, h)
 	game.InitBridge(w, h)
