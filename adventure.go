@@ -36,6 +36,7 @@ func main() {
 func updateStates() {
 	game.GreenDragon.Animate()
 	game.Bat.Animate()
+	game.Portcullis.Animate()
 }
 
 func isGameOver() bool {

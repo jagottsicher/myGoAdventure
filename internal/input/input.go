@@ -45,6 +45,8 @@ func InitUserInput() {
 			case *tcell.EventResize:
 				render.CurrentScreen = nil
 				render.FillTheScreen()
+				w, h := render.Screen.Size()
+				game.ReinitOnResize(w, h)
 				render.Screen.Sync()
 			}
 		}
@@ -84,7 +86,7 @@ func HandleUserInput() {
 
 	if keys["Rune[s]"] || keys["Down"] {
 		game.Player.RelY += float64(game.Player.StepY) / float64(h)
-		if game.Player.RelY >= 1.0 {
+		if game.Player.RelY+float64(game.Player.Height)/float64(h) >= 1.0 {
 			if game.CurrentRoom != nil && game.CurrentRoom.Down != nil {
 				game.CurrentRoom = game.CurrentRoom.Down
 				game.Player.RelY = 0
@@ -114,7 +116,7 @@ func HandleUserInput() {
 	if keys["Rune[d]"] || keys["Right"] {
 		newRelX := game.Player.RelX + float64(game.Player.StepX)/float64(w)
 		newScreenX := int(newRelX * float64(w))
-		if newScreenX >= w {
+		if newScreenX+game.Player.Width >= w {
 			if game.CurrentRoom != nil && game.CurrentRoom.Right != nil {
 				game.CurrentRoom = game.CurrentRoom.Right
 				game.Player.RelX = 0

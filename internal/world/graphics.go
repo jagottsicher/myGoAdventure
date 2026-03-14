@@ -1,14 +1,22 @@
 package world
 
-// Player graphics
+// Player graphics — 3x2: L M R columns, two rows
 var PlayerGfx = []*Cell{
 	{X: 0, Y: 0, Symbol: 'L'},
-	{X: 1, Y: 0, Symbol: 'R'},
+	{X: 1, Y: 0, Symbol: 'M'},
+	{X: 2, Y: 0, Symbol: 'R'},
+	{X: 0, Y: 1, Symbol: 'L'},
+	{X: 1, Y: 1, Symbol: 'M'},
+	{X: 2, Y: 1, Symbol: 'R'},
 }
 
 var PlayerGfxBefore = []*Cell{
 	{X: 0, Y: 0, Symbol: 'B'},
 	{X: 1, Y: 0, Symbol: '4'},
+	{X: 2, Y: 0, Symbol: 'F'},
+	{X: 0, Y: 1, Symbol: 'B'},
+	{X: 1, Y: 1, Symbol: '4'},
+	{X: 2, Y: 1, Symbol: 'F'},
 }
 
 // Yellow Key (8 wide x 2 terminal rows = 3 pixel rows via half-block chars)
@@ -361,6 +369,36 @@ var MagnetGfx = []*Cell{
 // Dot — objectGfxDot, 1 pixel row → 1 terminal row (top-half only)
 var DotGfx = []*Cell{
 	{X: 0, Y: 0, Symbol: '▀'},
+}
+
+// MakePortcullisGfx generates a portcullis grating of '╋' characters with the given height.
+func MakePortcullisGfx(width, height int) []*Cell {
+	var cells []*Cell
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			cells = append(cells, &Cell{X: x, Y: y, Symbol: '╋'})
+		}
+	}
+	return cells
+}
+
+// MakePortcullisFrames returns 4 animation frames: fully closed → 3 opening steps.
+// Each frame the gate rises: heights are H, 2/3·H, 1/3·H, 1 row.
+func MakePortcullisFrames(width, height int) [][]*Cell {
+	h2 := height * 2 / 3
+	if h2 < 1 {
+		h2 = 1
+	}
+	h3 := height / 3
+	if h3 < 1 {
+		h3 = 1
+	}
+	return [][]*Cell{
+		MakePortcullisGfx(width, height), // closed
+		MakePortcullisGfx(width, h2),     // 1st step
+		MakePortcullisGfx(width, h3),     // 2nd step
+		MakePortcullisGfx(width, 1),      // open — 1 row at top
+	}
 }
 
 // Castle
