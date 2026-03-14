@@ -115,6 +115,76 @@ var DragonGfx = []*Cell{
 	{X: 7, Y: 9, Symbol: '█'},
 }
 
+// Bat State 03 — wings up (compact), decoded from objectGfxBat[] State 03
+// 7 pixel rows → 4 terminal rows (3 pairs + 1 lone top-half row)
+//
+// █      █
+// ██    ██
+// ▀█▀██▀█▀
+//  ▀▀  ▀▀
+var BatGfx = []*Cell{
+	// Row 0: 0x81+0x81 → █      █
+	{X: 0, Y: 0, Symbol: '█'},
+	{X: 7, Y: 0, Symbol: '█'},
+	// Row 1: 0xC3+0xC3 → ██    ██
+	{X: 0, Y: 1, Symbol: '█'},
+	{X: 1, Y: 1, Symbol: '█'},
+	{X: 6, Y: 1, Symbol: '█'},
+	{X: 7, Y: 1, Symbol: '█'},
+	// Row 2: 0xFF+0x5A → ▀█▀██▀█▀
+	{X: 0, Y: 2, Symbol: '▀'},
+	{X: 1, Y: 2, Symbol: '█'},
+	{X: 2, Y: 2, Symbol: '▀'},
+	{X: 3, Y: 2, Symbol: '█'},
+	{X: 4, Y: 2, Symbol: '█'},
+	{X: 5, Y: 2, Symbol: '▀'},
+	{X: 6, Y: 2, Symbol: '█'},
+	{X: 7, Y: 2, Symbol: '▀'},
+	// Row 3: 0x66 lone → ▀▀  ▀▀ (top-half only)
+	{X: 1, Y: 3, Symbol: '▀'},
+	{X: 2, Y: 3, Symbol: '▀'},
+	{X: 5, Y: 3, Symbol: '▀'},
+	{X: 6, Y: 3, Symbol: '▀'},
+}
+
+// Bat State FF — wings spread/down, decoded from objectGfxBat[] State FF
+// 11 pixel rows → 6 terminal rows (5 pairs + 1 lone top-half row)
+//
+// ▄      ▀
+// ▄      ▀
+//  ▄▀██▀▄
+// ▄█▀  ▀█▄
+// █      █
+// ▀      ▀
+var BatGfxOpen = []*Cell{
+	// Row 0: 0x01+0x80 → ▄      ▀
+	{X: 0, Y: 0, Symbol: '▄'},
+	{X: 7, Y: 0, Symbol: '▀'},
+	// Row 1: 0x01+0x80 → ▄      ▀
+	{X: 0, Y: 1, Symbol: '▄'},
+	{X: 7, Y: 1, Symbol: '▀'},
+	// Row 2: 0x3C+0x5A →  ▄▀██▀▄
+	{X: 1, Y: 2, Symbol: '▄'},
+	{X: 2, Y: 2, Symbol: '▀'},
+	{X: 3, Y: 2, Symbol: '█'},
+	{X: 4, Y: 2, Symbol: '█'},
+	{X: 5, Y: 2, Symbol: '▀'},
+	{X: 6, Y: 2, Symbol: '▄'},
+	// Row 3: 0x66+0xC3 → ▄█▀  ▀█▄
+	{X: 0, Y: 3, Symbol: '▄'},
+	{X: 1, Y: 3, Symbol: '█'},
+	{X: 2, Y: 3, Symbol: '▀'},
+	{X: 5, Y: 3, Symbol: '▀'},
+	{X: 6, Y: 3, Symbol: '█'},
+	{X: 7, Y: 3, Symbol: '▄'},
+	// Row 4: 0x81+0x81 → █      █
+	{X: 0, Y: 4, Symbol: '█'},
+	{X: 7, Y: 4, Symbol: '█'},
+	// Row 5: 0x81 lone → ▀      ▀ (top-half only)
+	{X: 0, Y: 5, Symbol: '▀'},
+	{X: 7, Y: 5, Symbol: '▀'},
+}
+
 // Dragon State 01 — mouth open, decoded from objectGfxDrag[] State 01 in Adventure.cpp
 // 22 pixel rows → 11 terminal rows via half-block pairs (bit7=leftmost pixel)
 //
@@ -203,6 +273,94 @@ var DragonGfxOpen = []*Cell{
 	{X: 5, Y: 9, Symbol: '▄'},
 	{X: 6, Y: 9, Symbol: '▄'},
 	{X: 7, Y: 9, Symbol: '█'},
+}
+
+// Bridge — objectGfxBridge, 24 pixel rows → 12 terminal rows
+// ██    ██  (top caps ×2)
+//  █    █   (pillars ×8)
+// ██    ██  (bottom caps ×2)
+var BridgeGfx = []*Cell{
+	// Rows 0-1: 0xC3 pairs → ██    ██
+	{X: 0, Y: 0, Symbol: '█'}, {X: 1, Y: 0, Symbol: '█'}, {X: 6, Y: 0, Symbol: '█'}, {X: 7, Y: 0, Symbol: '█'},
+	{X: 0, Y: 1, Symbol: '█'}, {X: 1, Y: 1, Symbol: '█'}, {X: 6, Y: 1, Symbol: '█'}, {X: 7, Y: 1, Symbol: '█'},
+	// Rows 2-9: 0x42 pairs →  █    █
+	{X: 1, Y: 2, Symbol: '█'}, {X: 6, Y: 2, Symbol: '█'},
+	{X: 1, Y: 3, Symbol: '█'}, {X: 6, Y: 3, Symbol: '█'},
+	{X: 1, Y: 4, Symbol: '█'}, {X: 6, Y: 4, Symbol: '█'},
+	{X: 1, Y: 5, Symbol: '█'}, {X: 6, Y: 5, Symbol: '█'},
+	{X: 1, Y: 6, Symbol: '█'}, {X: 6, Y: 6, Symbol: '█'},
+	{X: 1, Y: 7, Symbol: '█'}, {X: 6, Y: 7, Symbol: '█'},
+	{X: 1, Y: 8, Symbol: '█'}, {X: 6, Y: 8, Symbol: '█'},
+	{X: 1, Y: 9, Symbol: '█'}, {X: 6, Y: 9, Symbol: '█'},
+	// Rows 10-11: 0xC3 pairs → ██    ██
+	{X: 0, Y: 10, Symbol: '█'}, {X: 1, Y: 10, Symbol: '█'}, {X: 6, Y: 10, Symbol: '█'}, {X: 7, Y: 10, Symbol: '█'},
+	{X: 0, Y: 11, Symbol: '█'}, {X: 1, Y: 11, Symbol: '█'}, {X: 6, Y: 11, Symbol: '█'}, {X: 7, Y: 11, Symbol: '█'},
+}
+
+// Sword — objectGfxSword, 5 pixel rows → 3 terminal rows
+//  ▄▀
+// ▀█▀▀▀▀▀▀
+//   ▀
+var SwordGfx = []*Cell{
+	// Row 0: 0x20+0x40 → col1=▄ col2=▀
+	{X: 1, Y: 0, Symbol: '▄'}, {X: 2, Y: 0, Symbol: '▀'},
+	// Row 1: 0xFF+0x40 → ▀█▀▀▀▀▀▀
+	{X: 0, Y: 1, Symbol: '▀'}, {X: 1, Y: 1, Symbol: '█'},
+	{X: 2, Y: 1, Symbol: '▀'}, {X: 3, Y: 1, Symbol: '▀'},
+	{X: 4, Y: 1, Symbol: '▀'}, {X: 5, Y: 1, Symbol: '▀'},
+	{X: 6, Y: 1, Symbol: '▀'}, {X: 7, Y: 1, Symbol: '▀'},
+	// Row 2: 0x20 lone → col2=▀
+	{X: 2, Y: 2, Symbol: '▀'},
+}
+
+// Chalice — objectGfxChallise, 9 pixel rows → 5 terminal rows
+// █      █
+// ▀█▄▄▄▄█▀
+//  ▀████▀
+//    ██
+//  ▀▀▀▀▀▀
+var ChaliceGfx = []*Cell{
+	// Row 0: 0x81+0x81 → █      █
+	{X: 0, Y: 0, Symbol: '█'}, {X: 7, Y: 0, Symbol: '█'},
+	// Row 1: 0xC3+0x7E → ▀█▄▄▄▄█▀
+	{X: 0, Y: 1, Symbol: '▀'}, {X: 1, Y: 1, Symbol: '█'},
+	{X: 2, Y: 1, Symbol: '▄'}, {X: 3, Y: 1, Symbol: '▄'},
+	{X: 4, Y: 1, Symbol: '▄'}, {X: 5, Y: 1, Symbol: '▄'},
+	{X: 6, Y: 1, Symbol: '█'}, {X: 7, Y: 1, Symbol: '▀'},
+	// Row 2: 0x7E+0x3C →  ▀████▀
+	{X: 1, Y: 2, Symbol: '▀'}, {X: 2, Y: 2, Symbol: '█'},
+	{X: 3, Y: 2, Symbol: '█'}, {X: 4, Y: 2, Symbol: '█'},
+	{X: 5, Y: 2, Symbol: '█'}, {X: 6, Y: 2, Symbol: '▀'},
+	// Row 3: 0x18+0x18 →    ██
+	{X: 3, Y: 3, Symbol: '█'}, {X: 4, Y: 3, Symbol: '█'},
+	// Row 4: 0x7E lone →  ▀▀▀▀▀▀ (top-half only)
+	{X: 1, Y: 4, Symbol: '▀'}, {X: 2, Y: 4, Symbol: '▀'},
+	{X: 3, Y: 4, Symbol: '▀'}, {X: 4, Y: 4, Symbol: '▀'},
+	{X: 5, Y: 4, Symbol: '▀'}, {X: 6, Y: 4, Symbol: '▀'},
+}
+
+// Magnet — objectGfxMagnet, 8 pixel rows → 4 terminal rows
+//  ▄████▄
+// ██▀  ▀██
+// ██    ██
+// ██    ██
+var MagnetGfx = []*Cell{
+	// Row 0: 0x3C+0x7E →  ▄████▄
+	{X: 1, Y: 0, Symbol: '▄'}, {X: 2, Y: 0, Symbol: '█'},
+	{X: 3, Y: 0, Symbol: '█'}, {X: 4, Y: 0, Symbol: '█'},
+	{X: 5, Y: 0, Symbol: '█'}, {X: 6, Y: 0, Symbol: '▄'},
+	// Row 1: 0xE7+0xC3 → ██▀  ▀██
+	{X: 0, Y: 1, Symbol: '█'}, {X: 1, Y: 1, Symbol: '█'},
+	{X: 2, Y: 1, Symbol: '▀'}, {X: 5, Y: 1, Symbol: '▀'},
+	{X: 6, Y: 1, Symbol: '█'}, {X: 7, Y: 1, Symbol: '█'},
+	// Rows 2-3: 0xC3+0xC3 → ██    ██
+	{X: 0, Y: 2, Symbol: '█'}, {X: 1, Y: 2, Symbol: '█'}, {X: 6, Y: 2, Symbol: '█'}, {X: 7, Y: 2, Symbol: '█'},
+	{X: 0, Y: 3, Symbol: '█'}, {X: 1, Y: 3, Symbol: '█'}, {X: 6, Y: 3, Symbol: '█'}, {X: 7, Y: 3, Symbol: '█'},
+}
+
+// Dot — objectGfxDot, 1 pixel row → 1 terminal row (top-half only)
+var DotGfx = []*Cell{
+	{X: 0, Y: 0, Symbol: '▀'},
 }
 
 // Castle

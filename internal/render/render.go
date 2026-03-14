@@ -67,6 +67,12 @@ func InitGamestate() {
 	game.InitPlayer(w, h)
 	game.InitYellowKey(w, h)
 	game.InitGreenDragon(w, h)
+	game.InitBat(w, h)
+	game.InitBridge(w, h)
+	game.InitSword(w, h)
+	game.InitChalice(w, h)
+	game.InitMagnet(w, h)
+	game.InitDot(w, h)
 	FillTheScreen()
 }
 

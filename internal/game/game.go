@@ -48,6 +48,12 @@ func (o *Object) Animate() {
 var Player *Object
 var YellowKey *Object
 var GreenDragon *Object
+var Bat *Object
+var Bridge *Object
+var Sword *Object
+var Chalice *Object
+var Magnet *Object
+var Dot *Object
 var AllObjects []*Object
 var CurrentRoom *world.Room
 
@@ -80,6 +86,68 @@ func InitGreenDragon(w, h int) {
 		AnimInterval: 30, // ~0.5s at 60 FPS
 	}
 	AllObjects = append(AllObjects, GreenDragon)
+}
+
+func InitBat(w, h int) {
+	frames := [][]*world.Cell{world.BatGfx, world.BatGfxOpen}
+	Bat = &Object{
+		RelX:         1.0 / 5.0,
+		RelY:         4.0 / 5.0,
+		Width:        8,
+		Height:       6,
+		StepX:        0,
+		StepY:        0,
+		Style:        tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:        frames[0],
+		Frames:       frames,
+		AnimInterval: 20, // ~0.33s at 60 FPS
+	}
+	AllObjects = append(AllObjects, Bat)
+}
+
+func InitBridge(w, h int) {
+	Bridge = &Object{
+		RelX: 0.5, RelY: 0.15, Width: 8, Height: 12,
+		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x99, 0x00, 0xCC)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape: world.BridgeGfx,
+	}
+	AllObjects = append(AllObjects, Bridge)
+}
+
+func InitSword(w, h int) {
+	Sword = &Object{
+		RelX: 0.65, RelY: 0.25, Width: 8, Height: 3,
+		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape: world.SwordGfx,
+	}
+	AllObjects = append(AllObjects, Sword)
+}
+
+func InitChalice(w, h int) {
+	Chalice = &Object{
+		RelX: 0.5, RelY: 0.45, Width: 8, Height: 5,
+		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xAA, 0x00)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape: world.ChaliceGfx,
+	}
+	AllObjects = append(AllObjects, Chalice)
+}
+
+func InitMagnet(w, h int) {
+	Magnet = &Object{
+		RelX: 0.75, RelY: 0.65, Width: 8, Height: 4,
+		Style: tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape: world.MagnetGfx,
+	}
+	AllObjects = append(AllObjects, Magnet)
+}
+
+func InitDot(w, h int) {
+	Dot = &Object{
+		RelX: 0.3, RelY: 0.3, Width: 1, Height: 1,
+		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xAA, 0xAA, 0xAA)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape: world.DotGfx,
+	}
+	AllObjects = append(AllObjects, Dot)
 }
 
 func InitPlayer(w, h int) {
