@@ -49,6 +49,7 @@ var Player *Object
 var YellowKey *Object
 var GreenDragon *Object
 var Bat *Object
+var Portcullis *Object
 var Bridge *Object
 var Sword *Object
 var Chalice *Object
@@ -105,9 +106,37 @@ func InitBat(w, h int) {
 	AllObjects = append(AllObjects, Bat)
 }
 
+func InitPortcullis(w, h int) {
+	// Castle template: 40 chars wide, 12 rows tall.
+	// Gate opening: cols 18–21 (4 chars) in template row 5.
+	doorStartCol := 18 * w / 40
+	doorWidth := (4*w + 39) / 40 // ceiling division — never one short
+	if doorWidth < 2 {
+		doorWidth = 2
+	}
+	// Height = 1 template row scaled to terminal rows (min 2)
+	portHeight := h / 12
+	if portHeight < 2 {
+		portHeight = 2
+	}
+	frames := world.MakePortcullisFrames(doorWidth, portHeight)
+	// RelY: template row 5 of 12 maps to ~5/12 of terminal height
+	Portcullis = &Object{
+		RelX:         float64(doorStartCol) / float64(w),
+		RelY:         5.0 / 12.0,
+		Width:        doorWidth,
+		Height:       portHeight,
+		Style:        tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
+		Shape:        frames[0],
+		Frames:       frames,
+		AnimInterval: 45,
+	}
+	AllObjects = append(AllObjects, Portcullis)
+}
+
 func InitBridge(w, h int) {
 	Bridge = &Object{
-		RelX: 0.5, RelY: 0.15, Width: 8, Height: 12,
+		RelX: 0.1, RelY: 0.15, Width: 8, Height: 12,
 		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x99, 0x00, 0xCC)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape: world.BridgeGfx,
 	}
@@ -125,7 +154,7 @@ func InitSword(w, h int) {
 
 func InitChalice(w, h int) {
 	Chalice = &Object{
-		RelX: 0.5, RelY: 0.45, Width: 8, Height: 5,
+		RelX: 0.8, RelY: 0.25, Width: 8, Height: 5,
 		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xAA, 0x00)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape: world.ChaliceGfx,
 	}
@@ -150,12 +179,32 @@ func InitDot(w, h int) {
 	AllObjects = append(AllObjects, Dot)
 }
 
+func ReinitOnResize(w, h int) {
+	if Portcullis != nil {
+		doorStartCol := 18 * w / 40
+		doorWidth := (4*w + 39) / 40
+		if doorWidth < 2 {
+			doorWidth = 2
+		}
+		portHeight := (h + 11) / 12
+		if portHeight < 2 {
+			portHeight = 2
+		}
+		frames := world.MakePortcullisFrames(doorWidth, portHeight)
+		Portcullis.RelX = float64(doorStartCol) / float64(w)
+		Portcullis.Width = doorWidth
+		Portcullis.Height = portHeight
+		Portcullis.Frames = frames
+		Portcullis.Shape = frames[Portcullis.animFrame]
+	}
+}
+
 func InitPlayer(w, h int) {
 	Player = &Object{
 		RelX:   float64(w/2) / float64(w),
 		RelY:   float64(h/3*2) / float64(h),
-		Width:  2,
-		Height: 1,
+		Width:  3,
+		Height: 2,
 		StepX:  2,
 		StepY:  1,
 		Style:  tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorPurple),
