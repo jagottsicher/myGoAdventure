@@ -35,14 +35,31 @@ func DrawStage() {
 
 func DrawAllVisibleObjects() {
 	for _, obj := range game.AllObjects {
-		DrawObject(obj)
+		if obj.ZLayer == 0 {
+			DrawObject(obj)
+		}
+	}
+	for _, obj := range game.AllObjects {
+		if obj.ZLayer == 1 {
+			DrawObject(obj)
+		}
+	}
+	for _, obj := range game.AllObjects {
+		if obj.ZLayer == 2 {
+			DrawObject(obj)
+		}
 	}
 }
 
 func DrawObject(obj *game.Object) {
 	termW, termH := Screen.Size()
-	screenX := int(obj.RelX * float64(termW))
-	screenY := int(obj.RelY * float64(termH))
+	ox, oy := obj.Width/2, obj.Height/2
+	if obj.BodyOffsets != nil {
+		off := obj.BodyOffsets[obj.OrientationFrame%len(obj.BodyOffsets)]
+		ox, oy = off[0], off[1]
+	}
+	screenX := int(obj.RelX*float64(termW)) - ox
+	screenY := int(obj.RelY*float64(termH)) - oy
 	objFg, _, _ := obj.Style.Decompose()
 	for _, point := range obj.Shape {
 		px := screenX + point.X
@@ -54,7 +71,10 @@ func DrawObject(obj *game.Object) {
 			continue
 		}
 		style := obj.Style
-		if point.Symbol == '▀' || point.Symbol == '▄' {
+		s := point.Symbol
+		isHalfBlock := s >= 0x2580 && s <= 0x259F && s != '█'
+		isBoxDrawing := s >= 0x2500 && s <= 0x257F
+		if isHalfBlock || isBoxDrawing {
 			_, _, existingStyle, _ := Screen.GetContent(px, py)
 			_, existingBg, _ := existingStyle.Decompose()
 			style = tcell.StyleDefault.Foreground(objFg).Background(existingBg)

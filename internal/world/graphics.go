@@ -284,25 +284,25 @@ var DragonGfxOpen = []*Cell{
 }
 
 // Bridge — objectGfxBridge, 24 pixel rows → 12 terminal rows
-// ██    ██  (top caps ×2)
-//  █    █   (pillars ×8)
-// ██    ██  (bottom caps ×2)
+// ██      ██  (top caps ×2)
+//  █      █   (pillars ×8)
+// ██      ██  (bottom caps ×2)
 var BridgeGfx = []*Cell{
-	// Rows 0-1: 0xC3 pairs → ██    ██
-	{X: 0, Y: 0, Symbol: '█'}, {X: 1, Y: 0, Symbol: '█'}, {X: 6, Y: 0, Symbol: '█'}, {X: 7, Y: 0, Symbol: '█'},
-	{X: 0, Y: 1, Symbol: '█'}, {X: 1, Y: 1, Symbol: '█'}, {X: 6, Y: 1, Symbol: '█'}, {X: 7, Y: 1, Symbol: '█'},
-	// Rows 2-9: 0x42 pairs →  █    █
-	{X: 1, Y: 2, Symbol: '█'}, {X: 6, Y: 2, Symbol: '█'},
-	{X: 1, Y: 3, Symbol: '█'}, {X: 6, Y: 3, Symbol: '█'},
-	{X: 1, Y: 4, Symbol: '█'}, {X: 6, Y: 4, Symbol: '█'},
-	{X: 1, Y: 5, Symbol: '█'}, {X: 6, Y: 5, Symbol: '█'},
-	{X: 1, Y: 6, Symbol: '█'}, {X: 6, Y: 6, Symbol: '█'},
-	{X: 1, Y: 7, Symbol: '█'}, {X: 6, Y: 7, Symbol: '█'},
-	{X: 1, Y: 8, Symbol: '█'}, {X: 6, Y: 8, Symbol: '█'},
-	{X: 1, Y: 9, Symbol: '█'}, {X: 6, Y: 9, Symbol: '█'},
-	// Rows 10-11: 0xC3 pairs → ██    ██
-	{X: 0, Y: 10, Symbol: '█'}, {X: 1, Y: 10, Symbol: '█'}, {X: 6, Y: 10, Symbol: '█'}, {X: 7, Y: 10, Symbol: '█'},
-	{X: 0, Y: 11, Symbol: '█'}, {X: 1, Y: 11, Symbol: '█'}, {X: 6, Y: 11, Symbol: '█'}, {X: 7, Y: 11, Symbol: '█'},
+	// Rows 0-1: top caps → ██      ██
+	{X: 0, Y: 0, Symbol: '█'}, {X: 1, Y: 0, Symbol: '█'}, {X: 8, Y: 0, Symbol: '█'}, {X: 9, Y: 0, Symbol: '█'},
+	{X: 0, Y: 1, Symbol: '█'}, {X: 1, Y: 1, Symbol: '█'}, {X: 8, Y: 1, Symbol: '█'}, {X: 9, Y: 1, Symbol: '█'},
+	// Rows 2-9: pillars →  █      █
+	{X: 1, Y: 2, Symbol: '█'}, {X: 8, Y: 2, Symbol: '█'},
+	{X: 1, Y: 3, Symbol: '█'}, {X: 8, Y: 3, Symbol: '█'},
+	{X: 1, Y: 4, Symbol: '█'}, {X: 8, Y: 4, Symbol: '█'},
+	{X: 1, Y: 5, Symbol: '█'}, {X: 8, Y: 5, Symbol: '█'},
+	{X: 1, Y: 6, Symbol: '█'}, {X: 8, Y: 6, Symbol: '█'},
+	{X: 1, Y: 7, Symbol: '█'}, {X: 8, Y: 7, Symbol: '█'},
+	{X: 1, Y: 8, Symbol: '█'}, {X: 8, Y: 8, Symbol: '█'},
+	{X: 1, Y: 9, Symbol: '█'}, {X: 8, Y: 9, Symbol: '█'},
+	// Rows 10-11: bottom caps → ██      ██
+	{X: 0, Y: 10, Symbol: '█'}, {X: 1, Y: 10, Symbol: '█'}, {X: 8, Y: 10, Symbol: '█'}, {X: 9, Y: 10, Symbol: '█'},
+	{X: 0, Y: 11, Symbol: '█'}, {X: 1, Y: 11, Symbol: '█'}, {X: 8, Y: 11, Symbol: '█'}, {X: 9, Y: 11, Symbol: '█'},
 }
 
 // Sword — objectGfxSword, 5 pixel rows → 3 terminal rows
@@ -310,15 +310,64 @@ var BridgeGfx = []*Cell{
 // ▀█▀▀▀▀▀▀
 //   ▀
 var SwordGfx = []*Cell{
-	// Row 0: 0x20+0x40 → col1=▄ col2=▀
-	{X: 1, Y: 0, Symbol: '▄'}, {X: 2, Y: 0, Symbol: '▀'},
-	// Row 1: 0xFF+0x40 → ▀█▀▀▀▀▀▀
-	{X: 0, Y: 1, Symbol: '▀'}, {X: 1, Y: 1, Symbol: '█'},
-	{X: 2, Y: 1, Symbol: '▀'}, {X: 3, Y: 1, Symbol: '▀'},
-	{X: 4, Y: 1, Symbol: '▀'}, {X: 5, Y: 1, Symbol: '▀'},
-	{X: 6, Y: 1, Symbol: '▀'}, {X: 7, Y: 1, Symbol: '▀'},
-	// Row 2: 0x20 lone → col2=▀
-	{X: 2, Y: 2, Symbol: '▀'},
+	// Row 1: guard tip (shifted down 1 to center in Height=4 box)
+	{X: 1, Y: 1, Symbol: '▄'}, {X: 2, Y: 1, Symbol: '▀'},
+	// Row 2: blade (center row)
+	{X: 0, Y: 2, Symbol: '▀'}, {X: 1, Y: 2, Symbol: '█'},
+	{X: 2, Y: 2, Symbol: '▀'}, {X: 3, Y: 2, Symbol: '▀'},
+	{X: 4, Y: 2, Symbol: '▀'}, {X: 5, Y: 2, Symbol: '▀'},
+	{X: 6, Y: 2, Symbol: '▀'}, {X: 7, Y: 2, Symbol: '▀'},
+	// Row 3: pommel
+	{X: 2, Y: 3, Symbol: '▀'},
+}
+
+// SwordGfxLeft — tip pointing left (horizontal mirror of SwordGfx)
+//      ▀▄
+// ▀▀▀▀▀▀█▀
+//      ▀
+var SwordGfxLeft = []*Cell{
+	// Row 1: guard tip (shifted down 1)
+	{X: 5, Y: 1, Symbol: '▀'}, {X: 6, Y: 1, Symbol: '▄'},
+	// Row 2: blade (center row)
+	{X: 0, Y: 2, Symbol: '▀'}, {X: 1, Y: 2, Symbol: '▀'},
+	{X: 2, Y: 2, Symbol: '▀'}, {X: 3, Y: 2, Symbol: '▀'},
+	{X: 4, Y: 2, Symbol: '▀'}, {X: 5, Y: 2, Symbol: '▀'},
+	{X: 6, Y: 2, Symbol: '█'}, {X: 7, Y: 2, Symbol: '▀'},
+	// Row 3: pommel
+	{X: 5, Y: 3, Symbol: '▀'},
+}
+
+// SwordGfxUp — tip pointing up (90° CCW rotation of SwordGfx, centered in 8-wide box)
+// Pixel grid 8px tall × 5px wide, packed into 4 terminal rows × 8 cols (X offset +2)
+//     █
+//     █
+//   ▄ █ ▄
+//   ▀█▀
+var SwordGfxUp = []*Cell{
+	// Row 0: tip (blade end)
+	{X: 4, Y: 0, Symbol: '█'},
+	// Row 1: blade
+	{X: 4, Y: 1, Symbol: '█'},
+	// Row 2: guard crosspiece
+	{X: 2, Y: 2, Symbol: '▄'}, {X: 4, Y: 2, Symbol: '█'}, {X: 6, Y: 2, Symbol: '▄'},
+	// Row 3: handle/pommel
+	{X: 3, Y: 3, Symbol: '▀'}, {X: 4, Y: 3, Symbol: '█'}, {X: 5, Y: 3, Symbol: '▀'},
+}
+
+// SwordGfxDown — tip pointing down (vertical flip of SwordGfxUp, ▄↔▀)
+//   ▄█▄
+//   ▀ █ ▀
+//     █
+//     █
+var SwordGfxDown = []*Cell{
+	// Row 0: handle/pommel (flipped from row 3 of Up)
+	{X: 3, Y: 0, Symbol: '▄'}, {X: 4, Y: 0, Symbol: '█'}, {X: 5, Y: 0, Symbol: '▄'},
+	// Row 1: guard crosspiece (flipped from row 2 of Up)
+	{X: 2, Y: 1, Symbol: '▀'}, {X: 4, Y: 1, Symbol: '█'}, {X: 6, Y: 1, Symbol: '▀'},
+	// Row 2: blade
+	{X: 4, Y: 2, Symbol: '█'},
+	// Row 3: tip (blade end)
+	{X: 4, Y: 3, Symbol: '█'},
 }
 
 // Chalice — objectGfxChallise, 9 pixel rows → 5 terminal rows
@@ -364,6 +413,153 @@ var MagnetGfx = []*Cell{
 	// Rows 2-3: 0xC3+0xC3 → ██    ██
 	{X: 0, Y: 2, Symbol: '█'}, {X: 1, Y: 2, Symbol: '█'}, {X: 6, Y: 2, Symbol: '█'}, {X: 7, Y: 2, Symbol: '█'},
 	{X: 0, Y: 3, Symbol: '█'}, {X: 1, Y: 3, Symbol: '█'}, {X: 6, Y: 3, Symbol: '█'}, {X: 7, Y: 3, Symbol: '█'},
+}
+
+// MakeMagnetFrames returns 16 frames for the magnet (Width=12, Height=8).
+//
+// Layout: Frames[orientation*4 + fieldPhase]
+//   orientation 0=Down, 1=Right, 2=Up, 3=Left
+//   fieldPhase  0=no arc, 1=inner, 2=medium, 3=outer
+//
+// Orientation and field-line phase are driven by independent timers (SubFrameCount=4).
+// Arcs use box-drawing chars so they pick up the background color of whatever they overlap.
+//
+// Down  (poles ↓, arch ↑):  arcs below  with ╰─╯  (arch top, poles+arcs bottom)
+// Right (poles →, arch ←):  arcs right  with ─╮╯  (arch left, poles+arcs right)
+// Up    (poles ↑, arch ↓):  arcs above  with ╭─╮  (arch bottom, poles+arcs top)
+// Left  (poles ←, arch →):  arcs left   with ╭╰─  (arch right, poles+arcs left)
+func MakeMagnetFrames() [][]*Cell {
+	cp := func(src []*Cell) []*Cell {
+		dst := make([]*Cell, len(src))
+		copy(dst, src)
+		return dst
+	}
+	join := func(a, b []*Cell) []*Cell { return append(cp(a), b...) }
+
+	// ── DOWN (poles down, arch up) ────────────────────────────────────────────
+	// Body at Y=0–3, shifted X+2. Poles: X=2–3 left, X=8–9 right.
+	dBody := []*Cell{
+		{X: 3, Y: 0, Symbol: '▄'}, {X: 4, Y: 0, Symbol: '█'}, {X: 5, Y: 0, Symbol: '█'},
+		{X: 6, Y: 0, Symbol: '█'}, {X: 7, Y: 0, Symbol: '█'}, {X: 8, Y: 0, Symbol: '▄'},
+		{X: 2, Y: 1, Symbol: '█'}, {X: 3, Y: 1, Symbol: '█'}, {X: 4, Y: 1, Symbol: '▀'},
+		{X: 7, Y: 1, Symbol: '▀'}, {X: 8, Y: 1, Symbol: '█'}, {X: 9, Y: 1, Symbol: '█'},
+		{X: 2, Y: 2, Symbol: '█'}, {X: 3, Y: 2, Symbol: '█'}, {X: 8, Y: 2, Symbol: '█'}, {X: 9, Y: 2, Symbol: '█'},
+		{X: 2, Y: 3, Symbol: '█'}, {X: 3, Y: 3, Symbol: '█'}, {X: 8, Y: 3, Symbol: '█'}, {X: 9, Y: 3, Symbol: '█'},
+	}
+	d0 := cp(dBody)
+	d1 := join(dBody, []*Cell{ // inner: tight 4-wide arc in center, 1 row
+		{X: 4, Y: 4, Symbol: '╰'}, {X: 5, Y: 4, Symbol: '─'},
+		{X: 6, Y: 4, Symbol: '─'}, {X: 7, Y: 4, Symbol: '╯'},
+	})
+	d2 := join(dBody, []*Cell{ // medium: │ at poles, 6-wide arc
+		{X: 3, Y: 4, Symbol: '│'}, {X: 8, Y: 4, Symbol: '│'},
+		{X: 3, Y: 5, Symbol: '╰'}, {X: 4, Y: 5, Symbol: '─'}, {X: 5, Y: 5, Symbol: '─'},
+		{X: 6, Y: 5, Symbol: '─'}, {X: 7, Y: 5, Symbol: '─'}, {X: 8, Y: 5, Symbol: '╯'},
+	})
+	d3 := join(dBody, []*Cell{ // outer: 2×│ at poles, 10-wide arc
+		{X: 1, Y: 4, Symbol: '│'}, {X: 10, Y: 4, Symbol: '│'},
+		{X: 1, Y: 5, Symbol: '│'}, {X: 10, Y: 5, Symbol: '│'},
+		{X: 1, Y: 6, Symbol: '╰'}, {X: 2, Y: 6, Symbol: '─'}, {X: 3, Y: 6, Symbol: '─'},
+		{X: 4, Y: 6, Symbol: '─'}, {X: 5, Y: 6, Symbol: '─'}, {X: 6, Y: 6, Symbol: '─'},
+		{X: 7, Y: 6, Symbol: '─'}, {X: 8, Y: 6, Symbol: '─'}, {X: 9, Y: 6, Symbol: '─'},
+		{X: 10, Y: 6, Symbol: '╯'},
+	})
+
+	// ── RIGHT (arch left, poles right, field lines expand rightward) ──────────
+	// Exact horizontal mirror of original rBody (arch was right, now left).
+	// back=X=0, corner=X=1 (▄/█/█/▀), transition=X=2 (█/▀/▄/█), rails=X=2–7. X=8–11 free.
+	rBody := []*Cell{
+		{X: 1, Y: 2, Symbol: '▄'}, {X: 2, Y: 2, Symbol: '█'}, {X: 3, Y: 2, Symbol: '█'},
+		{X: 4, Y: 2, Symbol: '█'}, {X: 5, Y: 2, Symbol: '█'}, {X: 6, Y: 2, Symbol: '█'}, {X: 7, Y: 2, Symbol: '█'},
+		{X: 0, Y: 3, Symbol: '█'}, {X: 1, Y: 3, Symbol: '█'}, {X: 2, Y: 3, Symbol: '▀'},
+		{X: 0, Y: 4, Symbol: '█'}, {X: 1, Y: 4, Symbol: '█'}, {X: 2, Y: 4, Symbol: '▄'},
+		{X: 1, Y: 5, Symbol: '▀'}, {X: 2, Y: 5, Symbol: '█'}, {X: 3, Y: 5, Symbol: '█'},
+		{X: 4, Y: 5, Symbol: '█'}, {X: 5, Y: 5, Symbol: '█'}, {X: 6, Y: 5, Symbol: '█'}, {X: 7, Y: 5, Symbol: '█'},
+	}
+	r0 := cp(rBody)
+	r1 := join(rBody, []*Cell{ // inner: tight arc just past pole tips at X=7
+		{X: 8, Y: 3, Symbol: '─'}, {X: 9, Y: 3, Symbol: '╮'},
+		{X: 8, Y: 4, Symbol: '─'}, {X: 9, Y: 4, Symbol: '╯'},
+	})
+	r2 := join(rBody, []*Cell{ // medium: arc spanning pole rows + 1 above/below
+		{X: 8, Y: 2, Symbol: '─'}, {X: 9, Y: 2, Symbol: '─'}, {X: 10, Y: 2, Symbol: '╮'},
+		{X: 10, Y: 3, Symbol: '│'},
+		{X: 10, Y: 4, Symbol: '│'},
+		{X: 8, Y: 5, Symbol: '─'}, {X: 9, Y: 5, Symbol: '─'}, {X: 10, Y: 5, Symbol: '╯'},
+	})
+	r3 := join(rBody, []*Cell{ // outer: arc spanning 2 rows beyond pole tips
+		{X: 8, Y: 1, Symbol: '─'}, {X: 9, Y: 1, Symbol: '─'}, {X: 10, Y: 1, Symbol: '─'}, {X: 11, Y: 1, Symbol: '╮'},
+		{X: 11, Y: 2, Symbol: '│'},
+		{X: 11, Y: 3, Symbol: '│'},
+		{X: 11, Y: 4, Symbol: '│'},
+		{X: 11, Y: 5, Symbol: '│'},
+		{X: 8, Y: 6, Symbol: '─'}, {X: 9, Y: 6, Symbol: '─'}, {X: 10, Y: 6, Symbol: '─'}, {X: 11, Y: 6, Symbol: '╯'},
+	})
+
+	// ── UP (poles up, arch down) ──────────────────────────────────────────────
+	// Vertical flip of Down body (Y→7-Y, ▄↔▀). Body at Y=4–7. Poles: X=2–3,8–9 at Y=4–5.
+	uBody := []*Cell{
+		{X: 2, Y: 4, Symbol: '█'}, {X: 3, Y: 4, Symbol: '█'}, {X: 8, Y: 4, Symbol: '█'}, {X: 9, Y: 4, Symbol: '█'},
+		{X: 2, Y: 5, Symbol: '█'}, {X: 3, Y: 5, Symbol: '█'}, {X: 8, Y: 5, Symbol: '█'}, {X: 9, Y: 5, Symbol: '█'},
+		{X: 2, Y: 6, Symbol: '█'}, {X: 3, Y: 6, Symbol: '█'}, {X: 4, Y: 6, Symbol: '▄'},
+		{X: 7, Y: 6, Symbol: '▄'}, {X: 8, Y: 6, Symbol: '█'}, {X: 9, Y: 6, Symbol: '█'},
+		{X: 3, Y: 7, Symbol: '▀'}, {X: 4, Y: 7, Symbol: '█'}, {X: 5, Y: 7, Symbol: '█'},
+		{X: 6, Y: 7, Symbol: '█'}, {X: 7, Y: 7, Symbol: '█'}, {X: 8, Y: 7, Symbol: '▀'},
+	}
+	u0 := cp(uBody)
+	u1 := join(uBody, []*Cell{ // inner: tight 4-wide arc in center, 1 row
+		{X: 4, Y: 3, Symbol: '╭'}, {X: 5, Y: 3, Symbol: '─'},
+		{X: 6, Y: 3, Symbol: '─'}, {X: 7, Y: 3, Symbol: '╮'},
+	})
+	u2 := join(uBody, []*Cell{ // medium: │ at poles, 6-wide arc
+		{X: 3, Y: 3, Symbol: '│'}, {X: 8, Y: 3, Symbol: '│'},
+		{X: 3, Y: 2, Symbol: '╭'}, {X: 4, Y: 2, Symbol: '─'}, {X: 5, Y: 2, Symbol: '─'},
+		{X: 6, Y: 2, Symbol: '─'}, {X: 7, Y: 2, Symbol: '─'}, {X: 8, Y: 2, Symbol: '╮'},
+	})
+	u3 := join(uBody, []*Cell{ // outer: 2×│ at poles, 10-wide arc
+		{X: 1, Y: 3, Symbol: '│'}, {X: 10, Y: 3, Symbol: '│'},
+		{X: 1, Y: 2, Symbol: '│'}, {X: 10, Y: 2, Symbol: '│'},
+		{X: 1, Y: 1, Symbol: '╭'}, {X: 2, Y: 1, Symbol: '─'}, {X: 3, Y: 1, Symbol: '─'},
+		{X: 4, Y: 1, Symbol: '─'}, {X: 5, Y: 1, Symbol: '─'}, {X: 6, Y: 1, Symbol: '─'},
+		{X: 7, Y: 1, Symbol: '─'}, {X: 8, Y: 1, Symbol: '─'}, {X: 9, Y: 1, Symbol: '─'},
+		{X: 10, Y: 1, Symbol: '╮'},
+	})
+
+	// ── LEFT (arch right, poles left, field lines expand leftward) ───────────
+	// Exact horizontal mirror of original lBody (arch was left, now right).
+	// rails=X=4–9, transition=X=9 (█/▀/▄/█), corner=X=10 (▄/█/█/▀), back=X=11. X=0–3 free.
+	lBody := []*Cell{
+		{X: 4, Y: 2, Symbol: '█'}, {X: 5, Y: 2, Symbol: '█'}, {X: 6, Y: 2, Symbol: '█'},
+		{X: 7, Y: 2, Symbol: '█'}, {X: 8, Y: 2, Symbol: '█'}, {X: 9, Y: 2, Symbol: '█'}, {X: 10, Y: 2, Symbol: '▄'},
+		{X: 9, Y: 3, Symbol: '▀'}, {X: 10, Y: 3, Symbol: '█'}, {X: 11, Y: 3, Symbol: '█'},
+		{X: 9, Y: 4, Symbol: '▄'}, {X: 10, Y: 4, Symbol: '█'}, {X: 11, Y: 4, Symbol: '█'},
+		{X: 4, Y: 5, Symbol: '█'}, {X: 5, Y: 5, Symbol: '█'}, {X: 6, Y: 5, Symbol: '█'},
+		{X: 7, Y: 5, Symbol: '█'}, {X: 8, Y: 5, Symbol: '█'}, {X: 9, Y: 5, Symbol: '█'}, {X: 10, Y: 5, Symbol: '▀'},
+	}
+	l0 := cp(lBody)
+	l1 := join(lBody, []*Cell{ // inner: arc ends at X=3 (just before rail start at X=4)
+		{X: 2, Y: 3, Symbol: '╭'}, {X: 3, Y: 3, Symbol: '─'},
+		{X: 2, Y: 4, Symbol: '╰'}, {X: 3, Y: 4, Symbol: '─'},
+	})
+	l2 := join(lBody, []*Cell{ // medium
+		{X: 1, Y: 2, Symbol: '╭'}, {X: 2, Y: 2, Symbol: '─'}, {X: 3, Y: 2, Symbol: '─'},
+		{X: 1, Y: 3, Symbol: '│'},
+		{X: 1, Y: 4, Symbol: '│'},
+		{X: 1, Y: 5, Symbol: '╰'}, {X: 2, Y: 5, Symbol: '─'}, {X: 3, Y: 5, Symbol: '─'},
+	})
+	l3 := join(lBody, []*Cell{ // outer: arc spanning 2 rows beyond pole tips
+		{X: 0, Y: 1, Symbol: '╭'}, {X: 1, Y: 1, Symbol: '─'}, {X: 2, Y: 1, Symbol: '─'}, {X: 3, Y: 1, Symbol: '─'},
+		{X: 0, Y: 2, Symbol: '│'},
+		{X: 0, Y: 3, Symbol: '│'},
+		{X: 0, Y: 4, Symbol: '│'},
+		{X: 0, Y: 5, Symbol: '│'},
+		{X: 0, Y: 6, Symbol: '╰'}, {X: 1, Y: 6, Symbol: '─'}, {X: 2, Y: 6, Symbol: '─'}, {X: 3, Y: 6, Symbol: '─'},
+	})
+
+	// Frames[orientation*4 + fieldPhase]  orientation: 0=Down 1=Right 2=Up 3=Left
+	// Right slot: arch LEFT (X=0–2), poles+arcs expand RIGHT.
+	// Left  slot: arch RIGHT (X=9–11), poles+arcs expand LEFT.
+	return [][]*Cell{d0, d1, d2, d3, r0, r1, r2, r3, u0, u1, u2, u3, l0, l1, l2, l3}
 }
 
 // Dot — objectGfxDot, 1 pixel row → 1 terminal row (top-half only)
