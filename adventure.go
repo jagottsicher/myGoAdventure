@@ -39,6 +39,8 @@ func updateStates() {
 	game.RedDragon.Animate()
 	game.Bat.Animate()
 	game.Portcullis.Animate()
+	game.Sword.Animate()
+	game.Magnet.Animate()
 	termW, _ := render.Screen.Size()
 	facePlayer(game.GreenDragon, termW)
 	facePlayer(game.YellowDragon, termW)
