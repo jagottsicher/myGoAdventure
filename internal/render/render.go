@@ -34,18 +34,14 @@ func DrawStage() {
 }
 
 func DrawAllVisibleObjects() {
-	for _, obj := range game.AllObjects {
-		if obj.ZLayer == 0 {
-			DrawObject(obj)
-		}
-	}
-	for _, obj := range game.AllObjects {
-		if obj.ZLayer == 1 {
-			DrawObject(obj)
-		}
-	}
-	for _, obj := range game.AllObjects {
-		if obj.ZLayer == 2 {
+	for layer := 0; layer <= 2; layer++ {
+		for _, obj := range game.AllObjects {
+			if obj.ZLayer != layer {
+				continue
+			}
+			if obj.Room != nil && obj.Room != game.CurrentRoom {
+				continue
+			}
 			DrawObject(obj)
 		}
 	}
@@ -101,6 +97,14 @@ func InitGamestate() {
 	game.InitChalice(w, h)
 	game.InitMagnet(w, h)
 	game.InitDot(w, h)
+
+	// Passage barriers — black on black, only visible in their room.
+	blackOnBlack := tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorBlack)
+	game.InitBarrier(&world.RoomTopAccessRight, 1.0/20.0, h, blackOnBlack)    // left of yellow castle: block left side
+	game.InitBarrier(&world.RoomCorridorRight, 19.0/20.0, h, blackOnBlack)   // right of yellow castle: block right side
+	game.InitBarrier(&world.RoomSideCorridorOlive, 1.0/20.0, h, blackOnBlack)  // below white castle: block left side
+	game.InitBarrier(&world.RoomSideCorridorCyan, 19.0/20.0, h, blackOnBlack) // cyan room next to it: block right side
+
 	FillTheScreen()
 }
 
@@ -165,6 +169,48 @@ func FillTheScreen() {
 			CurrentScreen = append(CurrentScreen, &world.Cell{X: tx, Y: ty, Symbol: ch})
 		}
 	}
+}
+
+// WouldCollideWall checks whether a bounding box at (screenX, screenY) with the given
+// width/height overlaps any 'X' cell — either from the room template on screen or from
+// a barrier object belonging to the current room (checked directly, not via screen buffer
+// to avoid race conditions with the render loop).
+func WouldCollideWall(screenX, screenY, width, height int) bool {
+	termW, termH := Screen.Size()
+	// Check room walls via screen buffer.
+	for dy := 0; dy < height; dy++ {
+		for dx := 0; dx < width; dx++ {
+			px, py := screenX+dx, screenY+dy
+			if px < 0 || px >= termW || py < 0 || py >= termH {
+				continue
+			}
+			r, _, _, _ := Screen.GetContent(px, py)
+			if r == 'X' {
+				return true
+			}
+		}
+	}
+	// Check barrier objects directly (not via screen buffer).
+	for _, obj := range game.AllObjects {
+		if obj.Room == nil || obj.Room != game.CurrentRoom {
+			continue
+		}
+		if len(obj.Shape) == 0 {
+			continue
+		}
+		ox := int(obj.RelX*float64(termW)) - obj.Width/2
+		oy := int(obj.RelY*float64(termH)) - obj.Height/2
+		for _, cell := range obj.Shape {
+			if cell.Symbol != 'X' {
+				continue
+			}
+			px, py := ox+cell.X, oy+cell.Y
+			if px >= screenX && px < screenX+width && py >= screenY && py < screenY+height {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func GetWidth() int {

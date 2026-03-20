@@ -17,6 +17,25 @@ var G = Game{
 	FPS:      60,
 }
 
+var GodMode bool
+
+var (
+	playerNormalStyle = tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorPurple)
+	playerGodStyle    = tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xAA, 0x00)).Foreground(tcell.ColorPurple)
+)
+
+func ToggleGodMode() {
+	GodMode = !GodMode
+	if Player == nil {
+		return
+	}
+	if GodMode {
+		Player.Style = playerGodStyle
+	} else {
+		Player.Style = playerNormalStyle
+	}
+}
+
 type Object struct {
 	RelX         float64
 	RelY         float64
@@ -24,8 +43,9 @@ type Object struct {
 	StepY        int
 	Width        int
 	Height       int
-	Flipped      bool // mirror sprite horizontally
-	ZLayer       int  // draw order: 0=default, 1=dragon, 2=bridge
+	Flipped      bool         // mirror sprite horizontally
+	ZLayer       int          // draw order: 0=default, 1=dragon, 2=bridge
+	Room         *world.Room // if set, only rendered when CurrentRoom == Room
 	Style        tcell.Style
 	Shape        []*world.Cell
 	Frames       [][]*world.Cell // animation frames; nil = static
@@ -281,6 +301,25 @@ func InitMagnet(w, h int) {
 	AllObjects = append(AllObjects, Magnet)
 }
 
+// InitBarrier creates a 1-wide vertical 'X' barrier at the given relative position.
+// relX/relY is the center of the bounding box (Width=1, so no horizontal offset).
+// Style is typically black-on-black so the barrier is invisible but still blocks movement.
+// Because DrawObject renders 'X' onto the screen, WouldCollideWall detects them automatically.
+func InitBarrier(room *world.Room, relX float64, h int, style tcell.Style) *Object {
+	height := h
+	b := &Object{
+		RelX:   relX,
+		RelY:   0.5,
+		Width:  1,
+		Height: height,
+		Room:   room,
+		Style:  style,
+		Shape:  world.MakeBarrierGfx(height),
+	}
+	AllObjects = append(AllObjects, b)
+	return b
+}
+
 func InitDot(w, h int) {
 	Dot = &Object{
 		RelX: 0.3, RelY: 0.3, Width: 1, Height: 1,
@@ -318,7 +357,7 @@ func InitPlayer(w, h int) {
 		Height: 2,
 		StepX:  2,
 		StepY:  1,
-		Style:  tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorPurple),
+		Style:  playerNormalStyle,
 		Shape:  world.PlayerGfx,
 	}
 	AllObjects = append(AllObjects, Player)
