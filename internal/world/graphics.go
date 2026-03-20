@@ -562,6 +562,17 @@ func MakeMagnetFrames() [][]*Cell {
 	return [][]*Cell{d0, d1, d2, d3, r0, r1, r2, r3, u0, u1, u2, u3, l0, l1, l2, l3}
 }
 
+// MakeBarrierGfx returns a vertical column of 'X' with the given height.
+// Placed as an Object, these act as invisible passage blockers:
+// collision detection checks for 'X' on screen, so they block movement automatically.
+func MakeBarrierGfx(height int) []*Cell {
+	cells := make([]*Cell, height)
+	for i := 0; i < height; i++ {
+		cells[i] = &Cell{X: 0, Y: i, Symbol: 'X'}
+	}
+	return cells
+}
+
 // Dot — objectGfxDot, 1 pixel row → 1 terminal row (top-half only)
 var DotGfx = []*Cell{
 	{X: 0, Y: 0, Symbol: '▀'},
