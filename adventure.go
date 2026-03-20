@@ -23,7 +23,14 @@ func main() {
 		updateStates()
 
 		render.DrawStage()
-		render.DrawAllVisibleObjects()
+		if game.HelpMode {
+			render.DrawHelp()
+		} else {
+			render.DrawAllVisibleObjects()
+		}
+		if game.ConfirmMode {
+			render.DrawConfirm()
+		}
 		render.Screen.Show()
 
 		remainingTime := frameDuration - time.Since(startTime)

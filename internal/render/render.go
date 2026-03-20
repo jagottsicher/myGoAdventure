@@ -14,16 +14,33 @@ import (
 var Screen tcell.Screen
 var CurrentScreen []*world.Cell
 
+var auraColor = tcell.NewRGBColor(0xFF, 0x80, 0x00) // orange torch glow
+
 func DrawStage() {
 	if game.CurrentRoom == nil {
 		return
 	}
+	// Torch aura only in dark maze rooms (Foreground == Background → walls invisible).
+	darkMaze := game.CurrentRoom.Foreground == game.CurrentRoom.Background
+	termW, termH := Screen.Size()
+	var playerCX, playerCY int
+	if game.Player != nil {
+		playerCX = int(game.Player.RelX * float64(termW))
+		playerCY = int(game.Player.RelY * float64(termH))
+	}
 	for _, point := range CurrentScreen {
 		var style tcell.Style
 		if point.Symbol == 'X' || point.Symbol == 'x' {
-			style = tcell.StyleDefault.
-				Background(game.CurrentRoom.Foreground).
-				Foreground(game.CurrentRoom.Foreground)
+			wallColor := game.CurrentRoom.Foreground
+			if darkMaze && game.Player != nil {
+				dx := point.X - playerCX
+				dy := point.Y - playerCY
+				// aura: 33 wide (±16), 16 high (±8)
+				if dx >= -16 && dx <= 16 && dy >= -8 && dy <= 8 {
+					wallColor = auraColor
+				}
+			}
+			style = tcell.StyleDefault.Background(wallColor).Foreground(wallColor)
 		} else {
 			style = tcell.StyleDefault.
 				Background(game.CurrentRoom.Background).
@@ -131,7 +148,7 @@ func InitScreen() {
 
 		screenWidth, screenHeight := Screen.Size()
 		title := "An Adventure - dedicated to Warren Robinett"
-		subline := "Press [Q] to exit."
+		subline := "Press [Q] to quit  [H] for help"
 		emitStr(Screen, screenWidth/2-len(title)/2, screenHeight/2-1, tcell.StyleDefault, title)
 		emitStr(Screen, screenWidth/2-len(subline)/2, screenHeight/2, tcell.StyleDefault, subline)
 
@@ -211,6 +228,119 @@ func WouldCollideWall(screenX, screenY, width, height int) bool {
 		}
 	}
 	return false
+}
+
+func DrawHelp() {
+	termW, termH := Screen.Size()
+	bg := tcell.NewRGBColor(0xcd, 0xcd, 0xcd)
+	blank := tcell.StyleDefault.Background(bg).Foreground(bg)
+	head := tcell.StyleDefault.Background(bg).Foreground(tcell.ColorBlack)
+	body := tcell.StyleDefault.Background(bg).Foreground(tcell.ColorBlack)
+	hilite := tcell.StyleDefault.Background(bg).Foreground(tcell.NewRGBColor(0x60, 0x60, 0x60))
+	cur := tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Foreground(tcell.ColorBlack)
+
+	lx := termW/2 - 22
+	cy := termH/2 - 10
+	boxW := 72 // content max ~68 + 2 padding each side
+	boxH := 27 // content 23 lines + 2 padding each side
+
+	// Draw gray box (+2 padding around text).
+	for y := cy - 2; y < cy-2+boxH; y++ {
+		for x := lx - 2; x < lx-2+boxW; x++ {
+			if x >= 0 && x < termW && y >= 0 && y < termH {
+				Screen.SetContent(x, y, ' ', nil, blank)
+			}
+		}
+	}
+
+	put := func(y int, s string, st tcell.Style) {
+		emitStr(Screen, lx, y, st, s)
+	}
+
+	put(cy+0, "An  A D V E N T U R E  —  help", head)
+	put(cy+1, "", body)
+	put(cy+2, "Objective", hilite)
+	put(cy+3, "  Find the enchanted chalice and return it to the golden castle.", body)
+	put(cy+4, "", body)
+	put(cy+5, "Controls", hilite)
+	put(cy+6, "  [W] / [↑]   [A] / [←]   [S] / [↓]   [D] / [→]    move player", body)
+	put(cy+7, "  [H]                                toggle this help screen", body)
+	put(cy+8, "  [V]                                cycle game variation", body)
+	put(cy+9, "  [R]                                reset game", body)
+	put(cy+10, "  [Q]                                quit", body)
+	put(cy+11, "", body)
+	put(cy+12, "Game variations", hilite)
+	put(cy+13, "  1  easy    1 castle, 1 slow dragon, chalice in the open,", body)
+	put(cy+14, "             bat and bridge not in play", body)
+	put(cy+15, "  2  normal  3 castles (golden/white/black), 3 dragons, full maze,", body)
+	put(cy+16, "             all objects and keys in play", body)
+	put(cy+17, "  3  hard    like variation 2, but dragons are faster", body)
+	put(cy+18, "             and significantly more aggressive", body)
+	put(cy+19, "", body)
+	emitStr(Screen, lx, cy+20, cur, fmt.Sprintf("  Current: Variation %d  ", game.G.GameType))
+	put(cy+21, "", body)
+	put(cy+22, "  Press [H] to close", hilite)
+}
+
+func DrawConfirm() {
+	termW, termH := Screen.Size()
+	bg := tcell.NewRGBColor(0xaa, 0xaa, 0xaa)
+	blank := tcell.StyleDefault.Background(bg).Foreground(bg)
+	body := tcell.StyleDefault.Background(bg).Foreground(tcell.ColorBlack)
+	yes := tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Foreground(tcell.ColorBlack)
+
+	var line1, line2 string
+	if game.ConfirmAction == "quit" {
+		line1 = "  Quit the game?"
+		line2 = "  Are you sure?  [Y] yes   any other key: no"
+	} else {
+		line1 = "  Reset the game?"
+		line2 = "  Are you sure?  [Y] yes   any other key: no"
+	}
+	boxW := len(line2) + 8
+	boxH := 6
+	bx := termW/2 - boxW/2
+	by := termH/2 - boxH/2
+
+	for y := by; y < by+boxH; y++ {
+		for x := bx; x < bx+boxW; x++ {
+			if x >= 0 && x < termW && y >= 0 && y < termH {
+				Screen.SetContent(x, y, ' ', nil, blank)
+			}
+		}
+	}
+	emitStr(Screen, bx+2, by+1, body, line1)
+	emitStr(Screen, bx+2, by+3, body, "  Are you sure?  ")
+	emitStr(Screen, bx+2+17, by+3, yes, "[Y] yes")
+	emitStr(Screen, bx+2+25, by+3, body, "   any other key: no")
+}
+
+func ResetGame() {
+	game.HelpMode = false
+	game.GodMode = false
+	game.ResetObjects()
+	w, h := Screen.Size()
+	game.CurrentRoom = &world.RoomYellowCastle
+	game.InitPlayer(w, h)
+	game.InitYellowKey(w, h)
+	game.InitWhiteKey(w, h)
+	game.InitBlackKey(w, h)
+	game.InitGreenDragon(w, h)
+	game.InitYellowDragon(w, h)
+	game.InitRedDragon(w, h)
+	game.InitBat(w, h)
+	game.InitPortcullis(w, h)
+	game.InitBridge(w, h)
+	game.InitSword(w, h)
+	game.InitChalice(w, h)
+	game.InitMagnet(w, h)
+	game.InitDot(w, h)
+	blackOnBlack := tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorBlack)
+	game.InitBarrier(&world.RoomTopAccessRight, 1.0/20.0, h, blackOnBlack)
+	game.InitBarrier(&world.RoomCorridorRight, 19.0/20.0, h, blackOnBlack)
+	game.InitBarrier(&world.RoomSideCorridorOlive, 1.0/20.0, h, blackOnBlack)
+	game.InitBarrier(&world.RoomSideCorridorCyan, 19.0/20.0, h, blackOnBlack)
+	FillTheScreen()
 }
 
 func GetWidth() int {
