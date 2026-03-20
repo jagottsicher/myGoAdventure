@@ -26,26 +26,7 @@ func InitUserInput() {
 		for {
 			switch ev := render.Screen.PollEvent().(type) {
 			case *tcell.EventKey:
-				if ev.Key() == tcell.KeyCtrlG {
-					game.ToggleGodMode()
-					break
-				}
-				key := ev.Name()
-				keyMu.Lock()
-				pressedKeys[key] = true
-				if t, ok := keyTimers[key]; ok {
-					t.Reset(keyReleaseTimeout)
-				} else {
-					k := key
-					keyTimers[k] = time.AfterFunc(keyReleaseTimeout, func() {
-						keyMu.Lock()
-						delete(pressedKeys, k)
-						delete(keyTimers, k)
-						keyMu.Unlock()
-					})
-				}
-				keyMu.Unlock()
-				HandleUserInput()
+				handleKey(ev)
 			case *tcell.EventResize:
 				render.CurrentScreen = nil
 				render.FillTheScreen()
@@ -57,6 +38,76 @@ func InitUserInput() {
 	}()
 }
 
+func handleKey(ev *tcell.EventKey) {
+	// Confirmation dialog takes priority.
+	if game.ConfirmMode {
+		if ev.Key() == tcell.KeyRune && (ev.Rune() == 'y' || ev.Rune() == 'Y') {
+			action := game.ConfirmAction
+			game.CancelConfirm()
+			if action == "quit" {
+				render.Screen.Fini()
+				clearScreen()
+				fmt.Println("Bye.")
+				os.Exit(0)
+			} else if action == "reset" {
+				render.ResetGame()
+			}
+		} else {
+			game.CancelConfirm()
+		}
+		return
+	}
+
+	// Any key closes the help screen.
+	if game.HelpMode {
+		game.ToggleHelp()
+		render.FillTheScreen()
+		return
+	}
+
+	// One-shot special keys.
+	switch {
+	case ev.Key() == tcell.KeyCtrlG:
+		game.ToggleGodMode()
+		return
+	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'h' || ev.Rune() == 'H'):
+		game.ToggleHelp()
+		render.FillTheScreen()
+		return
+	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'v' || ev.Rune() == 'V'):
+		game.CycleVariation()
+		return
+	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'r' || ev.Rune() == 'R'):
+		game.StartConfirm("reset")
+		return
+	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'q' || ev.Rune() == 'Q'):
+		game.StartConfirm("quit")
+		return
+	}
+
+	if game.HelpMode {
+		return
+	}
+
+	// Movement keys via held-key system.
+	key := ev.Name()
+	keyMu.Lock()
+	pressedKeys[key] = true
+	if t, ok := keyTimers[key]; ok {
+		t.Reset(keyReleaseTimeout)
+	} else {
+		k := key
+		keyTimers[k] = time.AfterFunc(keyReleaseTimeout, func() {
+			keyMu.Lock()
+			delete(pressedKeys, k)
+			delete(keyTimers, k)
+			keyMu.Unlock()
+		})
+	}
+	keyMu.Unlock()
+	HandleUserInput()
+}
+
 func HandleUserInput() {
 	keyMu.Lock()
 	keys := make(map[string]bool, len(pressedKeys))
@@ -65,23 +116,14 @@ func HandleUserInput() {
 	}
 	keyMu.Unlock()
 
-	if keys["Rune[q]"] {
-		render.Screen.Fini()
-		clearScreen()
-		fmt.Println("Bye.")
-		os.Exit(0)
-	}
-
 	w, h := render.Screen.Size()
 	roomChanged := false
 
-	// playerScreenXY returns the player bounding box top-left in screen coords.
 	playerScreenXY := func() (int, int) {
 		return int(game.Player.RelX*float64(w)) - game.Player.Width/2,
 			int(game.Player.RelY*float64(h)) - game.Player.Height/2
 	}
 
-	// canMove checks wall collision unless GodMode is active.
 	canMove := func(candX, candY int) bool {
 		if game.GodMode {
 			return true
@@ -128,7 +170,6 @@ func HandleUserInput() {
 	if keys["Rune[a]"] || keys["Left"] {
 		anchorX := int(game.Player.RelX * float64(w))
 		_, candY := playerScreenXY()
-		// Try full step (2), fall back to 1 — integer arithmetic only.
 		newAnchorX := anchorX - game.Player.StepX
 		candX := newAnchorX - game.Player.Width/2
 		if !canMove(candX, candY) {
@@ -152,7 +193,6 @@ func HandleUserInput() {
 	if keys["Rune[d]"] || keys["Right"] {
 		anchorX := int(game.Player.RelX * float64(w))
 		_, candY := playerScreenXY()
-		// Try full step (2), fall back to 1 — integer arithmetic only.
 		newAnchorX := anchorX + game.Player.StepX
 		candX := newAnchorX - game.Player.Width/2
 		if !canMove(candX, candY) {

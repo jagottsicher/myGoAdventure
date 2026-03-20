@@ -19,6 +19,40 @@ var G = Game{
 
 var GodMode bool
 
+var HelpMode bool
+var helpPreviousRoom *world.Room
+
+func ResetObjects() {
+	AllObjects = nil
+}
+
+var ConfirmMode bool
+var ConfirmAction string // "quit" or "reset"
+
+func StartConfirm(action string) {
+	ConfirmMode = true
+	ConfirmAction = action
+}
+
+func CancelConfirm() {
+	ConfirmMode = false
+	ConfirmAction = ""
+}
+
+func CycleVariation() {
+	G.GameType = G.GameType%3 + 1
+}
+
+func ToggleHelp() {
+	HelpMode = !HelpMode
+	if HelpMode {
+		helpPreviousRoom = CurrentRoom
+		CurrentRoom = &world.RoomSplashScreen
+	} else {
+		CurrentRoom = helpPreviousRoom
+	}
+}
+
 var (
 	playerNormalStyle = tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorPurple)
 	playerGodStyle    = tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xAA, 0x00)).Foreground(tcell.ColorPurple)
