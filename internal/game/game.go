@@ -210,8 +210,10 @@ func DropCarried() {
 var (
 	batFedUpTimer = 0xff  // 0xff = hunting; 0..254 = carrying (counts up to 0xff)
 	BatCarrying   *Object // object the bat is currently carrying (nil = hunting)
-	batMovX       int     // current X velocity in terminal cols (set while hunting)
-	batMovY       int     // current Y velocity in terminal rows
+	batDirX       int     // movement direction: -1, 0, or +1
+	batDirY       int     // movement direction: -1, 0, or +1
+	batAccX       float64 // sub-cell accumulator for X (avoids too-fast snapping)
+	batAccY       float64 // sub-cell accumulator for Y
 )
 
 func batPriorityList() []*Object {
@@ -254,19 +256,23 @@ func UpdateBat(termW, termH int) {
 			oTop := int(obj.RelY*float64(termH)) - obj.Height/2
 
 			// Steer toward target center.
-			if batLeft+Bat.Width/2 < oLeft+obj.Width/2 {
-				batMovX = 2
-			} else if batLeft+Bat.Width/2 > oLeft+obj.Width/2 {
-				batMovX = -2
+			batCX := batLeft + Bat.Width/2
+			objCX := oLeft + obj.Width/2
+			if batCX < objCX {
+				batDirX = 1
+			} else if batCX > objCX {
+				batDirX = -1
 			} else {
-				batMovX = 0
+				batDirX = 0
 			}
-			if batTop+Bat.Height/2 < oTop+obj.Height/2 {
-				batMovY = 1
-			} else if batTop+Bat.Height/2 > oTop+obj.Height/2 {
-				batMovY = -1
+			batCY := batTop + Bat.Height/2
+			objCY := oTop + obj.Height/2
+			if batCY < objCY {
+				batDirY = 1
+			} else if batCY > objCY {
+				batDirY = -1
 			} else {
-				batMovY = 0
+				batDirY = 0
 			}
 
 			// Pick up if expanded bat extents overlap target.
@@ -283,11 +289,20 @@ func UpdateBat(termW, termH int) {
 		}
 	}
 
-	// Apply current velocity (bat always moves, even while carrying).
+	// Apply movement via fractional accumulators.
+	// Original bat speed: ±3 Atari px/frame on 160×128 screen.
+	// Scale proportionally to terminal size → same traversal time as original.
+	batAccX += 3.0 * float64(termW) / 160.0 * float64(batDirX)
+	batAccY += 3.0 * float64(termH) / 128.0 * float64(batDirY)
+	stepX := int(batAccX)
+	stepY := int(batAccY)
+	batAccX -= float64(stepX)
+	batAccY -= float64(stepY)
+
 	batLeft := int(Bat.RelX*float64(termW)) - Bat.Width/2
 	batTop := int(Bat.RelY*float64(termH)) - Bat.Height/2
-	batLeft += batMovX
-	batTop += batMovY
+	batLeft += stepX
+	batTop += stepY
 
 	// Room transitions.
 	if batLeft < 0 {
@@ -296,7 +311,8 @@ func UpdateBat(termW, termH int) {
 			batLeft = termW - Bat.Width
 		} else {
 			batLeft = 0
-			batMovX = 0
+			batDirX = 0
+			batAccX = 0
 		}
 	} else if batLeft+Bat.Width > termW {
 		if Bat.Room != nil && Bat.Room.Right != nil {
@@ -304,7 +320,8 @@ func UpdateBat(termW, termH int) {
 			batLeft = 0
 		} else {
 			batLeft = termW - Bat.Width
-			batMovX = 0
+			batDirX = 0
+			batAccX = 0
 		}
 	}
 	if batTop < 0 {
@@ -313,7 +330,8 @@ func UpdateBat(termW, termH int) {
 			batTop = termH - Bat.Height
 		} else {
 			batTop = 0
-			batMovY = 0
+			batDirY = 0
+			batAccY = 0
 		}
 	} else if batTop+Bat.Height > termH {
 		if Bat.Room != nil && Bat.Room.Down != nil {
@@ -321,7 +339,8 @@ func UpdateBat(termW, termH int) {
 			batTop = 0
 		} else {
 			batTop = termH - Bat.Height
-			batMovY = 0
+			batDirY = 0
+			batAccY = 0
 		}
 	}
 
@@ -548,13 +567,15 @@ func InitBat(w, h int) {
 	}
 	AllObjects = append(AllObjects, Bat)
 	// Reset bat AI state on every init/reset.
-	// C++ V2 table line: OBJECT_BAT, 0x02, 0x20, 0x20, 0x00, 0, -3
-	// movementY=-3 in Atari coords = moving downward (decreasing y = toward roomDown).
-	// In terminal rows (y increases downward) that maps to +1 row/frame.
+	// C++ V2 table: OBJECT_BAT, room=0x02, movementX=0, movementY=-3
+	// movementY=-3 in Atari coords = moving downward (low y = roomDown in Atari).
+	// In terminal rows (y increases downward) that maps to batDirY=+1.
 	batFedUpTimer = 0xff
 	BatCarrying = nil
-	batMovX = 0
-	batMovY = 1
+	batDirX = 0
+	batDirY = 1
+	batAccX = 0
+	batAccY = 0
 }
 
 func InitPortcullises(w, h int) {
