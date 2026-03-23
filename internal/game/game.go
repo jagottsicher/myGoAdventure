@@ -563,7 +563,7 @@ func InitBat(w, h int) {
 		Style:        tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:        frames[0],
 		Frames:       frames,
-		AnimInterval: 4, // toggle every 4 frames — matches original flapTimer
+		AnimInterval: 12, // ~5 Hz wing flap — visually comfortable in terminal
 	}
 	AllObjects = append(AllObjects, Bat)
 	// Reset bat AI state on every init/reset.
