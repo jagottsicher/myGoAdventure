@@ -544,14 +544,17 @@ func InitBat(w, h int) {
 		Style:        tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:        frames[0],
 		Frames:       frames,
-		AnimInterval: 1, // toggle every frame — matches original
+		AnimInterval: 4, // toggle every 4 frames — matches original flapTimer
 	}
 	AllObjects = append(AllObjects, Bat)
 	// Reset bat AI state on every init/reset.
+	// C++ V2 table line: OBJECT_BAT, 0x02, 0x20, 0x20, 0x00, 0, -3
+	// movementY=-3 in Atari coords = moving downward (decreasing y = toward roomDown).
+	// In terminal rows (y increases downward) that maps to +1 row/frame.
 	batFedUpTimer = 0xff
 	BatCarrying = nil
 	batMovX = 0
-	batMovY = 0
+	batMovY = 1
 }
 
 func InitPortcullises(w, h int) {
