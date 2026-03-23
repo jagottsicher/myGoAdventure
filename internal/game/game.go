@@ -687,6 +687,75 @@ func InitMagnet(w, h int) {
 		BodyOffsets:      [][2]int{{6, 2}, {4, 4}, {6, 6}, {8, 4}},
 	}
 	AllObjects = append(AllObjects, Magnet)
+	magnetAccX = 0
+	magnetAccY = 0
+}
+
+// Magnet attraction state.
+var (
+	magnetAccX float64
+	magnetAccY float64
+)
+
+func magnetPriorityList() []*Object {
+	return []*Object{YellowKey, WhiteKey, BlackKey, Sword, Bridge, Chalice}
+}
+
+// UpdateMagnet attracts the highest-priority eligible object in the magnet's room
+// toward the magnet at ±1 Atari px/frame (same proportional speed as bat).
+// Only the player's CarriedObject is excluded (matches C++ original).
+func UpdateMagnet(termW, termH int) {
+	if Magnet == nil {
+		return
+	}
+
+	// Magnet anchor in screen coordinates.
+	mCX := int(Magnet.RelX * float64(termW))
+	mTop := int(Magnet.RelY*float64(termH)) - Magnet.Height/2
+	// Objects are pulled to the bottom-center of the magnet (C++: y - gfxData[0]).
+	targetX := mCX
+	targetY := mTop + Magnet.Height
+
+	for _, obj := range magnetPriorityList() {
+		if obj == nil || obj == CarriedObject {
+			continue
+		}
+		if obj.Room != Magnet.Room {
+			continue
+		}
+
+		oCX := int(obj.RelX * float64(termW))
+		oCY := int(obj.RelY * float64(termH))
+
+		var dX, dY int
+		if oCX < targetX {
+			dX = 1
+		} else if oCX > targetX {
+			dX = -1
+		}
+		if oCY < targetY {
+			dY = 1
+		} else if oCY > targetY {
+			dY = -1
+		}
+
+		magnetAccX += float64(termW) / 160.0 * float64(dX)
+		magnetAccY += float64(termH) / 128.0 * float64(dY)
+		stepX := int(magnetAccX)
+		stepY := int(magnetAccY)
+		magnetAccX -= float64(stepX)
+		magnetAccY -= float64(stepY)
+
+		if stepX != 0 || stepY != 0 {
+			oLeft := int(obj.RelX*float64(termW)) - obj.Width/2
+			oTop := int(obj.RelY*float64(termH)) - obj.Height/2
+			oLeft += stepX
+			oTop += stepY
+			obj.RelX = float64(oLeft+obj.Width/2) / float64(termW)
+			obj.RelY = float64(oTop+obj.Height/2) / float64(termH)
+		}
+		break // only the highest-priority object per frame
+	}
 }
 
 // InitBarrier creates a 1-wide vertical 'X' barrier at the given relative position.
