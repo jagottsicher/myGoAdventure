@@ -739,8 +739,10 @@ func UpdateMagnet(termW, termH int) {
 			dY = -1
 		}
 
-		magnetAccX += float64(termW) / 160.0 * float64(dX)
-		magnetAccY += float64(termH) / 128.0 * float64(dY)
+		// Original: 1 Atari px/frame (bat moves at 3 px/frame, so magnet is 3× slower).
+		// Bat uses multiplier 1.0; magnet uses 1/3 of that = 0.33.
+		magnetAccX += 0.33 * float64(termW) / 160.0 * float64(dX)
+		magnetAccY += 0.33 * float64(termH) / 128.0 * float64(dY)
 		stepX := int(magnetAccX)
 		stepY := int(magnetAccY)
 		magnetAccX -= float64(stepX)
