@@ -290,10 +290,10 @@ func UpdateBat(termW, termH int) {
 	}
 
 	// Apply movement via fractional accumulators.
-	// Original bat speed: ±3 Atari px/frame on 160×128 screen.
-	// Scale proportionally to terminal size → same traversal time as original.
-	batAccX += 3.0 * float64(termW) / 160.0 * float64(batDirX)
-	batAccY += 3.0 * float64(termH) / 128.0 * float64(batDirY)
+	// Scaled for terminal: 1 Atari px/frame → ~2.7s to cross screen width.
+	// (Original was 3px/frame = 0.89s, but that is too fast in a terminal.)
+	batAccX += 1.0 * float64(termW) / 160.0 * float64(batDirX)
+	batAccY += 1.0 * float64(termH) / 128.0 * float64(batDirY)
 	stepX := int(batAccX)
 	stepY := int(batAccY)
 	batAccX -= float64(stepX)
