@@ -687,15 +687,11 @@ func InitMagnet(w, h int) {
 		BodyOffsets:      [][2]int{{6, 2}, {4, 4}, {6, 6}, {8, 4}},
 	}
 	AllObjects = append(AllObjects, Magnet)
-	magnetAccX = 0
-	magnetAccY = 0
+	magnetTick = 0
 }
 
 // Magnet attraction state.
-var (
-	magnetAccX float64
-	magnetAccY float64
-)
+var magnetTick int
 
 func magnetPriorityList() []*Object {
 	return []*Object{YellowKey, WhiteKey, BlackKey, Sword, Bridge, Chalice}
@@ -727,32 +723,23 @@ func UpdateMagnet(termW, termH int) {
 		oCX := int(obj.RelX * float64(termW))
 		oCY := int(obj.RelY * float64(termH))
 
-		var dX, dY int
-		if oCX < targetX {
-			dX = 1
-		} else if oCX > targetX {
-			dX = -1
-		}
-		if oCY < targetY {
-			dY = 1
-		} else if oCY > targetY {
-			dY = -1
-		}
-
-		// Original: 1 Atari px/frame (bat moves at 3 px/frame, so magnet is 3× slower).
-		// Bat uses multiplier 1.0; magnet uses 1/3 of that = 0.33.
-		magnetAccX += 0.33 * float64(termW) / 160.0 * float64(dX)
-		magnetAccY += 0.33 * float64(termH) / 128.0 * float64(dY)
-		stepX := int(magnetAccX)
-		stepY := int(magnetAccY)
-		magnetAccX -= float64(stepX)
-		magnetAccY -= float64(stepY)
-
-		if stepX != 0 || stepY != 0 {
+		// Move object 1 cell per axis every 4 frames toward the target.
+		// Using a tick gate avoids accumulator oscillation when the magnet
+		// moves with the player.
+		magnetTick = (magnetTick + 1) % 4
+		if magnetTick == 0 {
 			oLeft := int(obj.RelX*float64(termW)) - obj.Width/2
 			oTop := int(obj.RelY*float64(termH)) - obj.Height/2
-			oLeft += stepX
-			oTop += stepY
+			if oCX < targetX {
+				oLeft++
+			} else if oCX > targetX {
+				oLeft--
+			}
+			if oCY < targetY {
+				oTop++
+			} else if oCY > targetY {
+				oTop--
+			}
 			obj.RelX = float64(oLeft+obj.Width/2) / float64(termW)
 			obj.RelY = float64(oTop+obj.Height/2) / float64(termH)
 		}
