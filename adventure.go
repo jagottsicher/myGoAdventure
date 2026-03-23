@@ -58,6 +58,7 @@ func updateStates() {
 	game.TryPickup(termW, termH)
 	game.UpdateCarriedObject(termW, termH)
 	game.UpdateBat(termW, termH)
+	game.UpdateMagnet(termW, termH)
 	facePlayer(game.GreenDragon, termW)
 	facePlayer(game.YellowDragon, termW)
 	facePlayer(game.RedDragon, termW)
