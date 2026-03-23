@@ -223,7 +223,21 @@ func batPriorityList() []*Object {
 // UpdateBat drives bat AI: hunting, carrying, room transitions.
 // Call once per game tick from adventure.go updateStates().
 func UpdateBat(termW, termH int) {
-	if Bat == nil || Bat == CarriedObject {
+	if Bat == nil {
+		return
+	}
+
+	// When the player is carrying the bat: skip AI movement but still update
+	// the bat's own carried object so it travels with the bat.
+	if Bat == CarriedObject {
+		if BatCarrying != nil {
+			batLeft := int(Bat.RelX*float64(termW)) - Bat.Width/2
+			batTop := int(Bat.RelY*float64(termH)) - Bat.Height/2
+			cLeft := batLeft + Bat.Width
+			BatCarrying.RelX = float64(cLeft+BatCarrying.Width/2) / float64(termW)
+			BatCarrying.RelY = float64(batTop+BatCarrying.Height/2) / float64(termH)
+			BatCarrying.Room = Bat.Room
+		}
 		return
 	}
 
