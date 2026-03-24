@@ -318,14 +318,14 @@ func UpdateBat(termW, termH int) {
 	batLeft += stepX
 	batTop += stepY
 
-	// Room transitions.
+	// Room transitions: cross into adjacent room or bounce off dead-end walls.
 	if batLeft < 0 {
 		if Bat.Room != nil && Bat.Room.Left != nil {
 			Bat.Room = Bat.Room.Left
 			batLeft = termW - Bat.Width
 		} else {
 			batLeft = 0
-			batDirX = 0
+			batDirX = 1 // bounce
 			batAccX = 0
 		}
 	} else if batLeft+Bat.Width > termW {
@@ -334,7 +334,7 @@ func UpdateBat(termW, termH int) {
 			batLeft = 0
 		} else {
 			batLeft = termW - Bat.Width
-			batDirX = 0
+			batDirX = -1 // bounce
 			batAccX = 0
 		}
 	}
@@ -344,7 +344,7 @@ func UpdateBat(termW, termH int) {
 			batTop = termH - Bat.Height
 		} else {
 			batTop = 0
-			batDirY = 0
+			batDirY = 1 // bounce
 			batAccY = 0
 		}
 	} else if batTop+Bat.Height > termH {
@@ -353,7 +353,7 @@ func UpdateBat(termW, termH int) {
 			batTop = 0
 		} else {
 			batTop = termH - Bat.Height
-			batDirY = 0
+			batDirY = -1 // bounce
 			batAccY = 0
 		}
 	}
@@ -428,6 +428,12 @@ type Object struct {
 	Paused    bool // if true, Animate() does nothing (animation frozen)
 	Solid     bool // if true, WouldCollideWall treats all cells as blocking
 	Carryable bool // if true, player can pick this up
+
+	// Portcullis state machine (mirrors C++ Portals() logic).
+	// PortState is an index into portStatesSeq (0–23).
+	// 0 = closed/stopped, 12 = fully open/stopped, >22 → permanent unlock.
+	PortState int
+	Unlocked  bool // permanently open — gate never becomes solid again
 
 	animTick  int
 	animFrame int // used as orientationFrame in flat mode
@@ -778,32 +784,63 @@ func InitDot(w, h int) {
 	AllObjects = append(AllObjects, Dot)
 }
 
+// portStatesSeq mirrors C++ portStates[]: maps PortState index (0–23) to graphic state (0–6).
+// 0 = fully closed, 6 = fully open.
+// Sequence: opens from state 1→12, holds at 12, closes from 13→22, permanent unlock at >22.
+var portStatesSeq = [24]int{0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1}
+
+// CollisionCheckObjects returns true if the bounding boxes of a and b overlap.
+func CollisionCheckObjects(a, b *Object, termW, termH int) bool {
+	ax := int(a.RelX*float64(termW)) - a.Width/2
+	ay := int(a.RelY*float64(termH)) - a.Height/2
+	bx := int(b.RelX*float64(termW)) - b.Width/2
+	by := int(b.RelY*float64(termH)) - b.Height/2
+	return ax < bx+b.Width && ax+a.Width > bx && ay < by+b.Height && ay+a.Height > by
+}
+
 // UpdatePortcullis drives the open/close state machine for one portcullis.
-// key is the matching key object (YellowKey, WhiteKey, BlackKey).
-// Opens when key is in the same room; stays open once fully open.
-func UpdatePortcullis(port *Object, key *Object) {
+// Mirrors C++ Portals() logic exactly:
+//   - Trigger when key overlaps gate (both in same room) and gate is stopped (state 0 or 12).
+//   - Auto-increment every tick while animating (state != 0 and != 12).
+//   - At state > 22: permanent unlock — gate stays open forever.
+func UpdatePortcullis(port, key *Object, termW, termH int) {
 	if port == nil || key == nil {
 		return
 	}
-	fullyOpen := port.animFrame == len(port.Frames)-1
 
-	if fullyOpen {
-		// Already open — keep paused, not solid.
-		port.Paused = true
+	if port.Unlocked {
 		port.Solid = false
 		return
 	}
 
-	keyPresent := key.Room == port.Room
-	if keyPresent {
-		// Key is here — animate open.
-		port.Paused = false
-		port.Solid = true // still solid until fully open
-	} else {
-		// Key gone before fully open — freeze.
-		port.Paused = true
-		port.Solid = true
+	// Trigger: key in same room as gate, gate standing still, key touches gate.
+	if key.Room == port.Room &&
+		(port.PortState == 0 || port.PortState == 12) &&
+		CollisionCheckObjects(port, key, termW, termH) {
+		port.PortState++
 	}
+
+	// Auto-increment while animating.
+	if port.PortState != 0 && port.PortState != 12 {
+		port.PortState++
+	}
+
+	// Permanent unlock after full open+close cycle.
+	if port.PortState > 22 {
+		port.PortState = 0
+		port.Unlocked = true
+		port.Solid = false
+		return
+	}
+
+	// Map graphic state (0–6) to frame index.
+	gfxState := portStatesSeq[port.PortState]
+	numFrames := len(port.Frames)
+	if numFrames > 1 {
+		frame := gfxState * (numFrames - 1) / 6
+		port.Shape = port.Frames[frame]
+	}
+	port.Solid = gfxState < 6 // passable only when fully open
 }
 
 func ReinitOnResize(w, h int) {
@@ -832,7 +869,9 @@ func ReinitOnResize(w, h int) {
 		p.Width = doorWidth
 		p.Height = portHeight
 		p.Frames = frames
-		p.Shape = frames[p.animFrame]
+		gfxState := portStatesSeq[p.PortState]
+		frame := gfxState * (len(frames) - 1) / 6
+		p.Shape = frames[frame]
 	}
 }
 
