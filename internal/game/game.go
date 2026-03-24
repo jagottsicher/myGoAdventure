@@ -212,8 +212,7 @@ var (
 	BatCarrying   *Object // object the bat is currently carrying (nil = hunting)
 	batDirX       int     // movement direction: -1, 0, or +1
 	batDirY       int     // movement direction: -1, 0, or +1
-	batAccX       float64 // sub-cell accumulator for X (avoids too-fast snapping)
-	batAccY       float64 // sub-cell accumulator for Y
+	batTick       int     // tick counter for movement gate
 )
 
 func batPriorityList() []*Object {
@@ -303,20 +302,17 @@ func UpdateBat(termW, termH int) {
 		}
 	}
 
-	// Apply movement via fractional accumulators.
-	// Scaled for terminal: 1 Atari px/frame → ~2.7s to cross screen width.
-	// (Original was 3px/frame = 0.89s, but that is too fast in a terminal.)
-	batAccX += 1.0 * float64(termW) / 160.0 * float64(batDirX)
-	batAccY += 1.0 * float64(termH) / 128.0 * float64(batDirY)
-	stepX := int(batAccX)
-	stepY := int(batAccY)
-	batAccX -= float64(stepX)
-	batAccY -= float64(stepY)
+	// Move 1 cell per axis every 4 frames (15 steps/s at 60 fps).
+	// Tick-gate avoids accumulator sign-truncation issues with Go's int().
+	batTick = (batTick + 1) % 4
 
 	batLeft := int(Bat.RelX*float64(termW)) - Bat.Width/2
 	batTop := int(Bat.RelY*float64(termH)) - Bat.Height/2
-	batLeft += stepX
-	batTop += stepY
+
+	if batTick == 0 {
+		batLeft += batDirX
+		batTop += batDirY
+	}
 
 	// Room transitions: cross into adjacent room or bounce off dead-end walls.
 	if batLeft < 0 {
@@ -326,7 +322,6 @@ func UpdateBat(termW, termH int) {
 		} else {
 			batLeft = 0
 			batDirX = 1 // bounce
-			batAccX = 0
 		}
 	} else if batLeft+Bat.Width > termW {
 		if Bat.Room != nil && Bat.Room.Right != nil {
@@ -335,7 +330,6 @@ func UpdateBat(termW, termH int) {
 		} else {
 			batLeft = termW - Bat.Width
 			batDirX = -1 // bounce
-			batAccX = 0
 		}
 	}
 	if batTop < 0 {
@@ -345,7 +339,6 @@ func UpdateBat(termW, termH int) {
 		} else {
 			batTop = 0
 			batDirY = 1 // bounce
-			batAccY = 0
 		}
 	} else if batTop+Bat.Height > termH {
 		if Bat.Room != nil && Bat.Room.Down != nil {
@@ -354,7 +347,6 @@ func UpdateBat(termW, termH int) {
 		} else {
 			batTop = termH - Bat.Height
 			batDirY = -1 // bounce
-			batAccY = 0
 		}
 	}
 
@@ -594,8 +586,7 @@ func InitBat(w, h int) {
 	BatCarrying = nil
 	batDirX = 0
 	batDirY = 1
-	batAccX = 0
-	batAccY = 0
+	batTick = 0
 }
 
 func InitPortcullises(w, h int) {
