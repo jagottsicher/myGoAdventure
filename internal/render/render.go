@@ -50,6 +50,22 @@ func DrawStage() {
 	}
 }
 
+// DrawDebugBat draws bat state on the last row — temporary debug aid, remove after bat is confirmed working.
+func DrawDebugBat() {
+	termW, termH := Screen.Size()
+	if game.Bat == nil {
+		return
+	}
+	msg := game.BatDebugState()
+	style := tcell.StyleDefault.Foreground(tcell.ColorYellow).Background(tcell.ColorDarkBlue)
+	for i, r := range msg {
+		if i >= termW {
+			break
+		}
+		Screen.SetContent(i, termH-1, r, nil, style)
+	}
+}
+
 func DrawAllVisibleObjects() {
 	for layer := 0; layer <= 2; layer++ {
 		for _, obj := range game.AllObjects {
@@ -108,7 +124,7 @@ func InitGamestate() {
 	game.InitYellowDragon(w, h)
 	game.InitRedDragon(w, h)
 	game.InitBat(w, h)
-	game.InitPortcullis(w, h)
+	game.InitPortcullises(w, h)
 	game.InitBridge(w, h)
 	game.InitSword(w, h)
 	game.InitChalice(w, h)
@@ -207,7 +223,7 @@ func WouldCollideWall(screenX, screenY, width, height int) bool {
 			}
 		}
 	}
-	// Check barrier objects directly (not via screen buffer).
+	// Check barrier and solid objects directly (not via screen buffer).
 	for _, obj := range game.AllObjects {
 		if obj.Room == nil || obj.Room != game.CurrentRoom {
 			continue
@@ -218,7 +234,9 @@ func WouldCollideWall(screenX, screenY, width, height int) bool {
 		ox := int(obj.RelX*float64(termW)) - obj.Width/2
 		oy := int(obj.RelY*float64(termH)) - obj.Height/2
 		for _, cell := range obj.Shape {
-			if cell.Symbol != 'X' {
+			// Barriers: only 'X' cells block.
+			// Solid objects (e.g. closed portcullis): all cells block.
+			if !obj.Solid && cell.Symbol != 'X' {
 				continue
 			}
 			px, py := ox+cell.X, oy+cell.Y
@@ -318,6 +336,7 @@ func DrawConfirm() {
 func ResetGame() {
 	game.HelpMode = false
 	game.GodMode = false
+	game.CarriedObject = nil
 	game.ResetObjects()
 	w, h := Screen.Size()
 	game.CurrentRoom = &world.RoomYellowCastle
@@ -329,7 +348,7 @@ func ResetGame() {
 	game.InitYellowDragon(w, h)
 	game.InitRedDragon(w, h)
 	game.InitBat(w, h)
-	game.InitPortcullis(w, h)
+	game.InitPortcullises(w, h)
 	game.InitBridge(w, h)
 	game.InitSword(w, h)
 	game.InitChalice(w, h)
@@ -360,4 +379,155 @@ func emitStr(s tcell.Screen, x, y int, style tcell.Style, str string) {
 		s.SetContent(x, y, c, comb, style)
 		x += w
 	}
+}
+
+// DrawSpecialRooms renders UI overlays for rooms with special content.
+// Must be called after DrawAllVisibleObjects, only when not in HelpMode.
+func DrawSpecialRooms() {
+	switch game.CurrentRoom {
+	case &world.RoomNumberRoom:
+		drawNameRoom()
+	}
+}
+
+// Half-block digit designs (6 chars wide, 4 rows tall).
+// Each row encodes two pixel rows via ▀ ▄ █ and space.
+var digitRows = map[int][4]string{
+	1: {" ▄██  ", "  ██  ", "  ██  ", " ▀▀▀▀▀"},
+	2: {"▄▀▀▀▀▄", " ▄▄▄▄▀", "▄▀    ", "▀▀▀▀▀▀"},
+	3: {"▄▀▀▀▀▄", " ▄▄▄▄▀", "▄    █", " ▀▀▀▀ "},
+}
+
+var (
+	colorEasy   = tcell.NewRGBColor(0xFF, 0xD8, 0x4C) // gold
+	colorNormal = tcell.NewRGBColor(0x88, 0xCC, 0xFF) // sky blue
+	colorHard   = tcell.NewRGBColor(0xFF, 0x55, 0x44) // red
+
+	dimEasy   = tcell.NewRGBColor(0x66, 0x55, 0x1C)
+	dimNormal = tcell.NewRGBColor(0x33, 0x55, 0x77)
+	dimHard   = tcell.NewRGBColor(0x66, 0x22, 0x1C)
+)
+
+func drawNumberRoom() {
+	termW, termH := Screen.Size()
+	bg := game.CurrentRoom.Background
+
+	cols := []struct {
+		n     int
+		label string
+		on    tcell.Color
+		off   tcell.Color
+	}{
+		{1, "easy", colorEasy, dimEasy},
+		{2, "normal", colorNormal, dimNormal},
+		{3, "hard", colorHard, dimHard},
+	}
+
+	const digitW = 6
+	const gap = 10
+	totalW := 3*digitW + 2*gap
+	startX := termW/2 - totalW/2
+	startY := termH/2 - 5
+
+	title := "select  variation"
+	ts := tcell.StyleDefault.Background(bg).Foreground(tcell.NewRGBColor(0x88, 0x88, 0x88))
+	emitStr(Screen, termW/2-len(title)/2, startY-2, ts, title)
+
+	for i, col := range cols {
+		x := startX + i*(digitW+gap)
+		selected := uint8(i+1) == game.G.GameType
+		fg := col.off
+		if selected {
+			fg = col.on
+		}
+		ds := tcell.StyleDefault.Background(bg).Foreground(fg)
+		for row, line := range digitRows[col.n] {
+			emitStr(Screen, x, startY+row, ds, line)
+		}
+		// label row
+		ls := tcell.StyleDefault.Background(bg).Foreground(fg)
+		label := col.label
+		if selected {
+			label = "▶ " + label
+		} else {
+			label = "  " + label
+		}
+		emitStr(Screen, x-1, startY+5, ls, label)
+	}
+}
+
+func drawNameRoom() {
+	termW, termH := Screen.Size()
+	bg := game.CurrentRoom.Background
+
+	gold := tcell.NewRGBColor(0xFF, 0xD8, 0x4C)
+	goBlue := tcell.NewRGBColor(0x00, 0xAD, 0xD8)
+	white := tcell.NewRGBColor(0xFF, 0xFF, 0xFF)
+	orange := tcell.NewRGBColor(0xFF, 0x80, 0x00)
+	dim := tcell.NewRGBColor(0x88, 0x88, 0x88)
+	boxBg := tcell.NewRGBColor(0x18, 0x00, 0x30)
+
+	inner := []struct {
+		text  string
+		color tcell.Color
+	}{
+		{"", gold},
+		{"   An  A D V E N T U R E   ", gold},
+		{"", gold},
+		{"  ═══════════════════════  ", orange},
+		{"", gold},
+		{"   ported to Go", goBlue},
+		{"   by Jens Schendel", white},
+		{"", gold},
+		{"   dedicated to", dim},
+		{"   Warren Robinett", orange},
+		{"", gold},
+	}
+
+	boxW := 0
+	for _, l := range inner {
+		if len(l.text) > boxW {
+			boxW = len(l.text)
+		}
+	}
+	boxW += 4
+	boxH := len(inner) + 4
+
+	bx := termW/2 - boxW/2
+	by := termH/2 - boxH/2
+
+	// Fill box background
+	fill := tcell.StyleDefault.Background(boxBg).Foreground(boxBg)
+	for y := by; y < by+boxH; y++ {
+		for x := bx; x < bx+boxW; x++ {
+			if x >= 0 && x < termW && y >= 0 && y < termH {
+				Screen.SetContent(x, y, ' ', nil, fill)
+			}
+		}
+	}
+
+	// Box border (gold, box-drawing chars)
+	bord := tcell.StyleDefault.Background(boxBg).Foreground(gold)
+	emitStr(Screen, bx, by, bord, "╔"+repeatStr("═", boxW-2)+"╗")
+	emitStr(Screen, bx, by+boxH-1, bord, "╚"+repeatStr("═", boxW-2)+"╝")
+	for y := by + 1; y < by+boxH-1; y++ {
+		Screen.SetContent(bx, y, '║', nil, bord)
+		Screen.SetContent(bx+boxW-1, y, '║', nil, bord)
+	}
+
+	// Content lines
+	for i, l := range inner {
+		st := tcell.StyleDefault.Background(boxBg).Foreground(l.color)
+		emitStr(Screen, bx+2, by+2+i, st, l.text)
+	}
+
+	_ = bg // room bg visible through castle graphic behind the box
+}
+
+func repeatStr(s string, n int) string {
+	out := ""
+	for i := 0; i < n; i++ {
+		out += s
+	}
+	return out
 }

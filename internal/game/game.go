@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"time"
 
 	"development/myGoAdventure/internal/world"
@@ -213,7 +214,26 @@ var (
 	batDirX       int     // movement direction: -1, 0, or +1
 	batDirY       int     // movement direction: -1, 0, or +1
 	batTick       int     // tick counter for movement gate
+	batCellX      int     // persistent bat position in terminal columns (top-left of bounding box)
+	batCellY      int     // persistent bat position in terminal rows
 )
+
+// BatDebugState returns a debug string with bat AI state — remove after debugging.
+func BatDebugState() string {
+	if Bat == nil {
+		return "BAT nil"
+	}
+	carry := "-"
+	if BatCarrying != nil {
+		carry = "CARRY"
+	}
+	carried := "-"
+	if Bat == CarriedObject {
+		carried = "BY_PLAYER"
+	}
+	return fmt.Sprintf("dx=%+d dy=%+d tick=%d fed=%d carry=%s held=%s cellY=%d relY=%.4f",
+		batDirX, batDirY, batTick, batFedUpTimer, carry, carried, batCellY, Bat.RelY)
+}
 
 func batPriorityList() []*Object {
 	return []*Object{Chalice, Sword, Bridge, YellowKey, WhiteKey, BlackKey, RedDragon, YellowDragon, GreenDragon, Magnet}
@@ -226,15 +246,15 @@ func UpdateBat(termW, termH int) {
 		return
 	}
 
-	// When the player is carrying the bat: skip AI movement but still update
-	// the bat's own carried object so it travels with the bat.
+	// When the player is carrying the bat: sync integer state from player-moved RelX/RelY,
+	// update the bat's own carried object, then return.
 	if Bat == CarriedObject {
+		batCellX = int(Bat.RelX*float64(termW)) - Bat.Width/2
+		batCellY = int(Bat.RelY*float64(termH)) - Bat.Height/2
 		if BatCarrying != nil {
-			batLeft := int(Bat.RelX*float64(termW)) - Bat.Width/2
-			batTop := int(Bat.RelY*float64(termH)) - Bat.Height/2
-			cLeft := batLeft + Bat.Width
+			cLeft := batCellX + Bat.Width
 			BatCarrying.RelX = float64(cLeft+BatCarrying.Width/2) / float64(termW)
-			BatCarrying.RelY = float64(batTop+BatCarrying.Height/2) / float64(termH)
+			BatCarrying.RelY = float64(batCellY+BatCarrying.Height/2) / float64(termH)
 			BatCarrying.Room = Bat.Room
 		}
 		return
@@ -247,15 +267,12 @@ func UpdateBat(termW, termH int) {
 
 	// Hunting: find highest-priority object in bat's room (different from current carry).
 	if batFedUpTimer >= 0xff {
-		batLeft := int(Bat.RelX*float64(termW)) - Bat.Width/2
-		batTop := int(Bat.RelY*float64(termH)) - Bat.Height/2
-
-		// Expand bat extents by 4 terminal cells for proximity detection (≈7 Atari px).
+		// Use persistent integer position — no float64 round-trip.
 		const expand = 4
-		ebX1 := batLeft - expand
-		ebY1 := batTop - expand
-		ebX2 := batLeft + Bat.Width + expand
-		ebY2 := batTop + Bat.Height + expand
+		ebX1 := batCellX - expand
+		ebY1 := batCellY - expand
+		ebX2 := batCellX + Bat.Width + expand
+		ebY2 := batCellY + Bat.Height + expand
 
 		for _, obj := range batPriorityList() {
 			if obj == nil || obj == BatCarrying {
@@ -269,20 +286,20 @@ func UpdateBat(termW, termH int) {
 			oTop := int(obj.RelY*float64(termH)) - obj.Height/2
 
 			// Steer toward target center.
-			batCX := batLeft + Bat.Width/2
+			bCX := batCellX + Bat.Width/2
 			objCX := oLeft + obj.Width/2
-			if batCX < objCX {
+			if bCX < objCX {
 				batDirX = 1
-			} else if batCX > objCX {
+			} else if bCX > objCX {
 				batDirX = -1
 			} else {
 				batDirX = 0
 			}
-			batCY := batTop + Bat.Height/2
+			bCY := batCellY + Bat.Height/2
 			objCY := oTop + obj.Height/2
-			if batCY < objCY {
+			if bCY < objCY {
 				batDirY = 1
-			} else if batCY > objCY {
+			} else if bCY > objCY {
 				batDirY = -1
 			} else {
 				batDirY = 0
@@ -302,62 +319,63 @@ func UpdateBat(termW, termH int) {
 		}
 	}
 
+	// Ensure bat always has velocity — both axes must not be zero simultaneously.
+	if batDirX == 0 && batDirY == 0 {
+		batDirY = 1
+	}
+
 	// Move 1 cell per axis every 4 frames (15 steps/s at 60 fps).
-	// Tick-gate avoids accumulator sign-truncation issues with Go's int().
+	// Integer state batCellX/Y is never read back from RelX/RelY — no round-trip rounding.
 	batTick = (batTick + 1) % 4
-
-	batLeft := int(Bat.RelX*float64(termW)) - Bat.Width/2
-	batTop := int(Bat.RelY*float64(termH)) - Bat.Height/2
-
 	if batTick == 0 {
-		batLeft += batDirX
-		batTop += batDirY
+		batCellX += batDirX
+		batCellY += batDirY
 	}
 
 	// Room transitions: cross into adjacent room or bounce off dead-end walls.
-	if batLeft < 0 {
+	if batCellX < 0 {
 		if Bat.Room != nil && Bat.Room.Left != nil {
 			Bat.Room = Bat.Room.Left
-			batLeft = termW - Bat.Width
+			batCellX = termW - Bat.Width
 		} else {
-			batLeft = 0
-			batDirX = 1 // bounce
+			batCellX = 0
+			batDirX = 1
 		}
-	} else if batLeft+Bat.Width > termW {
+	} else if batCellX+Bat.Width > termW {
 		if Bat.Room != nil && Bat.Room.Right != nil {
 			Bat.Room = Bat.Room.Right
-			batLeft = 0
+			batCellX = 0
 		} else {
-			batLeft = termW - Bat.Width
-			batDirX = -1 // bounce
+			batCellX = termW - Bat.Width
+			batDirX = -1
 		}
 	}
-	if batTop < 0 {
+	if batCellY < 0 {
 		if Bat.Room != nil && Bat.Room.Up != nil {
 			Bat.Room = Bat.Room.Up
-			batTop = termH - Bat.Height
+			batCellY = termH - Bat.Height
 		} else {
-			batTop = 0
-			batDirY = 1 // bounce
+			batCellY = 0
+			batDirY = 1
 		}
-	} else if batTop+Bat.Height > termH {
+	} else if batCellY+Bat.Height > termH {
 		if Bat.Room != nil && Bat.Room.Down != nil {
 			Bat.Room = Bat.Room.Down
-			batTop = 0
+			batCellY = 0
 		} else {
-			batTop = termH - Bat.Height
-			batDirY = -1 // bounce
+			batCellY = termH - Bat.Height
+			batDirY = -1
 		}
 	}
 
-	Bat.RelX = float64(batLeft+Bat.Width/2) / float64(termW)
-	Bat.RelY = float64(batTop+Bat.Height/2) / float64(termH)
+	Bat.RelX = float64(batCellX+Bat.Width/2) / float64(termW)
+	Bat.RelY = float64(batCellY+Bat.Height/2) / float64(termH)
 
 	// Update carried object position: right side of bat, same top.
 	if BatCarrying != nil {
-		cLeft := batLeft + Bat.Width
+		cLeft := batCellX + Bat.Width
 		BatCarrying.RelX = float64(cLeft+BatCarrying.Width/2) / float64(termW)
-		BatCarrying.RelY = float64(batTop+BatCarrying.Height/2) / float64(termH)
+		BatCarrying.RelY = float64(batCellY+BatCarrying.Height/2) / float64(termH)
 		BatCarrying.Room = Bat.Room
 	}
 }
@@ -587,6 +605,8 @@ func InitBat(w, h int) {
 	batDirX = 0
 	batDirY = 1
 	batTick = 0
+	batCellX = int(0.20*float64(w)) - Bat.Width/2
+	batCellY = int(0.25*float64(h)) - Bat.Height/2
 }
 
 func InitPortcullises(w, h int) {
@@ -709,8 +729,11 @@ func UpdateMagnet(termW, termH int) {
 	targetX := mCX
 	targetY := mTop + Magnet.Height
 
+	// Tick gate runs unconditionally so rhythm is independent of object eligibility.
+	magnetTick = (magnetTick + 1) % 4
+
 	for _, obj := range magnetPriorityList() {
-		if obj == nil || obj == CarriedObject {
+		if obj == nil || obj == CarriedObject || obj == BatCarrying {
 			continue
 		}
 		if obj.Room != Magnet.Room {
@@ -721,9 +744,6 @@ func UpdateMagnet(termW, termH int) {
 		oCY := int(obj.RelY * float64(termH))
 
 		// Move object 1 cell per axis every 4 frames toward the target.
-		// Using a tick gate avoids accumulator oscillation when the magnet
-		// moves with the player.
-		magnetTick = (magnetTick + 1) % 4
 		if magnetTick == 0 {
 			oLeft := int(obj.RelX*float64(termW)) - obj.Width/2
 			oTop := int(obj.RelY*float64(termH)) - obj.Height/2
@@ -835,6 +855,12 @@ func UpdatePortcullis(port, key *Object, termW, termH int) {
 }
 
 func ReinitOnResize(w, h int) {
+	// Re-sync bat integer position for the new terminal size.
+	if Bat != nil {
+		batCellX = int(Bat.RelX*float64(w)) - Bat.Width/2
+		batCellY = int(Bat.RelY*float64(h)) - Bat.Height/2
+	}
+
 	ports := []*Object{PortcullisYellow, PortcullisWhite, PortcullisBlack}
 	if ports[0] == nil {
 		return
