@@ -28,6 +28,7 @@ func main() {
 		} else {
 			render.DrawAllVisibleObjects()
 			render.DrawSpecialRooms()
+			render.DrawDebugBat()
 		}
 		if game.ConfirmMode {
 			render.DrawConfirm()
@@ -42,19 +43,16 @@ func main() {
 }
 
 func updateStates() {
+	termW, termH := render.Screen.Size()
 	game.GreenDragon.Animate()
 	game.YellowDragon.Animate()
 	game.RedDragon.Animate()
 	game.Bat.Animate()
-	game.UpdatePortcullis(game.PortcullisYellow, game.YellowKey)
-	game.UpdatePortcullis(game.PortcullisWhite, game.WhiteKey)
-	game.UpdatePortcullis(game.PortcullisBlack, game.BlackKey)
-	game.PortcullisYellow.Animate()
-	game.PortcullisWhite.Animate()
-	game.PortcullisBlack.Animate()
+	game.UpdatePortcullis(game.PortcullisYellow, game.YellowKey, termW, termH)
+	game.UpdatePortcullis(game.PortcullisWhite, game.WhiteKey, termW, termH)
+	game.UpdatePortcullis(game.PortcullisBlack, game.BlackKey, termW, termH)
 	game.Sword.Animate()
 	game.Magnet.Animate()
-	termW, termH := render.Screen.Size()
 	game.TryPickup(termW, termH)
 	game.UpdateCarriedObject(termW, termH)
 	game.UpdateBat(termW, termH)

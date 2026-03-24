@@ -80,6 +80,9 @@ func handleKey(ev *tcell.EventKey) {
 	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'r' || ev.Rune() == 'R'):
 		game.StartConfirm("reset")
 		return
+	case ev.Key() == tcell.KeyRune && ev.Rune() == ' ':
+		game.DropCarried()
+		return
 	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'q' || ev.Rune() == 'Q'):
 		game.StartConfirm("quit")
 		return
