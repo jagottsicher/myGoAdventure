@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"development/myGoAdventure/internal/world"
@@ -506,6 +507,7 @@ func InitYellowKey(w, h int) {
 	// C++ V2: room 0x09 (RoomMazeMiddle), X=0x20, Y=0x40
 	YellowKey = &Object{
 		RelX: 0.20, RelY: 0.50, Width: 8, Height: 2,
+		ZLayer:    1,
 		Carryable: true,
 		Room:      &world.RoomMazeMiddle,
 		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xF5, 0xCE, 0x42)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
@@ -518,6 +520,7 @@ func InitWhiteKey(w, h int) {
 	// C++ V2: room 0x06 (RoomBlueMazeBottom), X=0x20, Y=0x40
 	WhiteKey = &Object{
 		RelX: 0.20, RelY: 0.50, Width: 8, Height: 2,
+		ZLayer:    1,
 		Carryable: true,
 		Room:      &world.RoomBlueMazeBottom,
 		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xFF, 0xFF)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
@@ -530,6 +533,7 @@ func InitBlackKey(w, h int) {
 	// C++ V2: room 0x19 (RoomRedMazeBottom), X=0x20, Y=0x40
 	BlackKey = &Object{
 		RelX: 0.20, RelY: 0.50, Width: 8, Height: 2,
+		ZLayer:    1,
 		Carryable: true,
 		Room:      &world.RoomRedMazeBottom,
 		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x00, 0x00, 0x00)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
@@ -588,6 +592,7 @@ func InitBat(w, h int) {
 	frames := [][]*world.Cell{world.BatGfx, world.BatGfxOpen}
 	Bat = &Object{
 		RelX: 0.20, RelY: 0.25, Width: 8, Height: 6,
+		ZLayer:       1,
 		Carryable:    true,
 		Room:         &world.RoomBelowYellowCastle,
 		Style:        tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
@@ -665,6 +670,7 @@ func InitSword(w, h int) {
 	frames := [][]*world.Cell{world.SwordGfx, world.SwordGfxLeft, world.SwordGfxUp, world.SwordGfxDown}
 	Sword = &Object{
 		RelX: 0.20, RelY: 0.25, Width: 8, Height: 4,
+		ZLayer:       1,
 		Carryable:    true,
 		Room:         &world.RoomYellowCastle,
 		Style:        tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xF5, 0xCE, 0x42)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
@@ -680,6 +686,7 @@ func InitChalice(w, h int) {
 	// C++ V2: room 0x14 (RoomBlackMaze2), X=0x30, Y=0x20
 	Chalice = &Object{
 		RelX: 0.30, RelY: 0.25, Width: 8, Height: 5,
+		ZLayer:    1,
 		Carryable: true,
 		Room:      &world.RoomBlackMaze2,
 		Style:     tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xAA, 0x00)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
@@ -722,12 +729,10 @@ func UpdateMagnet(termW, termH int) {
 		return
 	}
 
-	// Magnet anchor in screen coordinates.
-	mCX := int(Magnet.RelX * float64(termW))
-	mTop := int(Magnet.RelY*float64(termH)) - Magnet.Height/2
-	// Objects are pulled to the bottom-center of the magnet (C++: y - gfxData[0]).
-	targetX := mCX
-	targetY := mTop + Magnet.Height
+	// Magnet anchor in screen coordinates (RelX/RelY = anchor point, orientation-independent).
+	// Use math.Round to avoid float64 truncation giving wrong integer center.
+	targetX := int(math.Round(Magnet.RelX * float64(termW)))
+	targetY := int(math.Round(Magnet.RelY * float64(termH)))
 
 	// Tick gate runs unconditionally so rhythm is independent of object eligibility.
 	magnetTick = (magnetTick + 1) % 4
@@ -740,13 +745,15 @@ func UpdateMagnet(termW, termH int) {
 			continue
 		}
 
-		oCX := int(obj.RelX * float64(termW))
-		oCY := int(obj.RelY * float64(termH))
+		// Use math.Round for center coords to prevent the same float64 truncation
+		// rounding error that froze the bat: int(n/termW * termW) can give n-1.
+		oCX := int(math.Round(obj.RelX * float64(termW)))
+		oCY := int(math.Round(obj.RelY * float64(termH)))
 
 		// Move object 1 cell per axis every 4 frames toward the target.
 		if magnetTick == 0 {
-			oLeft := int(obj.RelX*float64(termW)) - obj.Width/2
-			oTop := int(obj.RelY*float64(termH)) - obj.Height/2
+			oLeft := oCX - obj.Width/2
+			oTop := oCY - obj.Height/2
 			if oCX < targetX {
 				oLeft++
 			} else if oCX > targetX {
