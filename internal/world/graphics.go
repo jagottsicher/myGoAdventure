@@ -283,6 +283,77 @@ var DragonGfxOpen = []*Cell{
 	{X: 7, Y: 9, Symbol: '█'},
 }
 
+// Dragon State 02 — dead, decoded from objectGfxDrag[] State 02 in Adventure.cpp
+// 17 pixel rows → 8 terminal rows (7 pairs + 1 lone top-half row)
+// dragonStates[] = {0,2,0,1}: game state 1 (dead) → graphic frame index 2 → this sprite.
+//
+//     ██
+//     ██▄
+//  ▄▄██▄██
+// █▀  ▀▀▀
+// ██████▄
+// ▀██████
+//  ▀█▀▀
+//  █▀ ▀▀█
+//  ▀▀▀▀▀▀
+var DragonGfxDead = []*Cell{
+	// Row 0: 0x0C+0x0C →     ██
+	{X: 4, Y: 0, Symbol: '█'},
+	{X: 5, Y: 0, Symbol: '█'},
+	// Row 1: 0x0C+0x0E →     ██▄
+	{X: 4, Y: 1, Symbol: '█'},
+	{X: 5, Y: 1, Symbol: '█'},
+	{X: 6, Y: 1, Symbol: '▄'},
+	// Row 2: 0x1B+0x7F →  ▄▄██▄██
+	{X: 1, Y: 2, Symbol: '▄'},
+	{X: 2, Y: 2, Symbol: '▄'},
+	{X: 3, Y: 2, Symbol: '█'},
+	{X: 4, Y: 2, Symbol: '█'},
+	{X: 5, Y: 2, Symbol: '▄'},
+	{X: 6, Y: 2, Symbol: '█'},
+	{X: 7, Y: 2, Symbol: '█'},
+	// Row 3: 0xCE+0x80 → █▀  ▀▀▀
+	{X: 0, Y: 3, Symbol: '█'},
+	{X: 1, Y: 3, Symbol: '▀'},
+	{X: 4, Y: 3, Symbol: '▀'},
+	{X: 5, Y: 3, Symbol: '▀'},
+	{X: 6, Y: 3, Symbol: '▀'},
+	// Row 4: 0xFC+0xFE → ██████▄
+	{X: 0, Y: 4, Symbol: '█'},
+	{X: 1, Y: 4, Symbol: '█'},
+	{X: 2, Y: 4, Symbol: '█'},
+	{X: 3, Y: 4, Symbol: '█'},
+	{X: 4, Y: 4, Symbol: '█'},
+	{X: 5, Y: 4, Symbol: '█'},
+	{X: 6, Y: 4, Symbol: '▄'},
+	// Row 5: 0xFE+0x7E → ▀██████
+	{X: 0, Y: 5, Symbol: '▀'},
+	{X: 1, Y: 5, Symbol: '█'},
+	{X: 2, Y: 5, Symbol: '█'},
+	{X: 3, Y: 5, Symbol: '█'},
+	{X: 4, Y: 5, Symbol: '█'},
+	{X: 5, Y: 5, Symbol: '█'},
+	{X: 6, Y: 5, Symbol: '█'},
+	// Row 6: 0x78+0x20 →  ▀█▀▀
+	{X: 1, Y: 6, Symbol: '▀'},
+	{X: 2, Y: 6, Symbol: '█'},
+	{X: 3, Y: 6, Symbol: '▀'},
+	{X: 4, Y: 6, Symbol: '▀'},
+	// Row 7: 0x6E+0x42 →  █▀ ▀▀█
+	{X: 1, Y: 7, Symbol: '█'},
+	{X: 2, Y: 7, Symbol: '▀'},
+	{X: 4, Y: 7, Symbol: '▀'},
+	{X: 5, Y: 7, Symbol: '▀'},
+	{X: 6, Y: 7, Symbol: '█'},
+	// Row 8: 0x7E lone →  ▀▀▀▀▀▀  (top half only)
+	{X: 1, Y: 8, Symbol: '▀'},
+	{X: 2, Y: 8, Symbol: '▀'},
+	{X: 3, Y: 8, Symbol: '▀'},
+	{X: 4, Y: 8, Symbol: '▀'},
+	{X: 5, Y: 8, Symbol: '▀'},
+	{X: 6, Y: 8, Symbol: '▀'},
+}
+
 // Bridge — objectGfxBridge, 24 pixel rows → 12 terminal rows
 // ██      ██  (top caps ×2)
 //  █      █   (pillars ×8)

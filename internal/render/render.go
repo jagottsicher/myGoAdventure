@@ -69,7 +69,7 @@ func DrawDebugBat() {
 func DrawAllVisibleObjects() {
 	for layer := 0; layer <= 2; layer++ {
 		for _, obj := range game.AllObjects {
-			if obj.ZLayer != layer {
+			if obj.Dead || obj.ZLayer != layer {
 				continue
 			}
 			if obj.Room != nil && obj.Room != game.CurrentRoom {
@@ -258,9 +258,9 @@ func DrawHelp() {
 	cur := tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Foreground(tcell.ColorBlack)
 
 	lx := termW/2 - 22
-	cy := termH/2 - 10
+	cy := termH/2 - 11
 	boxW := 72 // content max ~68 + 2 padding each side
-	boxH := 27 // content 23 lines + 2 padding each side
+	boxH := 37 // content 29 lines + 4 padding + 4 for box
 
 	// Draw gray box (+2 padding around text).
 	for y := cy - 2; y < cy-2+boxH; y++ {
@@ -275,6 +275,13 @@ func DrawHelp() {
 		emitStr(Screen, lx, y, st, s)
 	}
 
+	diffStr := func(on bool) string {
+		if on {
+			return "A"
+		}
+		return "B"
+	}
+
 	put(cy+0, "An  A D V E N T U R E  —  help", head)
 	put(cy+1, "", body)
 	put(cy+2, "Objective", hilite)
@@ -282,22 +289,29 @@ func DrawHelp() {
 	put(cy+4, "", body)
 	put(cy+5, "Controls", hilite)
 	put(cy+6, "  [W] / [↑]   [A] / [←]   [S] / [↓]   [D] / [→]    move player", body)
-	put(cy+7, "  [H]                                toggle this help screen", body)
-	put(cy+8, "  [V]                                cycle game variation", body)
-	put(cy+9, "  [R]                                reset game", body)
-	put(cy+10, "  [Q]                                quit", body)
-	put(cy+11, "", body)
-	put(cy+12, "Game variations", hilite)
-	put(cy+13, "  1  easy    1 castle, 1 slow dragon, chalice in the open,", body)
-	put(cy+14, "             bat and bridge not in play", body)
-	put(cy+15, "  2  normal  3 castles (golden/white/black), 3 dragons, full maze,", body)
-	put(cy+16, "             all objects and keys in play", body)
-	put(cy+17, "  3  hard    like variation 2, but dragons are faster", body)
-	put(cy+18, "             and significantly more aggressive", body)
-	put(cy+19, "", body)
-	emitStr(Screen, lx, cy+20, cur, fmt.Sprintf("  Current: Variation %d  ", game.G.GameType))
+	put(cy+7, "  [Space]                            drop carried object", body)
+	put(cy+8, "  [H]                                toggle this help screen", body)
+	put(cy+9, "  [V]                                select game variation  (1 / 2 / 3)", body)
+	put(cy+10, "  [N]                                select difficulty  (A / B)", body)
+	put(cy+11, "  [R]                                reset game", body)
+	put(cy+12, "  [Q]                                quit", body)
+	put(cy+13, "", body)
+	put(cy+14, "Game variations  [V]", hilite)
+	put(cy+15, "  1  easy    1 castle, 1 slow dragon, chalice in the open,", body)
+	put(cy+16, "             bat and bridge not in play", body)
+	put(cy+17, "  2  normal  3 castles (golden/white/black), 3 dragons, full maze,", body)
+	put(cy+18, "             all objects and keys in play", body)
+	put(cy+19, "  3  hard    like variation 2, but dragons are faster", body)
+	put(cy+20, "             and significantly more aggressive", body)
 	put(cy+21, "", body)
-	put(cy+22, "  Press [H] to close", hilite)
+	put(cy+22, "Difficulty  [N]  (A = harder / B = easier)", hilite)
+	put(cy+23, "  A  dragons flee from sword, shorter roar window after touch", body)
+	put(cy+24, "  B  dragons ignore the sword, longer roar window", body)
+	put(cy+25, "", body)
+	emitStr(Screen, lx, cy+26, cur, fmt.Sprintf("  Variation %d   Difficulty: %s  ",
+		game.G.GameType, diffStr(game.DifficultyLeft)))
+	put(cy+27, "", body)
+	put(cy+28, "  Press [H] to close", hilite)
 }
 
 func DrawConfirm() {
@@ -360,6 +374,111 @@ func ResetGame() {
 	game.InitBarrier(&world.RoomSideCorridorOlive, 1.0/20.0, h, blackOnBlack)
 	game.InitBarrier(&world.RoomSideCorridorCyan, 19.0/20.0, h, blackOnBlack)
 	FillTheScreen()
+}
+
+// DrawSelOverlay renders the selection overlay for variation or difficulty cycling.
+// DrawEaten renders the "eaten by dragon" overlay. Player can only reset from here.
+func DrawEaten() {
+	if !game.Eaten {
+		return
+	}
+	termW, termH := Screen.Size()
+	bg := tcell.StyleDefault.Background(tcell.NewRGBColor(0x66, 0x00, 0x00)).Foreground(tcell.NewRGBColor(0xFF, 0xAA, 0xAA))
+	hi := tcell.StyleDefault.Background(tcell.NewRGBColor(0x66, 0x00, 0x00)).Foreground(tcell.NewRGBColor(0xFF, 0xFF, 0xFF))
+
+	lines := []string{
+		"  You have been eaten by a dragon!  ",
+		"",
+		"  Press [R] to reset the game.  ",
+	}
+	boxW := 40
+	boxH := len(lines) + 4
+	bx := termW/2 - boxW/2
+	by := termH/2 - boxH/2
+
+	for y := by; y < by+boxH; y++ {
+		for x := bx; x < bx+boxW; x++ {
+			if x >= 0 && x < termW && y >= 0 && y < termH {
+				Screen.SetContent(x, y, ' ', nil, bg)
+			}
+		}
+	}
+	for i, line := range lines {
+		st := bg
+		if i == 0 {
+			st = hi
+		}
+		emitStr(Screen, bx+(boxW-len(line))/2, by+2+i, st, line)
+	}
+}
+
+func DrawSelOverlay() {
+	o := game.Overlay
+	if !o.Active {
+		return
+	}
+	termW, termH := Screen.Size()
+
+	bg := tcell.StyleDefault.Background(tcell.NewRGBColor(0x33, 0x33, 0x33)).Foreground(tcell.NewRGBColor(0xcc, 0xcc, 0xcc))
+	sel := tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Foreground(tcell.ColorBlack)
+
+	var title string
+	var labels []string
+	var cur int
+
+	if o.Kind == "variation" {
+		title = " Game Variation "
+		labels = []string{" 1 ", " 2 ", " 3 "}
+		cur = o.Value - 1 // 1-indexed → 0-indexed
+	} else {
+		title = "  Difficulty  "
+		labels = []string{" A ", " B "}
+		cur = o.Value
+	}
+
+	itemsRow := ""
+	for i, l := range labels {
+		if i > 0 {
+			itemsRow += "  "
+		}
+		itemsRow += l
+	}
+
+	boxW := len(title) + 4
+	if len(itemsRow)+4 > boxW {
+		boxW = len(itemsRow) + 4
+	}
+	boxH := 5
+	bx := termW/2 - boxW/2
+	by := termH/2 - boxH/2
+
+	// Fill background.
+	for y := by; y < by+boxH; y++ {
+		for x := bx; x < bx+boxW; x++ {
+			if x >= 0 && x < termW && y >= 0 && y < termH {
+				Screen.SetContent(x, y, ' ', nil, bg)
+			}
+		}
+	}
+
+	// Title row.
+	emitStr(Screen, bx+(boxW-len(title))/2, by+1, bg, title)
+
+	// Items row: draw each item individually to apply selection highlight.
+	ix := bx + (boxW-len(itemsRow))/2
+	col := ix
+	for i, l := range labels {
+		st := bg
+		if i == cur {
+			st = sel
+		}
+		emitStr(Screen, col, by+3, st, l)
+		col += len(l)
+		if i < len(labels)-1 {
+			emitStr(Screen, col, by+3, bg, "  ")
+			col += 2
+		}
+	}
 }
 
 func GetWidth() int {

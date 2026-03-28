@@ -83,7 +83,10 @@ func handleKey(ev *tcell.EventKey) {
 		render.FillTheScreen()
 		return
 	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'v' || ev.Rune() == 'V'):
-		game.CycleVariation()
+		game.HandleSelOverlayKey("variation")
+		return
+	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'n' || ev.Rune() == 'N'):
+		game.HandleSelOverlayKey("difficulty")
 		return
 	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'r' || ev.Rune() == 'R'):
 		game.StartConfirm("reset")
@@ -122,6 +125,9 @@ func handleKey(ev *tcell.EventKey) {
 }
 
 func HandleUserInput() {
+	if game.Eaten {
+		return // player trapped inside dragon — no movement
+	}
 	// Throttle to every 2nd frame (~30 moves/sec at 60 fps) to match
 	// the original speed before the game-loop-driven input change.
 	playerMoveTick++
