@@ -28,10 +28,12 @@ func main() {
 		} else {
 			render.DrawAllVisibleObjects()
 			render.DrawSpecialRooms()
+			render.DrawSelOverlay()
 			if game.GodMode {
 				render.DrawDebugBat()
 			}
 		}
+		render.DrawEaten()
 		if game.ConfirmMode {
 			render.DrawConfirm()
 		}
@@ -47,6 +49,7 @@ func main() {
 func updateStates() {
 	termW, termH := render.Screen.Size()
 	input.HandleUserInput()
+	game.UpdateSelOverlay()
 	game.GreenDragon.Animate()
 	game.YellowDragon.Animate()
 	game.RedDragon.Animate()
@@ -61,9 +64,15 @@ func updateStates() {
 	game.UpdateBat(termW, termH)
 	game.UpdateMagnet(termW, termH)
 	game.UpdateDragons(termW, termH)
-	facePlayer(game.GreenDragon, termW)
-	facePlayer(game.YellowDragon, termW)
-	facePlayer(game.RedDragon, termW)
+	if game.GreenDS.State != 1 {
+		facePlayer(game.GreenDragon, termW)
+	}
+	if game.YellowDS.State != 1 {
+		facePlayer(game.YellowDragon, termW)
+	}
+	if game.RedDS.State != 1 {
+		facePlayer(game.RedDragon, termW)
+	}
 }
 
 func facePlayer(dragon *game.Object, termW int) {

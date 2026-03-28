@@ -21,6 +21,21 @@ var G = Game{
 
 var GodMode bool
 
+// DifficultyLeft/Right mirror the two physical switches on the Atari 2600.
+// true = A (harder), false = B (easier).
+// DifficultyLeft:  A = shorter roar window after dragon touch (harder to escape).
+// DifficultyRight: A = dragons flee from the sword; B = dragons ignore the sword.
+var DifficultyLeft = true  // default A
+var DifficultyRight = true // default A
+
+func ToggleDifficultyLeft() {
+	DifficultyLeft = !DifficultyLeft
+}
+
+func ToggleDifficultyRight() {
+	DifficultyRight = !DifficultyRight
+}
+
 var HelpMode bool
 var helpPreviousRoom *world.Room
 
@@ -41,8 +56,71 @@ func CancelConfirm() {
 	ConfirmAction = ""
 }
 
-func CycleVariation() {
-	G.GameType = G.GameType%3 + 1
+// SelOverlay is the selection overlay state for variation and difficulty cycling.
+type SelOverlay struct {
+	Active bool
+	Kind   string // "variation" or "difficulty"
+	Value  int    // current preview: variation=1..3, difficulty=0(A)/1(B)
+	Ticks  int    // countdown; reaches 0 → apply and close
+}
+
+var Overlay SelOverlay
+
+// HandleSelOverlayKey is called when the V or F key is pressed.
+// Pressing V while the difficulty overlay is open applies the pending difficulty
+// selection first, then opens the variation overlay (and vice versa).
+func HandleSelOverlayKey(kind string) {
+	if Overlay.Active && Overlay.Kind != kind {
+		applySelOverlay()
+	}
+	if Overlay.Active && Overlay.Kind == kind {
+		cycleSelOverlay()
+		Overlay.Ticks = 3 * int(G.FPS)
+	} else {
+		var val int
+		if kind == "variation" {
+			val = int(G.GameType)
+		} else if !DifficultyLeft {
+			val = 1 // B
+		}
+		Overlay = SelOverlay{Active: true, Kind: kind, Value: val, Ticks: 3 * int(G.FPS)}
+	}
+}
+
+func cycleSelOverlay() {
+	switch Overlay.Kind {
+	case "variation":
+		Overlay.Value = Overlay.Value%3 + 1
+	case "difficulty":
+		Overlay.Value = 1 - Overlay.Value
+	}
+}
+
+func applySelOverlay() {
+	if !Overlay.Active {
+		return
+	}
+	switch Overlay.Kind {
+	case "variation":
+		G.GameType = uint8(Overlay.Value)
+	case "difficulty":
+		a := Overlay.Value == 0
+		DifficultyLeft = a
+		DifficultyRight = a
+	}
+	Overlay.Active = false
+}
+
+// UpdateSelOverlay decrements the overlay timer and applies the selection on timeout.
+// Call once per game tick.
+func UpdateSelOverlay() {
+	if !Overlay.Active {
+		return
+	}
+	Overlay.Ticks--
+	if Overlay.Ticks <= 0 {
+		applySelOverlay()
+	}
 }
 
 // CarriedObject is the object the player is currently carrying (nil = nothing).
@@ -439,6 +517,7 @@ type Object struct {
 	Paused    bool // if true, Animate() does nothing (animation frozen)
 	Solid     bool // if true, WouldCollideWall treats all cells as blocking
 	Carryable bool // if true, player can pick this up
+	Dead      bool // if true, object is removed from rendering and AI
 
 	// Portcullis state machine (mirrors C++ Portals() logic).
 	// PortState is an index into portStatesSeq (0–23).
@@ -548,6 +627,34 @@ type dragonState struct {
 	cellX, cellY int // bounding-box top-left in terminal columns/rows
 	dirX, dirY   int // current movement direction: -1, 0, or +1 per axis
 	tick         int // tick counter for movement gate
+	// State machine mirroring C++ dragon->state:
+	// 0 = alive/stalking, 1 = dead, 2 = eaten player, 3 = roaring (timer running)
+	State     int
+	RoarTimer int
+	// Dormant: true until the player first enters the dragon's room.
+	// Deviation from C++ original (where dragons always move from game start),
+	// but avoids dragons roaming across the entire map before the player finds them.
+	Dormant bool
+}
+
+// Eaten is true while the player is trapped inside a dragon (state 2).
+var Eaten bool
+
+// dragonDiffTable mirrors C++ dragonDiff[]: pairs of (B, A) timer offsets per game level.
+// timer = 0xFC - dragonDiffTable[gameLevel*2 + (DifficultyLeft ? 1 : 0)]
+// Smaller timer = harder (less time to escape after touching a dragon).
+var dragonDiffTable = [6]int{0xD0, 0xE8, 0xF0, 0xF6, 0xF0, 0xF6}
+
+func dragonRoarTimer() int {
+	level := int(G.GameType) - 1 // GameType is 1-indexed
+	if level < 0 {
+		level = 0
+	}
+	diffIdx := 0
+	if DifficultyLeft {
+		diffIdx = 1 // A = harder
+	}
+	return 0xFC - dragonDiffTable[level*2+diffIdx]
 }
 
 var (
@@ -560,6 +667,10 @@ func initDragonState(ds *dragonState, dragon *Object, w, h int) {
 	ds.cellX = int(dragon.RelX*float64(w)) - dragon.Width/2
 	ds.cellY = int(dragon.RelY*float64(h)) - dragon.Height/2
 	ds.tick = 0
+	ds.State = 0
+	ds.RoarTimer = 0
+	ds.Dormant = true
+	Eaten = false
 	// V1 (GameType==1): dragons stand still. V2/V3: start moving diagonally.
 	if G.GameType == 1 {
 		ds.dirX = 0
@@ -660,17 +771,63 @@ func redDragonMatrix() [][2]*Object {
 // moveDragon updates one dragon's direction from its matrix, then moves it.
 // tickPeriod controls speed: 4 = medium (green/yellow, same as bat), 3 = fast (red).
 func moveDragon(dragon *Object, ds *dragonState, matrix [][2]*Object, tickPeriod, termW, termH int) {
-	if dragon == nil || G.GameType == 1 {
-		return // V1: dragons are static
+	if dragon == nil || ds.State == 1 {
+		return // dead: nothing
+	}
+
+	// State 2: eaten — freeze player inside dragon, don't move dragon.
+	if ds.State == 2 {
+		if Player != nil {
+			Player.RelX = dragon.RelX
+			Player.RelY = dragon.RelY
+			CurrentRoom = dragon.Room
+		}
+		return
+	}
+
+	// State 3: roaring — count down, then eat or release.
+	if ds.State == 3 {
+		ds.RoarTimer--
+		if ds.RoarTimer <= 0 {
+			if dragon.Room == CurrentRoom && Player != nil &&
+				CollisionCheckObjects(dragon, Player, termW, termH) {
+				ds.State = 2
+				Eaten = true
+			} else {
+				ds.State = 0
+			}
+		}
+		return // no movement during roar
+	}
+
+	// State 0: V1 dragons are static.
+	if G.GameType == 1 {
+		return
+	}
+
+	// Dormant: wait until the player first enters this dragon's room, then wake permanently.
+	if ds.Dormant {
+		if dragon.Room == CurrentRoom {
+			ds.Dormant = false
+		} else {
+			return
+		}
 	}
 
 	dCX := ds.cellX + dragon.Width/2
 	dCY := ds.cellY + dragon.Height/2
 
+	// Difficulty Right B: skip the first matrix pair (sword flee).
+	// Mirrors C++ `matrix+2` when gameDifficultyRight == DIFFICULTY_B.
+	activeMatrix := matrix
+	if !DifficultyRight && len(activeMatrix) > 1 {
+		activeMatrix = activeMatrix[1:]
+	}
+
 	// Determine direction from matrix: flee takes priority over seek within each pair.
 	// dirSet is true when the matrix fired — prevents the adjacent-room override below.
 	dirSet := false
-	for _, pair := range matrix {
+	for _, pair := range activeMatrix {
 		flee, seek := pair[0], pair[1]
 
 		// Flee check (nil = self-ref, skip).
@@ -796,9 +953,63 @@ func moveDragon(dragon *Object, ds *dragonState, matrix [][2]*Object, tickPeriod
 	dragon.RelY = float64(ds.cellY+dragon.Height/2) / float64(termH)
 }
 
+// killDragonIfSwordHits checks whether the sword overlaps the dragon and kills it.
+// Room check is the cheap early exit — matches C++ CollisionCheckObjectObject order.
+// Optimization: skips entirely when sword and dragon are in different rooms (O(1)).
+func killDragonIfSwordHits(dragon *Object, ds *dragonState, termW, termH int) {
+	// Only state 0 (alive/stalking) can be killed — matches C++ check inside state==0 block.
+	if dragon == nil || ds.State != 0 {
+		return
+	}
+	if Sword == nil || Sword.Room != dragon.Room {
+		return
+	}
+	if CollisionCheckObjects(dragon, Sword, termW, termH) {
+		ds.State = 1
+		ds.dirX = 0
+		ds.dirY = 0
+		// Switch to dead graphic and freeze animation (dragonStates[1]=frame2=dead).
+		dragon.Shape = world.DragonGfxDead
+		dragon.Frames = dragon.Frames[:1] // Animate() skips when len(Frames)<=1
+	}
+}
+
+// touchDragonIfPlayerHits checks whether the player overlaps the dragon and triggers
+// the roar state (state 3). Only fires in state 0 (stalking) — mirrors C++ check.
+func touchDragonIfPlayerHits(dragon *Object, ds *dragonState, termW, termH int) {
+	// Already eaten by another dragon — don't trigger again.
+	if Eaten {
+		return
+	}
+	if dragon == nil || ds.State != 0 || Player == nil {
+		return
+	}
+	if dragon.Room != CurrentRoom {
+		return
+	}
+	if CollisionCheckObjects(dragon, Player, termW, termH) {
+		ds.Dormant = false // wake up on contact even if not yet awake
+		ds.State = 3
+		ds.RoarTimer = dragonRoarTimer()
+		// Dragon snaps to player position (C++ behavior).
+		dragon.RelX = Player.RelX
+		dragon.RelY = Player.RelY
+		ds.cellX = int(dragon.RelX*float64(termW)) - dragon.Width/2
+		ds.cellY = int(dragon.RelY*float64(termH)) - dragon.Height/2
+		ds.dirX = 0
+		ds.dirY = 0
+	}
+}
+
 // UpdateDragons drives movement AI for all three dragons.
 // Call once per game tick from adventure.go updateStates().
 func UpdateDragons(termW, termH int) {
+	touchDragonIfPlayerHits(GreenDragon, &GreenDS, termW, termH)
+	touchDragonIfPlayerHits(YellowDragon, &YellowDS, termW, termH)
+	touchDragonIfPlayerHits(RedDragon, &RedDS, termW, termH)
+	killDragonIfSwordHits(GreenDragon, &GreenDS, termW, termH)
+	killDragonIfSwordHits(YellowDragon, &YellowDS, termW, termH)
+	killDragonIfSwordHits(RedDragon, &RedDS, termW, termH)
 	moveDragon(GreenDragon, &GreenDS, greenDragonMatrix(), 4, termW, termH)
 	moveDragon(YellowDragon, &YellowDS, yellowDragonMatrix(), 4, termW, termH)
 	moveDragon(RedDragon, &RedDS, redDragonMatrix(), 3, termW, termH)
