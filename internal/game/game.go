@@ -25,8 +25,8 @@ var GodMode bool
 // true = A (harder), false = B (easier).
 // DifficultyLeft:  A = shorter roar window after dragon touch (harder to escape).
 // DifficultyRight: A = dragons flee from the sword; B = dragons ignore the sword.
-var DifficultyLeft = true  // default A
-var DifficultyRight = true // default A
+var DifficultyLeft = false  // default B
+var DifficultyRight = false // default B
 
 func ToggleDifficultyLeft() {
 	DifficultyLeft = !DifficultyLeft
@@ -134,6 +134,12 @@ var carryOffsetX, carryOffsetY int
 // dropCooldown prevents immediately re-picking-up a just-dropped object.
 var dropCooldown int
 
+// PlayerMoved is set to true by HandleUserInput whenever the player's position
+// changes. Reset to false at the start of each HandleUserInput call.
+// TryPickup only fires when this is true — prevents objects drifting (magnet,
+// bat drop) from auto-attaching to a stationary player.
+var PlayerMoved bool
+
 func absInt(x int) int {
 	if x < 0 {
 		return -x
@@ -143,6 +149,8 @@ func absInt(x int) int {
 
 // TryPickup checks cells adjacent to the player (cross shape, no corners).
 // Snaps the picked-up object flush to the nearest side of the player.
+// Only fires when the player moved this frame — objects drifting into the
+// pickup zone (via magnet or bat drop) do not auto-attach.
 func TryPickup(termW, termH int) {
 	if Player == nil {
 		return
@@ -180,7 +188,7 @@ func TryPickup(termW, termH int) {
 			continue
 		}
 
-		// Determine which side the object is on relative to the player center.
+		// dx/dy: relative position of object center to player center (used for offset + orientation).
 		pCX := pLeft + Player.Width/2
 		pCY := pTop + Player.Height/2
 		oCX := ox + obj.Width/2
@@ -189,28 +197,56 @@ func TryPickup(termW, termH int) {
 		dy := oCY - pCY
 
 		var offX, offY int
-		if absInt(dx) >= absInt(dy) {
-			// Left or right of player.
-			if dx < 0 {
-				offX = -obj.Width
-			} else {
-				offX = Player.Width
+		if obj == Bridge {
+			// Bridge: only grabbable at the two pillar areas (cols 0–1 = left, cols 8–9 = right).
+			// - From left/right: player must be outside the bridge touching that pillar.
+			// - From above/below: player X must overlap a pillar column, not just the deck (cols 2–7).
+			// Offset preserves the exact grab position — no centering.
+			leftPillarR := ox + 2
+			rightPillarL := ox + 8
+			bridgeR := ox + obj.Width
+
+			fromLeft := pRight >= ox && pRight <= leftPillarR &&
+				pBottom > oy && pTop < oy+obj.Height
+			fromRight := pLeft >= rightPillarL && pLeft <= bridgeR &&
+				pBottom > oy && pTop < oy+obj.Height
+
+			atLeftPillar := pRight > ox && pLeft < leftPillarR
+			atRightPillar := pRight > rightPillarL && pLeft < bridgeR
+			pillarContact := atLeftPillar || atRightPillar
+			fromAbove := pBottom >= oy && pBottom <= oy+1 && pillarContact
+			fromBelow := pTop >= oy+obj.Height-1 && pTop <= oy+obj.Height && pillarContact
+
+			if !fromLeft && !fromRight && !fromAbove && !fromBelow {
+				continue
 			}
-			offY = (Player.Height - obj.Height) / 2
+			offX = ox - pLeft
+			offY = oy - pTop
 		} else {
-			// Above or below player — center object on player.
-			offX = Player.Width/2 - obj.Width/2
-			if dy < 0 {
-				offY = -obj.Height
+			if absInt(dx) >= absInt(dy) {
+				// Left or right of player.
+				if dx < 0 {
+					offX = -obj.Width
+				} else {
+					offX = Player.Width
+				}
+				offY = (Player.Height - obj.Height) / 2
 			} else {
-				offY = Player.Height
+				// Above or below player — center object on player.
+				offX = Player.Width/2 - obj.Width/2
+				if dy < 0 {
+					offY = -obj.Height
+				} else {
+					offY = Player.Height
+				}
 			}
 		}
 
 		if obj == BatCarrying {
-			// Player steals from bat — bat immediately hunts for something new.
+			// Player steals from bat — give the player a grace period before bat hunts again.
 			BatCarrying = nil
 			batFedUpTimer = 0xff
+			batHuntDelay = 90 // ~1.5s at 60 FPS
 		}
 		CarriedObject = obj
 		carryOffsetX = offX
@@ -288,12 +324,13 @@ func DropCarried() {
 
 // Bat AI state.
 var (
-	batFedUpTimer = 0xff  // 0xff = hunting; 0..254 = carrying (counts up to 0xff)
-	BatCarrying   *Object // object the bat is currently carrying (nil = hunting)
-	batDirX       int     // movement direction: -1, 0, or +1
-	batDirY       int     // movement direction: -1, 0, or +1
-	batTick       int     // tick counter for movement gate
-	batCellX      int     // persistent bat position in terminal columns (top-left of bounding box)
+	batFedUpTimer  = 0xff // 0xff = hunting; 0..254 = carrying (counts up to 0xff)
+	batHuntDelay   int    // frames remaining before bat may hunt again after player steal
+	BatCarrying    *Object // object the bat is currently carrying (nil = hunting)
+	batDirX        int    // movement direction: -1, 0, or +1
+	batDirY        int    // movement direction: -1, 0, or +1
+	batTick        int    // tick counter for movement gate
+	batCellX       int    // persistent bat position in terminal columns (top-left of bounding box)
 	batCellY      int     // persistent bat position in terminal rows
 )
 
@@ -345,7 +382,10 @@ func UpdateBat(termW, termH int) {
 	}
 
 	// Hunting: find highest-priority object in bat's room (different from current carry).
-	if batFedUpTimer >= 0xff {
+	if batHuntDelay > 0 {
+		batHuntDelay--
+	}
+	if batFedUpTimer >= 0xff && batHuntDelay == 0 {
 		// Use persistent integer position — no float64 round-trip.
 		const expand = 4
 		ebX1 := batCellX - expand
@@ -405,7 +445,7 @@ func UpdateBat(termW, termH int) {
 
 	// Move 1 cell per axis every 4 frames (15 steps/s at 60 fps).
 	// Integer state batCellX/Y is never read back from RelX/RelY — no round-trip rounding.
-	batTick = (batTick + 1) % 4
+	batTick = (batTick + 1) % 3
 	if batTick == 0 {
 		batCellX += batDirX
 		batCellY += batDirY
@@ -469,10 +509,7 @@ func ToggleHelp() {
 	}
 }
 
-var (
-	playerNormalStyle = tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorPurple)
-	playerGodStyle    = tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xAA, 0x00)).Foreground(tcell.ColorPurple)
-)
+var playerGodStyle = tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xAA, 0x00)).Foreground(tcell.NewRGBColor(0xFF, 0xAA, 0x00))
 
 func ToggleGodMode() {
 	GodMode = !GodMode
@@ -481,9 +518,24 @@ func ToggleGodMode() {
 	}
 	if GodMode {
 		Player.Style = playerGodStyle
-	} else {
-		Player.Style = playerNormalStyle
 	}
+	// GodMode off: UpdatePlayerStyle() corrects the color on the next frame.
+}
+
+// UpdatePlayerStyle sets the player's style to match the current room color.
+// Both fg and bg are identical so the LMR characters render as solid blocks.
+// Mirrors C++ behavior: ball is drawn in roomDefs[room].color.
+func UpdatePlayerStyle() {
+	if Player == nil || CurrentRoom == nil || GodMode {
+		return
+	}
+	c := CurrentRoom.Foreground
+	// Dark maze rooms have Foreground == Background (walls invisible).
+	// Use the same orange as the torch aura so the player matches the visible walls.
+	if c == CurrentRoom.Background {
+		c = tcell.NewRGBColor(0xFF, 0x80, 0x00)
+	}
+	Player.Style = tcell.StyleDefault.Background(c).Foreground(c)
 }
 
 type Object struct {
@@ -523,6 +575,7 @@ type Object struct {
 	// PortState is an index into portStatesSeq (0–23).
 	// 0 = closed/stopped, 12 = fully open/stopped, >22 → permanent unlock.
 	PortState int
+	PortTick  int  // frame counter — state only advances every portTicksPerStep frames
 	Unlocked  bool // permanently open — gate never becomes solid again
 
 	animTick  int
@@ -581,6 +634,91 @@ var Magnet *Object
 var Dot *Object
 var AllObjects []*Object
 var CurrentRoom *world.Room
+
+// castle portal state — tracked across frames by UpdateCastlePortals
+var castlePortalPrevRoom *world.Room
+var prevPlayerRelY float64
+
+// Win condition state.
+var GameWon bool
+var WinFlashTimer int   // counts down 255→0: screen flashes
+var WinOverlayTimer int // counts down 180→0: "YOU WON!" overlay visible
+
+// Flash color state — hue cycles 0–359, lum cycles 0–200.
+// Chalice always uses flash colors; room also flashes during win.
+var flashHue int
+var flashLum int
+
+// GetFlashColor returns the current cycling color (matches C++ GetFlashColor).
+func GetFlashColor() tcell.Color {
+	h := float64(flashHue) / (360.0 / 3) // 0–3 range
+	var r, g, b float64
+	if h < 1 {
+		r = h * 255; g = 0; b = (1 - h) * 255
+	} else if h < 2 {
+		h -= 1; r = (1 - h) * 255; g = h * 255; b = 0
+	} else {
+		h -= 2; r = 0; g = (1 - h) * 255; b = h * 255
+	}
+	lum := float64(flashLum)
+	if lum > r {
+		r = lum
+	}
+	if lum > g {
+		g = lum
+	}
+	if lum > b {
+		b = lum
+	}
+	return tcell.NewRGBColor(int32(r), int32(g), int32(b))
+}
+
+// AdvanceFlashColor increments the flash hue and lum every frame.
+func AdvanceFlashColor() {
+	flashHue += 2
+	if flashHue >= 360 {
+		flashHue -= 360
+	}
+	flashLum += 11
+	if flashLum > 200 {
+		flashLum = 0
+	}
+}
+
+// UpdateChaliceColor keeps the chalice style in sync with the flash color.
+func UpdateChaliceColor() {
+	if Chalice == nil {
+		return
+	}
+	fc := GetFlashColor()
+	Chalice.Style = tcell.StyleDefault.Foreground(fc).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd))
+}
+
+// CheckWinCondition triggers the win state when the chalice reaches RoomAboveYellowCastle.
+func CheckWinCondition() {
+	if GameWon || Chalice == nil {
+		return
+	}
+	if Chalice.Room == &world.RoomAboveYellowCastle {
+		GameWon = true
+		WinFlashTimer = 255
+	}
+}
+
+// UpdateWinState decrements the flash timer, then starts the overlay timer.
+func UpdateWinState() {
+	if !GameWon {
+		return
+	}
+	if WinFlashTimer > 0 {
+		WinFlashTimer--
+		if WinFlashTimer == 0 {
+			WinOverlayTimer = 5 * 60 // 5 seconds at 60 fps
+		}
+	} else if WinOverlayTimer > 0 {
+		WinOverlayTimer--
+	}
+}
 
 func InitYellowKey(w, h int) {
 	// C++ V2: room 0x09 (RoomMazeMiddle), X=0x20, Y=0x40
@@ -1010,9 +1148,9 @@ func UpdateDragons(termW, termH int) {
 	killDragonIfSwordHits(GreenDragon, &GreenDS, termW, termH)
 	killDragonIfSwordHits(YellowDragon, &YellowDS, termW, termH)
 	killDragonIfSwordHits(RedDragon, &RedDS, termW, termH)
-	moveDragon(GreenDragon, &GreenDS, greenDragonMatrix(), 4, termW, termH)
-	moveDragon(YellowDragon, &YellowDS, yellowDragonMatrix(), 4, termW, termH)
-	moveDragon(RedDragon, &RedDS, redDragonMatrix(), 3, termW, termH)
+	moveDragon(GreenDragon, &GreenDS, greenDragonMatrix(), 4, termW, termH)  // slow
+	moveDragon(YellowDragon, &YellowDS, yellowDragonMatrix(), 3, termW, termH) // medium
+	moveDragon(RedDragon, &RedDS, redDragonMatrix(), 2, termW, termH)          // fast
 }
 
 func InitBat(w, h int) {
@@ -1034,6 +1172,7 @@ func InitBat(w, h int) {
 	// movementY=-3 in Atari coords = moving downward (low y = roomDown in Atari).
 	// In terminal rows (y increases downward) that maps to batDirY=+1.
 	batFedUpTimer = 0xff
+	batHuntDelay = 0
 	BatCarrying = nil
 	batDirX = 0
 	batDirY = 1
@@ -1057,12 +1196,13 @@ func InitPortcullises(w, h int) {
 	frames := world.MakePortcullisFrames(doorWidth, portHeight)
 	relX := float64(doorStartCol+doorWidth/2) / float64(w)
 	relY := 5.0/12.0 + float64(portHeight/2)/float64(h)
-	style := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd))
-
+	bg := tcell.NewRGBColor(0xcd, 0xcd, 0xcd)
 	makePort := func(room *world.Room) *Object {
+		style := tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(bg)
 		o := &Object{
 			RelX: relX, RelY: relY,
 			Width: doorWidth, Height: portHeight,
+			ZLayer:       2,
 			Style:        style,
 			Shape:        frames[0],
 			Frames:       frames,
@@ -1084,7 +1224,7 @@ func InitBridge(w, h int) {
 	// C++ V2: room 0x0B (RoomMazeSide), X=0x40, Y=0x40
 	Bridge = &Object{
 		RelX: 0.40, RelY: 0.50, Width: 10, Height: 12,
-		ZLayer: 2,
+		ZLayer: 0,
 		Carryable: true,
 		Room:      &world.RoomMazeSide,
 		Style:     tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x99, 0x00, 0xCC)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
@@ -1235,6 +1375,10 @@ func InitDot(w, h int) {
 // Sequence: opens from state 1→12, holds at 12, closes from 13→22, permanent unlock at >22.
 var portStatesSeq = [24]int{0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1}
 
+// portTicksPerStep: frames between each portcullis state increment.
+// 12 steps × 30 frames / 60 fps ≈ 6 seconds to fully open.
+const portTicksPerStep = 30
+
 // CollisionCheckObjects returns true if the bounding boxes of a and b overlap.
 func CollisionCheckObjects(a, b *Object, termW, termH int) bool {
 	ax := int(a.RelX*float64(termW)) - a.Width/2
@@ -1244,11 +1388,11 @@ func CollisionCheckObjects(a, b *Object, termW, termH int) bool {
 	return ax < bx+b.Width && ax+a.Width > bx && ay < by+b.Height && ay+a.Height > by
 }
 
-// UpdatePortcullis drives the open/close state machine for one portcullis.
-// Mirrors C++ Portals() logic exactly:
-//   - Trigger when key overlaps gate (both in same room) and gate is stopped (state 0 or 12).
-//   - Auto-increment every tick while animating (state != 0 and != 12).
-//   - At state > 22: permanent unlock — gate stays open forever.
+// UpdatePortcullis drives the portcullis open animation and permanent unlock.
+// Simplified behaviour (not the original open+close cycle):
+//   - Trigger: player in castle room carrying key, gate closed (PortState=0), adjacent to gate.
+//   - Gate opens over 11 steps (PortState 1→11), throttled by portTicksPerStep.
+//   - At PortState=12: gate permanently unlocked — stays open forever.
 func UpdatePortcullis(port, key *Object, termW, termH int) {
 	if port == nil || key == nil {
 		return
@@ -1259,34 +1403,105 @@ func UpdatePortcullis(port, key *Object, termW, termH int) {
 		return
 	}
 
-	// Trigger: key in same room as gate, gate standing still, key touches gate.
-	if key.Room == port.Room &&
-		(port.PortState == 0 || port.PortState == 12) &&
-		CollisionCheckObjects(port, key, termW, termH) {
-		port.PortState++
+	// Trigger: gate must be fully closed (PortState=0).
+	// Key counts as "held" if the player carries it directly, or if the player
+	// carries the bat which is itself carrying the key.
+	playerHasKey := CarriedObject == key || (CarriedObject == Bat && BatCarrying == key)
+	if CurrentRoom == port.Room && playerHasKey && port.PortState == 0 {
+		portAx := int(port.RelX*float64(termW)) - port.Width/2
+		portAy := int(port.RelY*float64(termH)) - port.Height/2
+		plAx := int(Player.RelX*float64(termW)) - Player.Width/2
+		plAy := int(Player.RelY*float64(termH)) - Player.Height/2
+		touching := plAx < portAx+port.Width && plAx+Player.Width > portAx &&
+			plAy <= portAy+port.Height && plAy+Player.Height >= portAy
+		if touching {
+			port.PortState++
+		}
 	}
 
-	// Auto-increment while animating.
-	if port.PortState != 0 && port.PortState != 12 {
-		port.PortState++
+	// Auto-increment while opening — throttled by portTicksPerStep.
+	if port.PortState != 0 {
+		port.PortTick++
+		if port.PortTick >= portTicksPerStep {
+			port.PortTick = 0
+			port.PortState++
+		}
 	}
 
-	// Permanent unlock after full open+close cycle.
-	if port.PortState > 22 {
+	// Permanently unlock when fully open (PortState reaches 12).
+	if port.PortState >= 12 {
 		port.PortState = 0
 		port.Unlocked = true
 		port.Solid = false
+		if len(port.Frames) > 0 {
+			port.Shape = port.Frames[len(port.Frames)-1]
+		}
 		return
 	}
 
-	// Map graphic state (0–6) to frame index.
+	// Map PortState (0–11) to opening frame.
 	gfxState := portStatesSeq[port.PortState]
 	numFrames := len(port.Frames)
 	if numFrames > 1 {
 		frame := gfxState * (numFrames - 1) / 6
 		port.Shape = port.Frames[frame]
 	}
-	port.Solid = gfxState < 6 // passable only when fully open
+	port.Solid = true // solid throughout opening animation
+}
+
+// UpdateCastlePortals manages portcullis portal teleports for all three castles.
+// Returns true when a room change happened (caller should call render.FillTheScreen).
+//
+//   - Player entering castle room from entry room (going Down) spawns below the portcullis
+//     instead of at the top of the screen.
+//   - Player in castle room crossing upward through open portcullis → teleport to entry room bottom.
+func UpdateCastlePortals(termW, termH int) bool {
+	roomChanged := false
+	defer func() {
+		castlePortalPrevRoom = CurrentRoom
+		prevPlayerRelY = Player.RelY
+	}()
+
+	type castlePair struct {
+		castleRoom *world.Room
+		entryRoom  *world.Room
+		port       *Object
+	}
+	pairs := []castlePair{
+		{&world.RoomYellowCastle, &world.RoomAboveYellowCastle, PortcullisYellow},
+		{&world.RoomWhiteCastle, &world.RoomWhiteCastleEntry, PortcullisWhite},
+		{&world.RoomBlackCastle, &world.RoomBlackCastleTop, PortcullisBlack},
+	}
+
+	for _, pair := range pairs {
+		port := pair.port
+		if port == nil {
+			continue
+		}
+
+		// Use the same portAy formula as the renderer.
+		portAy := int(port.RelY*float64(termH)) - port.Height/2
+
+		// Case 1: Player just entered castle room from entry room (going Down).
+		// Reposition to just below the portcullis TOP edge (portAy+1).
+		// No room change — player is already in castleRoom; just fix RelY.
+		if CurrentRoom == pair.castleRoom && castlePortalPrevRoom == pair.entryRoom {
+			Player.RelY = float64(portAy+1+Player.Height/2) / float64(termH)
+		}
+
+		// Case 2: Portcullis is open and player's top has reached portAy
+		// → teleport to entry room bottom.
+		// Simple positional check: no crossing-detection timing issues.
+		if CurrentRoom == pair.castleRoom && !port.Solid {
+			currTop := int(Player.RelY*float64(termH)) - Player.Height/2
+			if currTop <= portAy {
+				CurrentRoom = pair.entryRoom
+				Player.RelY = 1.0 - float64(Player.Height/2)/float64(termH)
+				roomChanged = true
+			}
+		}
+	}
+	return roomChanged
 }
 
 func ReinitOnResize(w, h int) {
@@ -1334,22 +1549,74 @@ func ReinitOnResize(w, h int) {
 		p.Width = doorWidth
 		p.Height = portHeight
 		p.Frames = frames
-		gfxState := portStatesSeq[p.PortState]
-		frame := gfxState * (len(frames) - 1) / 6
+		var frame int
+		if p.Unlocked {
+			frame = len(frames) - 1
+		} else {
+			gfxState := portStatesSeq[p.PortState]
+			frame = gfxState * (len(frames) - 1) / 6
+		}
 		p.Shape = frames[frame]
 	}
 }
 
 func InitPlayer(w, h int) {
 	Player = &Object{
-		RelX:   float64(w/2+1) / float64(w),
-		RelY:   float64(h/3*2+1) / float64(h),
-		Width:  3,
-		Height: 2,
-		StepX:  2,
-		StepY:  1,
-		Style:  playerNormalStyle,
-		Shape:  world.PlayerGfx,
+		RelX:    float64(w/2+1) / float64(w),
+		RelY:    float64(h/3*2+1) / float64(h),
+		Width:   3,
+		Height:  2,
+		ZLayer:  1,
+		StepX:   2,
+		StepY:   1,
+		Style:   tcell.StyleDefault, // updated each frame by UpdatePlayerStyle()
+		Shape:   world.PlayerGfx,
 	}
 	AllObjects = append(AllObjects, Player)
+}
+
+// SoftReset mirrors the original Atari "game reset": player returns to the
+// Yellow Castle at the start position; all objects, dragons, and bat keep
+// their current positions and rooms. Dragon states are cleared (dead dragons
+// become alive again, eaten state is cleared). This matches the C++ original.
+func SoftReset(w, h int) {
+	// Player back to Yellow Castle start.
+	CurrentRoom = &world.RoomYellowCastle
+	if Player != nil {
+		Player.RelX = float64(w/2+1) / float64(w)
+		Player.RelY = float64(h/3*2+1) / float64(h)
+	}
+	// Drop carried object in place.
+	CarriedObject = nil
+	dropCooldown = 0
+	// Clear eaten state.
+	Eaten = false
+	// Reset dragon states but keep positions/rooms.
+	// Also restore graphics if a dragon was killed (State==1 truncated Frames).
+	resetDragonForSoftReset(GreenDragon, &GreenDS)
+	resetDragonForSoftReset(YellowDragon, &YellowDS)
+	resetDragonForSoftReset(RedDragon, &RedDS)
+	// Clear UI state.
+	HelpMode = false
+	GodMode = false
+	CancelConfirm()
+	Overlay.Active = false
+	// Clear win state.
+	GameWon = false
+	WinFlashTimer = 0
+	WinOverlayTimer = 0
+}
+
+func resetDragonForSoftReset(dragon *Object, ds *dragonState) {
+	if dragon == nil {
+		return
+	}
+	ds.State = 0
+	ds.RoarTimer = 0
+	// Restore animation frames if dragon was killed (frames were truncated).
+	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
+	dragon.Shape = frames[0]
+	dragon.Frames = frames
+	dragon.animFrame = 0
+	dragon.animTick = 0
 }

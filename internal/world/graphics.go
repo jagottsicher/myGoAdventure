@@ -358,22 +358,33 @@ var DragonGfxDead = []*Cell{
 // ██      ██  (top caps ×2)
 //  █      █   (pillars ×8)
 // ██      ██  (bottom caps ×2)
-var BridgeGfx = []*Cell{
-	// Rows 0-1: top caps → ██      ██
-	{X: 0, Y: 0, Symbol: '█'}, {X: 1, Y: 0, Symbol: '█'}, {X: 8, Y: 0, Symbol: '█'}, {X: 9, Y: 0, Symbol: '█'},
-	{X: 0, Y: 1, Symbol: '█'}, {X: 1, Y: 1, Symbol: '█'}, {X: 8, Y: 1, Symbol: '█'}, {X: 9, Y: 1, Symbol: '█'},
-	// Rows 2-9: pillars →  █      █
-	{X: 1, Y: 2, Symbol: '█'}, {X: 8, Y: 2, Symbol: '█'},
-	{X: 1, Y: 3, Symbol: '█'}, {X: 8, Y: 3, Symbol: '█'},
-	{X: 1, Y: 4, Symbol: '█'}, {X: 8, Y: 4, Symbol: '█'},
-	{X: 1, Y: 5, Symbol: '█'}, {X: 8, Y: 5, Symbol: '█'},
-	{X: 1, Y: 6, Symbol: '█'}, {X: 8, Y: 6, Symbol: '█'},
-	{X: 1, Y: 7, Symbol: '█'}, {X: 8, Y: 7, Symbol: '█'},
-	{X: 1, Y: 8, Symbol: '█'}, {X: 8, Y: 8, Symbol: '█'},
-	{X: 1, Y: 9, Symbol: '█'}, {X: 8, Y: 9, Symbol: '█'},
-	// Rows 10-11: bottom caps → ██      ██
-	{X: 0, Y: 10, Symbol: '█'}, {X: 1, Y: 10, Symbol: '█'}, {X: 8, Y: 10, Symbol: '█'}, {X: 9, Y: 10, Symbol: '█'},
-	{X: 0, Y: 11, Symbol: '█'}, {X: 1, Y: 11, Symbol: '█'}, {X: 8, Y: 11, Symbol: '█'}, {X: 9, Y: 11, Symbol: '█'},
+var BridgeGfx = makeBridgeGfx()
+
+func makeBridgeGfx() []*Cell {
+	cells := []*Cell{}
+	for y := 0; y < 12; y++ {
+		// End caps (rows 0-1 and 10-11): wide — col 0-1 and 8-9.
+		// Middle rows (2-9): thin pillar — col 1 and 8 only.
+		// Col 0 and 9 at the ends are the "Stege nach außen" (outer stubs).
+		if y <= 1 || y >= 10 {
+			cells = append(cells,
+				&Cell{X: 0, Y: y, Symbol: '█'},
+				&Cell{X: 1, Y: y, Symbol: '█'},
+				&Cell{X: 8, Y: y, Symbol: '█'},
+				&Cell{X: 9, Y: y, Symbol: '█'},
+			)
+		} else {
+			cells = append(cells,
+				&Cell{X: 1, Y: y, Symbol: '█'},
+				&Cell{X: 8, Y: y, Symbol: '█'},
+			)
+		}
+		// Deck: cols 2-7, all rows — spaces (not 'X', so passable).
+		for x := 2; x <= 7; x++ {
+			cells = append(cells, &Cell{X: x, Y: y, Symbol: ' '})
+		}
+	}
+	return cells
 }
 
 // Sword — objectGfxSword, 5 pixel rows → 3 terminal rows
