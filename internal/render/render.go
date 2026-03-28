@@ -28,11 +28,14 @@ func DrawStage() {
 		playerCX = int(game.Player.RelX * float64(termW))
 		playerCY = int(game.Player.RelY * float64(termH))
 	}
+	winFlash := game.GameWon && game.WinFlashTimer > 0
 	for _, point := range CurrentScreen {
 		var style tcell.Style
 		if point.Symbol == 'X' || point.Symbol == 'x' {
 			wallColor := game.CurrentRoom.Foreground
-			if darkMaze && game.Player != nil {
+			if winFlash {
+				wallColor = game.GetFlashColor()
+			} else if darkMaze && game.Player != nil {
 				dx := point.X - playerCX
 				dy := point.Y - playerCY
 				// aura: 33 wide (±16), 16 high (±8)
@@ -42,9 +45,14 @@ func DrawStage() {
 			}
 			style = tcell.StyleDefault.Background(wallColor).Foreground(wallColor)
 		} else {
-			style = tcell.StyleDefault.
-				Background(game.CurrentRoom.Background).
-				Foreground(game.CurrentRoom.Foreground)
+			bg := game.CurrentRoom.Background
+			fg := game.CurrentRoom.Foreground
+			if winFlash {
+				fc := game.GetFlashColor()
+				bg = fc
+				fg = fc
+			}
+			style = tcell.StyleDefault.Background(bg).Foreground(fg)
 		}
 		Screen.SetContent(point.X, point.Y, point.Symbol, nil, style)
 	}
@@ -209,21 +217,36 @@ func FillTheScreen() {
 // a barrier object belonging to the current room (checked directly, not via screen buffer
 // to avoid race conditions with the render loop).
 func WouldCollideWall(screenX, screenY, width, height int) bool {
-	termW, termH := Screen.Size()
-	// Check room walls via screen buffer.
-	for dy := 0; dy < height; dy++ {
-		for dx := 0; dx < width; dx++ {
-			px, py := screenX+dx, screenY+dy
-			if px < 0 || px >= termW || py < 0 || py >= termH {
-				continue
-			}
-			r, _, _, _ := Screen.GetContent(px, py)
-			if r == 'X' {
-				return true
+	// Build set of positions covered by the bridge — the entire bounding box is passable.
+	// Applies whether the bridge is carried or dropped, as long as it is in the current room.
+	bridged := map[[2]int]bool{}
+	if b := game.Bridge; b != nil && b.Room == game.CurrentRoom {
+		termW, termH := Screen.Size()
+		box := int(b.RelX*float64(termW)) - b.Width/2
+		boy := int(b.RelY*float64(termH)) - b.Height/2
+		for y := 0; y < b.Height; y++ {
+			for x := 0; x < b.Width; x++ {
+				bridged[[2]int{box + x, boy + y}] = true
 			}
 		}
 	}
+
+	// Check room walls via CurrentScreen — authoritative wall list, never corrupted
+	// by object rendering (unlike Screen.GetContent which objects overwrite).
+	for _, cell := range CurrentScreen {
+		if cell.Symbol != 'X' {
+			continue
+		}
+		if bridged[[2]int{cell.X, cell.Y}] {
+			continue // wall covered by bridge deck — passable
+		}
+		if cell.X >= screenX && cell.X < screenX+width &&
+			cell.Y >= screenY && cell.Y < screenY+height {
+			return true
+		}
+	}
 	// Check barrier and solid objects directly (not via screen buffer).
+	termW, termH := Screen.Size()
 	for _, obj := range game.AllObjects {
 		if obj.Room == nil || obj.Room != game.CurrentRoom {
 			continue
@@ -314,6 +337,33 @@ func DrawHelp() {
 	put(cy+28, "  Press [H] to close", hilite)
 }
 
+func DrawWinOverlay() {
+	if !game.GameWon || game.WinOverlayTimer <= 0 {
+		return
+	}
+	termW, termH := Screen.Size()
+	fc := game.GetFlashColor()
+	bg := tcell.StyleDefault.Background(fc).Foreground(fc)
+	text := tcell.StyleDefault.Background(fc).Foreground(tcell.ColorBlack)
+
+	msg := "  YOU WON!  "
+	sub := "  Press [R] to play again  "
+	boxW := len(sub) + 4
+	boxH := 5
+	bx := termW/2 - boxW/2
+	by := termH/2 - boxH/2
+
+	for y := by; y < by+boxH; y++ {
+		for x := bx; x < bx+boxW; x++ {
+			if x >= 0 && x < termW && y >= 0 && y < termH {
+				Screen.SetContent(x, y, ' ', nil, bg)
+			}
+		}
+	}
+	emitStr(Screen, bx+(boxW-len(msg))/2, by+1, text, msg)
+	emitStr(Screen, bx+(boxW-len(sub))/2, by+3, text, sub)
+}
+
 func DrawConfirm() {
 	termW, termH := Screen.Size()
 	bg := tcell.NewRGBColor(0xaa, 0xaa, 0xaa)
@@ -348,31 +398,8 @@ func DrawConfirm() {
 }
 
 func ResetGame() {
-	game.HelpMode = false
-	game.GodMode = false
-	game.CarriedObject = nil
-	game.ResetObjects()
 	w, h := Screen.Size()
-	game.CurrentRoom = &world.RoomYellowCastle
-	game.InitPlayer(w, h)
-	game.InitYellowKey(w, h)
-	game.InitWhiteKey(w, h)
-	game.InitBlackKey(w, h)
-	game.InitGreenDragon(w, h)
-	game.InitYellowDragon(w, h)
-	game.InitRedDragon(w, h)
-	game.InitBat(w, h)
-	game.InitPortcullises(w, h)
-	game.InitBridge(w, h)
-	game.InitSword(w, h)
-	game.InitChalice(w, h)
-	game.InitMagnet(w, h)
-	game.InitDot(w, h)
-	blackOnBlack := tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorBlack)
-	game.InitBarrier(&world.RoomTopAccessRight, 1.0/20.0, h, blackOnBlack)
-	game.InitBarrier(&world.RoomCorridorRight, 19.0/20.0, h, blackOnBlack)
-	game.InitBarrier(&world.RoomSideCorridorOlive, 1.0/20.0, h, blackOnBlack)
-	game.InitBarrier(&world.RoomSideCorridorCyan, 19.0/20.0, h, blackOnBlack)
+	game.SoftReset(w, h)
 	FillTheScreen()
 }
 

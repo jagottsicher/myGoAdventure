@@ -34,6 +34,7 @@ func main() {
 			}
 		}
 		render.DrawEaten()
+		render.DrawWinOverlay()
 		if game.ConfirmMode {
 			render.DrawConfirm()
 		}
@@ -49,6 +50,7 @@ func main() {
 func updateStates() {
 	termW, termH := render.Screen.Size()
 	input.HandleUserInput()
+	game.UpdatePlayerStyle()
 	game.UpdateSelOverlay()
 	game.GreenDragon.Animate()
 	game.YellowDragon.Animate()
@@ -57,6 +59,9 @@ func updateStates() {
 	game.UpdatePortcullis(game.PortcullisYellow, game.YellowKey, termW, termH)
 	game.UpdatePortcullis(game.PortcullisWhite, game.WhiteKey, termW, termH)
 	game.UpdatePortcullis(game.PortcullisBlack, game.BlackKey, termW, termH)
+	if game.UpdateCastlePortals(termW, termH) {
+		render.FillTheScreen()
+	}
 	game.Sword.Animate()
 	game.Magnet.Animate()
 	game.TryPickup(termW, termH)
@@ -73,6 +78,10 @@ func updateStates() {
 	if game.RedDS.State != 1 {
 		facePlayer(game.RedDragon, termW)
 	}
+	game.AdvanceFlashColor()
+	game.UpdateChaliceColor()
+	game.CheckWinCondition()
+	game.UpdateWinState()
 }
 
 func facePlayer(dragon *game.Object, termW int) {

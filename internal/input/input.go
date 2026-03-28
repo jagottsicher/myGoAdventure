@@ -25,6 +25,7 @@ const (
 var (
 	pressedKeys  = map[string]bool{}
 	keyTimers    = map[string]*time.Timer{}
+	keyConsumed  = map[string]bool{} // true after first step; cleared on OS repeat
 	keyMu        sync.Mutex
 	playerMoveTick int
 )
@@ -108,8 +109,8 @@ func handleKey(ev *tcell.EventKey) {
 	keyMu.Lock()
 	pressedKeys[key] = true
 	if t, ok := keyTimers[key]; ok {
-		// Repeat event: OS repeat is flowing — switch to short timeout so
-		// releasing the key stops movement within keyRepeatTimeout.
+		// Repeat event: OS repeat is flowing — allow next step and reset short timeout.
+		keyConsumed[key] = false
 		t.Reset(keyRepeatTimeout)
 	} else {
 		// First press: use long timeout to bridge the OS initial repeat delay.
@@ -118,6 +119,7 @@ func handleKey(ev *tcell.EventKey) {
 			keyMu.Lock()
 			delete(pressedKeys, k)
 			delete(keyTimers, k)
+			delete(keyConsumed, k)
 			keyMu.Unlock()
 		})
 	}
@@ -125,6 +127,7 @@ func handleKey(ev *tcell.EventKey) {
 }
 
 func HandleUserInput() {
+	game.PlayerMoved = false // reset every frame
 	if game.Eaten {
 		return // player trapped inside dragon — no movement
 	}
@@ -135,10 +138,16 @@ func HandleUserInput() {
 		return
 	}
 
+	// Only pass keys that haven't been consumed yet; mark them consumed immediately.
+	// A key is un-consumed again only when an OS repeat event arrives (held key).
+	// Tap = 1 step. Hold = 1 step, brief pause, then one step per OS repeat.
 	keyMu.Lock()
 	keys := make(map[string]bool, len(pressedKeys))
-	for k, v := range pressedKeys {
-		keys[k] = v
+	for k := range pressedKeys {
+		if !keyConsumed[k] {
+			keys[k] = true
+			keyConsumed[k] = true
+		}
 	}
 	keyMu.Unlock()
 
@@ -163,6 +172,7 @@ func HandleUserInput() {
 		candY := int(newRelY*float64(h)) - game.Player.Height/2
 		if canMove(candX, candY) {
 			game.Player.RelY = newRelY
+			game.PlayerMoved = true
 			if candY < 0 {
 				if game.CurrentRoom != nil && game.CurrentRoom.Up != nil {
 					game.CurrentRoom = game.CurrentRoom.Up
@@ -181,6 +191,7 @@ func HandleUserInput() {
 		candY := int(newRelY*float64(h)) - game.Player.Height/2
 		if canMove(candX, candY) {
 			game.Player.RelY = newRelY
+			game.PlayerMoved = true
 			if candY+game.Player.Height > h {
 				if game.CurrentRoom != nil && game.CurrentRoom.Down != nil {
 					game.CurrentRoom = game.CurrentRoom.Down
@@ -204,6 +215,7 @@ func HandleUserInput() {
 		}
 		if canMove(candX, candY) {
 			game.Player.RelX = float64(newAnchorX) / float64(w)
+			game.PlayerMoved = true
 			if candX < 0 {
 				if game.CurrentRoom != nil && game.CurrentRoom.Left != nil {
 					game.CurrentRoom = game.CurrentRoom.Left
@@ -227,6 +239,7 @@ func HandleUserInput() {
 		}
 		if canMove(candX, candY) {
 			game.Player.RelX = float64(newAnchorX) / float64(w)
+			game.PlayerMoved = true
 			if candX+game.Player.Width > w {
 				if game.CurrentRoom != nil && game.CurrentRoom.Right != nil {
 					game.CurrentRoom = game.CurrentRoom.Right
