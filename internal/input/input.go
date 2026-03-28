@@ -13,12 +13,20 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const keyReleaseTimeout = 150 * time.Millisecond
+const (
+	// keyInitialTimeout covers the OS key-repeat initial delay (~500–660 ms on Linux).
+	// Keeps the key "pressed" until the first OS repeat event arrives.
+	keyInitialTimeout = 750 * time.Millisecond
+	// keyRepeatTimeout is used once OS repeats are flowing (~30 ms interval).
+	// Short enough that releasing the key stops movement within ~80 ms.
+	keyRepeatTimeout = 80 * time.Millisecond
+)
 
 var (
-	pressedKeys = map[string]bool{}
-	keyTimers   = map[string]*time.Timer{}
-	keyMu       sync.Mutex
+	pressedKeys  = map[string]bool{}
+	keyTimers    = map[string]*time.Timer{}
+	keyMu        sync.Mutex
+	playerMoveTick int
 )
 
 func InitUserInput() {
@@ -97,10 +105,13 @@ func handleKey(ev *tcell.EventKey) {
 	keyMu.Lock()
 	pressedKeys[key] = true
 	if t, ok := keyTimers[key]; ok {
-		t.Reset(keyReleaseTimeout)
+		// Repeat event: OS repeat is flowing — switch to short timeout so
+		// releasing the key stops movement within keyRepeatTimeout.
+		t.Reset(keyRepeatTimeout)
 	} else {
+		// First press: use long timeout to bridge the OS initial repeat delay.
 		k := key
-		keyTimers[k] = time.AfterFunc(keyReleaseTimeout, func() {
+		keyTimers[k] = time.AfterFunc(keyInitialTimeout, func() {
 			keyMu.Lock()
 			delete(pressedKeys, k)
 			delete(keyTimers, k)
@@ -108,10 +119,16 @@ func handleKey(ev *tcell.EventKey) {
 		})
 	}
 	keyMu.Unlock()
-	HandleUserInput()
 }
 
 func HandleUserInput() {
+	// Throttle to every 2nd frame (~30 moves/sec at 60 fps) to match
+	// the original speed before the game-loop-driven input change.
+	playerMoveTick++
+	if playerMoveTick%2 != 0 {
+		return
+	}
+
 	keyMu.Lock()
 	keys := make(map[string]bool, len(pressedKeys))
 	for k, v := range pressedKeys {
