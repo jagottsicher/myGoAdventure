@@ -542,6 +542,34 @@ func InitBlackKey(w, h int) {
 	AllObjects = append(AllObjects, BlackKey)
 }
 
+// dragonState holds persistent integer position and movement state for one dragon.
+// Using integers avoids the float64 round-trip truncation bug that froze the bat.
+type dragonState struct {
+	cellX, cellY int // bounding-box top-left in terminal columns/rows
+	dirX, dirY   int // current movement direction: -1, 0, or +1 per axis
+	tick         int // tick counter for movement gate
+}
+
+var (
+	GreenDS  dragonState
+	YellowDS dragonState
+	RedDS    dragonState
+)
+
+func initDragonState(ds *dragonState, dragon *Object, w, h int) {
+	ds.cellX = int(dragon.RelX*float64(w)) - dragon.Width/2
+	ds.cellY = int(dragon.RelY*float64(h)) - dragon.Height/2
+	ds.tick = 0
+	// V1 (GameType==1): dragons stand still. V2/V3: start moving diagonally.
+	if G.GameType == 1 {
+		ds.dirX = 0
+		ds.dirY = 0
+	} else {
+		ds.dirX = 1
+		ds.dirY = 1
+	}
+}
+
 func InitGreenDragon(w, h int) {
 	// C++ V2: room 0x04 (RoomBlueMazeTop), X=0x50, Y=0x20
 	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
@@ -555,6 +583,7 @@ func InitGreenDragon(w, h int) {
 		AnimInterval: 30,
 	}
 	AllObjects = append(AllObjects, GreenDragon)
+	initDragonState(&GreenDS, GreenDragon, w, h)
 }
 
 func InitYellowDragon(w, h int) {
@@ -570,6 +599,7 @@ func InitYellowDragon(w, h int) {
 		AnimInterval: 30,
 	}
 	AllObjects = append(AllObjects, YellowDragon)
+	initDragonState(&YellowDS, YellowDragon, w, h)
 }
 
 func InitRedDragon(w, h int) {
@@ -585,6 +615,193 @@ func InitRedDragon(w, h int) {
 		AnimInterval: 30,
 	}
 	AllObjects = append(AllObjects, RedDragon)
+	initDragonState(&RedDS, RedDragon, w, h)
+}
+
+// greenDragonMatrix returns the flee/seek pairs for the green dragon.
+// Mirrors C++ greenDragonMatrix[]: (SWORD,GREENDRAGON),(GREENDRAGON,BALL),
+// (GREENDRAGON,CHALISE),(GREENDRAGON,BRIDGE),(GREENDRAGON,MAGNET),(GREENDRAGON,BLACKKEY).
+// self-ref entries (GreenDragon) are returned as nil — callers skip nil flee/seek.
+func greenDragonMatrix() [][2]*Object {
+	return [][2]*Object{
+		{Sword, nil},        // flee SWORD; no seek (self-ref → nil)
+		{nil, Player},       // no flee (self-ref → nil); seek BALL (player)
+		{nil, Chalice},      // seek CHALICE
+		{nil, Bridge},       // seek BRIDGE
+		{nil, Magnet},       // seek MAGNET
+		{nil, BlackKey},     // seek BLACKKEY
+	}
+}
+
+// yellowDragonMatrix returns the flee/seek pairs for the yellow dragon.
+// Mirrors C++ yellowDragonMatrix[]: (SWORD,YELLOWDRAGON),(YELLOWKEY,YELLOWDRAGON),
+// (YELLOWDRAGON,BALL),(YELLOWDRAGON,CHALISE).
+func yellowDragonMatrix() [][2]*Object {
+	return [][2]*Object{
+		{Sword, nil},        // flee SWORD; no seek (self-ref → nil)
+		{YellowKey, nil},    // flee YELLOWKEY; no seek (self-ref → nil)
+		{nil, Player},       // seek BALL (player)
+		{nil, Chalice},      // seek CHALICE
+	}
+}
+
+// redDragonMatrix returns the flee/seek pairs for the red dragon.
+// Mirrors C++ redDragonMatrix[]: (SWORD,REDDRAGON),(REDDRAGON,BALL),
+// (REDDRAGON,CHALISE),(REDDRAGON,WHITEKEY).
+func redDragonMatrix() [][2]*Object {
+	return [][2]*Object{
+		{Sword, nil},        // flee SWORD; no seek (self-ref → nil)
+		{nil, Player},       // seek BALL (player)
+		{nil, Chalice},      // seek CHALICE
+		{nil, WhiteKey},     // seek WHITEKEY
+	}
+}
+
+// moveDragon updates one dragon's direction from its matrix, then moves it.
+// tickPeriod controls speed: 4 = medium (green/yellow, same as bat), 3 = fast (red).
+func moveDragon(dragon *Object, ds *dragonState, matrix [][2]*Object, tickPeriod, termW, termH int) {
+	if dragon == nil || G.GameType == 1 {
+		return // V1: dragons are static
+	}
+
+	dCX := ds.cellX + dragon.Width/2
+	dCY := ds.cellY + dragon.Height/2
+
+	// Determine direction from matrix: flee takes priority over seek within each pair.
+	// dirSet is true when the matrix fired — prevents the adjacent-room override below.
+	dirSet := false
+	for _, pair := range matrix {
+		flee, seek := pair[0], pair[1]
+
+		// Flee check (nil = self-ref, skip).
+		if flee != nil {
+			inRoom := (flee == Player && dragon.Room == CurrentRoom) ||
+				(flee != Player && flee.Room == dragon.Room)
+			if inRoom {
+				fx := int(flee.RelX*float64(termW))
+				fy := int(flee.RelY*float64(termH))
+				if dCX < fx {
+					ds.dirX = -1
+				} else if dCX > fx {
+					ds.dirX = 1
+				} else {
+					ds.dirX = 0
+				}
+				if dCY < fy {
+					ds.dirY = -1
+				} else if dCY > fy {
+					ds.dirY = 1
+				} else {
+					ds.dirY = 0
+				}
+				dirSet = true
+				break
+			}
+		}
+
+		// Seek check (nil = self-ref, skip).
+		// Only reached when flee is nil (self-ref) — matches C++ else-branch logic.
+		if flee == nil && seek != nil {
+			inRoom := (seek == Player && dragon.Room == CurrentRoom) ||
+				(seek != Player && seek.Room == dragon.Room)
+			if inRoom {
+				sx := int(seek.RelX*float64(termW))
+				sy := int(seek.RelY*float64(termH))
+				if dCX < sx {
+					ds.dirX = 1
+				} else if dCX > sx {
+					ds.dirX = -1
+				} else {
+					ds.dirX = 0
+				}
+				if dCY < sy {
+					ds.dirY = 1
+				} else if dCY > sy {
+					ds.dirY = -1
+				} else {
+					ds.dirY = 0
+				}
+				dirSet = true
+				break
+			}
+		}
+	}
+
+	// Adjacent-room following: when the matrix didn't find any target in the dragon's
+	// current room, steer toward the exit that leads to the player's room (1-step lookahead).
+	// This is the fix for "dragon never follows across screen boundaries" — without it,
+	// the dragon just keeps its old direction which may point at a dead-end wall.
+	if !dirSet && dragon.Room != nil {
+		switch CurrentRoom {
+		case dragon.Room.Up:
+			ds.dirY = -1
+		case dragon.Room.Down:
+			ds.dirY = 1
+		case dragon.Room.Left:
+			ds.dirX = -1
+		case dragon.Room.Right:
+			ds.dirX = 1
+		}
+	}
+
+	// Ensure dragon always has velocity.
+	if ds.dirX == 0 && ds.dirY == 0 {
+		ds.dirY = 1
+	}
+
+	// Move 1 cell per axis every tickPeriod frames.
+	ds.tick = (ds.tick + 1) % tickPeriod
+	if ds.tick == 0 {
+		ds.cellX += ds.dirX
+		ds.cellY += ds.dirY
+	}
+
+	// Room transitions: cross into adjacent room or bounce off dead-end walls.
+	if ds.cellX < 0 {
+		if dragon.Room != nil && dragon.Room.Left != nil {
+			dragon.Room = dragon.Room.Left
+			ds.cellX = termW - dragon.Width
+		} else {
+			ds.cellX = 0
+			ds.dirX = 1
+		}
+	} else if ds.cellX+dragon.Width > termW {
+		if dragon.Room != nil && dragon.Room.Right != nil {
+			dragon.Room = dragon.Room.Right
+			ds.cellX = 0
+		} else {
+			ds.cellX = termW - dragon.Width
+			ds.dirX = -1
+		}
+	}
+	if ds.cellY < 0 {
+		if dragon.Room != nil && dragon.Room.Up != nil {
+			dragon.Room = dragon.Room.Up
+			ds.cellY = termH - dragon.Height
+		} else {
+			ds.cellY = 0
+			ds.dirY = 1
+		}
+	} else if ds.cellY+dragon.Height > termH {
+		if dragon.Room != nil && dragon.Room.Down != nil {
+			dragon.Room = dragon.Room.Down
+			ds.cellY = 0
+		} else {
+			ds.cellY = termH - dragon.Height
+			ds.dirY = -1
+		}
+	}
+
+	dragon.RelX = float64(ds.cellX+dragon.Width/2) / float64(termW)
+	dragon.RelY = float64(ds.cellY+dragon.Height/2) / float64(termH)
+}
+
+// UpdateDragons drives movement AI for all three dragons.
+// Call once per game tick from adventure.go updateStates().
+func UpdateDragons(termW, termH int) {
+	moveDragon(GreenDragon, &GreenDS, greenDragonMatrix(), 4, termW, termH)
+	moveDragon(YellowDragon, &YellowDS, yellowDragonMatrix(), 4, termW, termH)
+	moveDragon(RedDragon, &RedDS, redDragonMatrix(), 3, termW, termH)
 }
 
 func InitBat(w, h int) {
@@ -866,6 +1083,19 @@ func ReinitOnResize(w, h int) {
 	if Bat != nil {
 		batCellX = int(Bat.RelX*float64(w)) - Bat.Width/2
 		batCellY = int(Bat.RelY*float64(h)) - Bat.Height/2
+	}
+	// Re-sync dragon integer positions for the new terminal size.
+	if GreenDragon != nil {
+		GreenDS.cellX = int(GreenDragon.RelX*float64(w)) - GreenDragon.Width/2
+		GreenDS.cellY = int(GreenDragon.RelY*float64(h)) - GreenDragon.Height/2
+	}
+	if YellowDragon != nil {
+		YellowDS.cellX = int(YellowDragon.RelX*float64(w)) - YellowDragon.Width/2
+		YellowDS.cellY = int(YellowDragon.RelY*float64(h)) - YellowDragon.Height/2
+	}
+	if RedDragon != nil {
+		RedDS.cellX = int(RedDragon.RelX*float64(w)) - RedDragon.Width/2
+		RedDS.cellY = int(RedDragon.RelY*float64(h)) - RedDragon.Height/2
 	}
 
 	ports := []*Object{PortcullisYellow, PortcullisWhite, PortcullisBlack}
