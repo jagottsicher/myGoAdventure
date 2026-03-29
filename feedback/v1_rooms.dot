@@ -1,0 +1,152 @@
+graph G {
+    // neato with fixed positions (-n flag).
+    // pos="x,y" in inches; y increases upward.
+    // Rooms placed so that the EXIT DIRECTION matches spatial position where possible.
+    // Non-geographic Adventure connections are marked with dashed/curved edges.
+    //
+    // V1-specific connections drawn in RED (differ from V2).
+
+    graph [margin=0.5];
+    node [shape=box, style=filled, fontname="monospace", fontsize=9,
+          width=1.6, height=0.45, fixedsize=true];
+    edge [fontsize=7];
+
+    // ══════════════════════════════════════════
+    //  NODE POSITIONS  (x, y in inches, y↑)
+    // ══════════════════════════════════════════
+
+    // ── Blue Maze cluster (upper-left) ────────
+    BlueMaze1      [label="BlueMaze1\n0x05",        fillcolor="#6b64ff", fontcolor=white, pos="4.0,15.0!"];
+    BlueMazeTop    [label="BlueMazeTop\n0x04",      fillcolor="#6b64ff", fontcolor=white, pos="2.0,13.0!"];
+    BlueMazeBottom [label="BlueMazeBottom\n0x06",   fillcolor="#6b64ff", fontcolor=white, pos="5.5,13.0!"];
+    BlueMazeCenter [label="BlueMazeCenter\n0x07",   fillcolor="#6b64ff", fontcolor=white, pos="2.0,11.2!"];
+    BlueMazeEntry  [label="BlueMazeEntry\n0x08",    fillcolor="#6b64ff", fontcolor=white, pos="4.0,11.2!"];
+
+    // ── Yellow Castle area (center) ───────────
+    AboveYellow    [label="Above Yellow\n0x12",     fillcolor="#FFD84C", fontcolor=black, pos="9.0,15.0!"];
+    YellowCastle   [label="Yellow Castle\n0x11",    fillcolor="#FFD84C", fontcolor=black, pos="9.0,13.0!"];
+    TopAccessRight [label="TopAccessRight\n0x01",   fillcolor="#a1b034", fontcolor=black, pos="7.0,13.0!"];
+    CorridorRight  [label="CorridorRight\n0x03",    fillcolor="#d5b543", fontcolor=black, pos="11.0,13.0!"];
+    BelowYellow    [label="BelowYellow\n0x02",      fillcolor="#86d922", fontcolor=black, pos="9.0,11.2!"];
+
+    // ── Black Castle / Castle Top (right-center) ─
+    BlackCastleTop [label="BlackCastleTop\n0x1D",   fillcolor="#fa5255", fontcolor=white, pos="11.0,9.5!"];
+    BlackCastle    [label="Black Castle\n0x10",     fillcolor="#444444", fontcolor=white, pos="7.0,9.5!"];
+
+    // ── White Maze cluster (middle-right) ─────
+    MazeEntry      [label="MazeEntry\n0x0A",        fillcolor="#cccccc", fontcolor=black, pos="13.0,11.2!"];
+    MazeMiddle     [label="MazeMiddle\n0x09",       fillcolor="#cccccc", fontcolor=black, pos="14.6,11.2!"];
+    MazeSide       [label="MazeSide\n0x0B",         fillcolor="#cccccc", fontcolor=black, pos="16.2,11.2!"];
+
+    // ── Side corridors ────────────────────────
+    SideCorridorOlive [label="SideCorridorOlive\n0x0D", fillcolor="#21d91b", fontcolor=black, pos="16.2,9.5!"];
+    SideCorridorCyan  [label="SideCorridorCyan\n0x0C",  fillcolor="#55b6ff", fontcolor=black, pos="16.2,7.8!"];
+    DeadEndCyan       [label="DeadEndCyan\n0x0E",       fillcolor="#55b6ff", fontcolor=black, pos="18.0,9.5!"];
+    WhiteCastle       [label="White Castle\n0x0F",      fillcolor="#DDDDDD", fontcolor=black, pos="18.0,7.8!"];
+
+    // ── OtherPurple / BlackCastleEntry (mid-right) ─
+    OtherPurple       [label="OtherPurple\n0x1C",       fillcolor="#a251d9", fontcolor=white, pos="14.6,9.5!"];
+    BlackCastleEntry  [label="BlackCastleEntry\n0x1B",  fillcolor="#a251d9", fontcolor=white, pos="14.6,7.8!"];
+
+    // ── Black Maze cluster (upper-right) ──────
+    BlackMazeEntry [label="BlackMazeEntry\n0x16",   fillcolor="#888888", fontcolor=white, pos="14.6,13.0!"];
+    BlackMaze1     [label="BlackMaze1\n0x13",        fillcolor="#888888", fontcolor=white, pos="16.2,13.0!"];
+    BlackMaze2     [label="BlackMaze2\n0x14",        fillcolor="#888888", fontcolor=white, pos="16.2,14.6!"];
+    BlackMaze3     [label="BlackMaze3\n0x15",        fillcolor="#888888", fontcolor=white, pos="14.6,14.6!"];
+
+    // ── Red Maze cluster (bottom) ─────────────
+    RedMaze1          [label="RedMaze1\n0x17",       fillcolor="#fa5255", fontcolor=white, pos="9.0,5.8!"];
+    RedMazeTop        [label="RedMazeTop\n0x18",     fillcolor="#fa5255", fontcolor=white, pos="7.4,5.8!"];
+    RedMazeBottom     [label="RedMazeBottom\n0x19",  fillcolor="#fa5255", fontcolor=white, pos="10.6,5.8!"];
+    WhiteCastleEntry  [label="WhiteCastleEntry\n0x1A",fillcolor="#fa5255",fontcolor=white, pos="9.0,4.2!"];
+
+    // ── Easter Egg (far right, special) ───────
+    EasterEgg      [label="Easter Egg\n0x1E",        fillcolor="#a251d9", fontcolor=white,
+                    pos="11.0,11.2!", style="filled,dashed"];
+
+    // ══════════════════════════════════════════
+    //  EDGES
+    //  Label = direction you travel FROM the left-side node
+    //  Red/bold = V1-specific (different from V2)
+    // ══════════════════════════════════════════
+
+    // Yellow Castle area
+    AboveYellow    -- YellowCastle   [label="D/U"];
+    YellowCastle   -- TopAccessRight [label="L/R"];
+    YellowCastle   -- CorridorRight  [label="R/L"];
+    YellowCastle   -- BelowYellow    [label="D/U"];
+
+    // TopAccessRight connections
+    TopAccessRight -- BlueMazeEntry  [label="U/D"];
+    TopAccessRight -- BlackCastle    [label="D↓", color=red, fontcolor=red, penwidth=2];
+
+    // BelowYellowCastle connections (V1: down→BlueMaze1)
+    BelowYellow    -- BlueMaze1      [label="D↓", color=red, fontcolor=red, penwidth=2, style=dashed];
+    BelowYellow    -- CorridorRight  [label="R/L"];
+
+    // CorridorRight connections (V1: down→BlackCastleTop)
+    CorridorRight  -- BlueMazeBottom [label="U/D"];
+    CorridorRight  -- BlackCastleTop [label="D↓", color=red, fontcolor=red, penwidth=2];
+    CorridorRight  -- EasterEgg      [label="R(Dot)", style=dashed, color=gray];
+
+    // Blue Maze internal
+    BlueMazeEntry  -- BlueMaze1      [label="U/D"];
+    BlueMazeEntry  -- BlueMazeCenter [label="L/R"];
+    BlueMaze1      -- BlueMazeTop    [label="L/R"];
+    BlueMaze1      -- BlueMazeBottom [label="R/L"];
+    BlueMazeTop    -- BlueMazeCenter [label="D/U"];
+    BlueMazeTop    -- BlackCastle    [label="U", style=dashed, color=gray, fontcolor=gray];
+    BlueMazeBottom -- CorridorRight  [label="D", style=dashed, color=gray, fontcolor=gray];
+
+    // BlueMazeCenter
+    BlueMazeCenter -- BlueMazeEntry  [label="R/L"];
+
+    // BlackCastle
+    BlackCastle    -- BlackCastleTop [label="U/D"];
+    BlackCastle    -- OtherPurple    [label="R/L"];
+
+    // BlackCastleTop (V1: up→CorridorRight)
+    BlackCastleTop -- CorridorRight  [label="U↑", color=red, fontcolor=red, penwidth=2];
+    BlackCastleTop -- BlackMazeEntry [label="nD", style=dashed, color=gray, fontcolor=gray];
+
+    // White Maze
+    MazeEntry      -- CorridorRight  [label="U", style=dashed, color=gray, fontcolor=gray];
+    MazeEntry      -- MazeMiddle     [label="R/L"];
+    MazeMiddle     -- MazeSide       [label="R/L"];
+    MazeSide       -- SideCorridorOlive [label="L/R"];
+    MazeSide       -- OtherPurple    [label="D/U"];
+
+    // Side corridors
+    SideCorridorOlive -- WhiteCastle [label="U/D"];
+    SideCorridorOlive -- DeadEndCyan [label="D/U"];
+    SideCorridorOlive -- SideCorridorCyan [label="L/R"];
+    SideCorridorCyan  -- BlackCastleTop   [label="D", style=dashed, color=gray, fontcolor=gray];
+    SideCorridorCyan  -- MazeSide         [label="R", style=dashed, color=gray, fontcolor=gray];
+    DeadEndCyan       -- WhiteCastle      [label="D/U"];
+    DeadEndCyan       -- BlackCastle      [label="R/L", style=dashed, color=gray, fontcolor=gray];
+
+    // OtherPurple (V1: down→BlackCastleEntry)
+    OtherPurple    -- BlackCastleTop [label="U/D"];
+    OtherPurple    -- BlackCastleEntry [label="D↓", color=red, fontcolor=red, penwidth=2];
+
+    // BlackCastleEntry (V1: all 4 → OtherPurple)
+    BlackCastleEntry -- OtherPurple  [label="↕↔", color=red, fontcolor=red, penwidth=2,
+                                      style=bold];
+
+    // Black Maze
+    BlackMazeEntry -- BlackMaze1     [label="R/L"];
+    BlackMazeEntry -- BlackMaze2     [label="U", style=dashed, color=gray, fontcolor=gray];
+    BlackMazeEntry -- BlackCastleTop [label="D/U"];
+    BlackMaze1     -- BlackMaze2     [label="U/D"];
+    BlackMaze1     -- BlackMaze3     [label="U/D", style=dashed, color=gray, fontcolor=gray];
+    BlackMaze2     -- BlackMaze3     [label="R/L"];
+    BlackMaze3     -- BlackMaze1     [label="L/R"];
+
+    // Red Maze
+    RedMaze1       -- RedMazeTop     [label="L/R"];
+    RedMaze1       -- RedMazeBottom  [label="R/L"];
+    RedMazeTop     -- WhiteCastleEntry [label="U/D"];
+    RedMazeBottom  -- WhiteCastleEntry [label="D", style=dashed, color=gray, fontcolor=gray];
+    WhiteCastleEntry -- WhiteCastle  [label="D", style=dashed, color=gray, fontcolor=gray];
+    WhiteCastle    -- SideCorridorOlive [label="U", style=dashed, color=gray, fontcolor=gray];
+}

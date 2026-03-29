@@ -4,8 +4,9 @@ import "github.com/gdamore/tcell/v2"
 
 // Room 0x1E in C++ — "Name Room" (Easter Egg, zeigt "Warren Robinett" in Originalfarbe FLASH)
 // In Go als Splashscreen genutzt — gleiche Rolle: Sonder-Anzeigeraum außerhalb des Spielablaufs
+// Room 0x1E in C++ — "Name Room" / Easter Egg room. Uses same graphic as BelowYellowCastle.
 var RoomSplashScreen = Room{
-	RoomData:   RoomGfxCastle,
+	RoomData:   RoomBelowYellowCastleGfx,
 	Background: tcell.NewRGBColor(0xcd, 0xcd, 0xcd),
 	Foreground: tcell.NewRGBColor(0xA2, 0x51, 0xD9), // COLOR_PURPLE
 }
@@ -222,7 +223,43 @@ var RoomDeadEndCyan = Room{
 	Foreground: tcell.NewRGBColor(0x55, 0xb6, 0xff), // COLOR_LTCYAN
 }
 
-func InitDirections() {
+// RoomsByID maps C++ room IDs (0x00–0x1E) to Go room pointers.
+// Used for variation-3 random object placement (mirrors C++ roomBoundsData logic).
+var RoomsByID = [0x1F]*Room{
+	0x00: &RoomNumberRoom,
+	0x01: &RoomTopAccessRight,
+	0x02: &RoomBelowYellowCastle,
+	0x03: &RoomCorridorRight,
+	0x04: &RoomBlueMazeTop,
+	0x05: &RoomBlueMaze1,
+	0x06: &RoomBlueMazeBottom,
+	0x07: &RoomBlueMazeCenter,
+	0x08: &RoomBlueMazeEntry,
+	0x09: &RoomMazeMiddle,
+	0x0A: &RoomMazeEntry,
+	0x0B: &RoomMazeSide,
+	0x0C: &RoomSideCorridorCyan,
+	0x0D: &RoomSideCorridorOlive,
+	0x0E: &RoomDeadEndCyan,
+	0x0F: &RoomWhiteCastle,
+	0x10: &RoomBlackCastle,
+	0x11: &RoomYellowCastle,
+	0x12: &RoomAboveYellowCastle,
+	0x13: &RoomBlackMaze1,
+	0x14: &RoomBlackMaze2,
+	0x15: &RoomBlackMaze3,
+	0x16: &RoomBlackMazeEntry,
+	0x17: &RoomRedMaze1,
+	0x18: &RoomRedMazeTop,
+	0x19: &RoomRedMazeBottom,
+	0x1A: &RoomWhiteCastleEntry,
+	0x1B: &RoomBlackCastleEntry,
+	0x1C: &RoomOtherPurpleRoom,
+	0x1D: &RoomBlackCastleTop,
+	0x1E: &RoomSplashScreen,
+}
+
+func InitDirections(gameType int) {
 	// --- Originalverbindungen (vor letztem Arbeitsschritt) ---
 
 	RoomYellowCastle.Up = &RoomAboveYellowCastle
@@ -236,12 +273,22 @@ func InitDirections() {
 	RoomAboveYellowCastle.Right = nil
 
 	RoomBelowYellowCastle.Up = &RoomYellowCastle
-	RoomBelowYellowCastle.Down = &RoomYellowCastle
+	// V1: Down→BlueMaze1 (0x05) / V2+: Down→YellowCastle (0x11)
+	if gameType == 1 {
+		RoomBelowYellowCastle.Down = &RoomBlueMaze1
+	} else {
+		RoomBelowYellowCastle.Down = &RoomYellowCastle
+	}
 	RoomBelowYellowCastle.Left = &RoomTopAccessRight
 	RoomBelowYellowCastle.Right = &RoomCorridorRight
 
 	RoomTopAccessRight.Up = &RoomBlueMazeEntry
-	RoomTopAccessRight.Down = &RoomWhiteCastle
+	// V1: Down→BlackCastle (0x10) / V2+: Down→WhiteCastle (0x0F)
+	if gameType == 1 {
+		RoomTopAccessRight.Down = &RoomBlackCastle
+	} else {
+		RoomTopAccessRight.Down = &RoomWhiteCastle
+	}
 	RoomTopAccessRight.Left = &RoomCorridorRight
 	RoomTopAccessRight.Right = &RoomBelowYellowCastle
 
@@ -288,7 +335,12 @@ func InitDirections() {
 	RoomWhiteCastleEntry.Left = &RoomRedMazeBottom
 
 	// Room 0x1D — Black Castle Top
-	RoomBlackCastleTop.Up = &RoomBlackMazeEntry
+	// UP: V1→CorridorRight (0x03) / V2+: stays as BlackMazeEntry (confirmed correct in V2)
+	if gameType == 1 {
+		RoomBlackCastleTop.Up = &RoomCorridorRight
+	} else {
+		RoomBlackCastleTop.Up = &RoomBlackMazeEntry
+	}
 	RoomBlackCastleTop.Down = &RoomBlackCastle
 	RoomBlackCastleTop.Left = &RoomCorridorRight
 	RoomBlackCastleTop.Right = &RoomTopAccessRight
@@ -312,9 +364,14 @@ func InitDirections() {
 	RoomBlueMazeCenter.Right = &RoomBlueMazeEntry
 
 	RoomCorridorRight.Up = &RoomBlueMazeBottom
-	RoomCorridorRight.Down = &RoomMazeEntry
+	// V1: Down→BlackCastleTop (0x1D) / V2+: Down→MazeEntry (0x0A)
+	if gameType == 1 {
+		RoomCorridorRight.Down = &RoomBlackCastleTop
+	} else {
+		RoomCorridorRight.Down = &RoomMazeEntry
+	}
 	RoomCorridorRight.Left = &RoomBelowYellowCastle
-	RoomCorridorRight.Right = &RoomNumberRoom
+	RoomCorridorRight.Right = &RoomSplashScreen
 
 	RoomMazeEntry.Up = &RoomCorridorRight
 	RoomMazeEntry.Down = &RoomMazeMiddle
@@ -340,6 +397,8 @@ func InitDirections() {
 	RoomNumberRoom.Down = nil
 	RoomNumberRoom.Left = &RoomCorridorRight
 	RoomNumberRoom.Right = nil
+
+	RoomSplashScreen.Left = &RoomCorridorRight
 
 	RoomWhiteCastle.Up = &RoomWhiteCastleEntry
 	RoomWhiteCastle.Down = &RoomSideCorridorOlive
@@ -370,13 +429,27 @@ func InitDirections() {
 	RoomBlackMazeEntry.Down = &RoomBlackCastleTop
 	RoomBlackMazeEntry.Left = &RoomBlackMaze3
 
-	RoomBlackCastleEntry.Up = &RoomSideCorridorCyan
-	RoomBlackCastleEntry.Down = &RoomBlackMazeEntry
-	RoomBlackCastleEntry.Left = &RoomBlackMazeEntry
-	RoomBlackCastleEntry.Right = &RoomBlackMazeEntry
+	// Room 0x1B — Black Castle Entry
+	// All 4 dirs: V1→OtherPurpleRoom (0x1C) / V2+: stays as current (confirmed correct in V2)
+	if gameType == 1 {
+		RoomBlackCastleEntry.Up = &RoomOtherPurpleRoom
+		RoomBlackCastleEntry.Down = &RoomOtherPurpleRoom
+		RoomBlackCastleEntry.Left = &RoomOtherPurpleRoom
+		RoomBlackCastleEntry.Right = &RoomOtherPurpleRoom
+	} else {
+		RoomBlackCastleEntry.Up = &RoomSideCorridorCyan
+		RoomBlackCastleEntry.Down = &RoomBlackMazeEntry
+		RoomBlackCastleEntry.Left = &RoomBlackMazeEntry
+		RoomBlackCastleEntry.Right = &RoomBlackMazeEntry
+	}
 
 	RoomOtherPurpleRoom.Up = &RoomBlackCastleTop
-	RoomOtherPurpleRoom.Down = &RoomSideCorridorCyan
+	// V1: Down→BlackCastleEntry (0x1B) / V2+: Down→SideCorridorCyan (0x0C)
+	if gameType == 1 {
+		RoomOtherPurpleRoom.Down = &RoomBlackCastleEntry
+	} else {
+		RoomOtherPurpleRoom.Down = &RoomSideCorridorCyan
+	}
 	RoomOtherPurpleRoom.Left = &RoomBlueMazeEntry
 	RoomOtherPurpleRoom.Right = &RoomBlueMazeCenter
 

@@ -48,6 +48,10 @@ func main() {
 }
 
 func updateStates() {
+	if game.NeedFullReset {
+		game.ClearForFullReset()
+		render.InitGamestate()
+	}
 	termW, termH := render.Screen.Size()
 	input.HandleUserInput()
 	game.UpdatePlayerStyle()
@@ -82,6 +86,7 @@ func updateStates() {
 	game.UpdateChaliceColor()
 	game.CheckWinCondition()
 	game.UpdateWinState()
+	game.UpdateEasterEggBarrier()
 }
 
 func facePlayer(dragon *game.Object, termW int) {
