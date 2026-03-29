@@ -16,6 +16,10 @@ var CurrentScreen []*world.Cell
 
 var auraColor = tcell.NewRGBColor(0xFF, 0x80, 0x00) // orange torch glow
 
+// eeFlashHue is a slow independent hue for the Easter Egg room text color.
+var eeFlashHue int
+var eeFlashTick int
+
 func DrawStage() {
 	if game.CurrentRoom == nil {
 		return
@@ -114,6 +118,28 @@ func DrawObject(obj *game.Object) {
 		if isHalfBlock || isBoxDrawing {
 			_, _, existingStyle, _ := Screen.GetContent(px, py)
 			_, existingBg, _ := existingStyle.Decompose()
+			if obj == game.Dot && s == '▀' {
+				// Use wall color as background only when the dot's own cell is a wall cell.
+				// Mirror the aura logic from DrawStage for dark maze rooms.
+				existingBg = game.CurrentRoom.Background
+				darkMaze := game.CurrentRoom.Foreground == game.CurrentRoom.Background
+				playerCX := int(game.Player.RelX * float64(termW))
+				playerCY := int(game.Player.RelY * float64(termH))
+				for _, cell := range CurrentScreen {
+					if cell.X == px && cell.Y == py && (cell.Symbol == 'X' || cell.Symbol == 'x') {
+						wallColor := game.CurrentRoom.Foreground
+						if darkMaze {
+							ddx := px - playerCX
+							ddy := py - playerCY
+							if ddx >= -16 && ddx <= 16 && ddy >= -8 && ddy <= 8 {
+								wallColor = auraColor
+							}
+						}
+						existingBg = wallColor
+						break
+					}
+				}
+			}
 			style = tcell.StyleDefault.Foreground(objFg).Background(existingBg)
 		}
 		Screen.SetContent(px, py, point.Symbol, nil, style)
@@ -121,7 +147,7 @@ func DrawObject(obj *game.Object) {
 }
 
 func InitGamestate() {
-	world.InitDirections()
+	world.InitDirections(int(game.G.GameType))
 	game.CurrentRoom = &world.RoomYellowCastle
 	w, h := Screen.Size()
 	game.InitPlayer(w, h)
@@ -139,10 +165,13 @@ func InitGamestate() {
 	game.InitMagnet(w, h)
 	game.InitDot(w, h)
 
+	// Variation 3: randomize object rooms per C++ roomBoundsData.
+	game.RandomizeObjectsV3()
+
 	// Passage barriers — black on black, only visible in their room.
 	blackOnBlack := tcell.StyleDefault.Background(tcell.ColorBlack).Foreground(tcell.ColorBlack)
 	game.InitBarrier(&world.RoomTopAccessRight, 1.0/20.0, h, blackOnBlack)    // left of yellow castle: block left side
-	game.InitBarrier(&world.RoomCorridorRight, 19.0/20.0, h, blackOnBlack)   // right of yellow castle: block right side
+	game.EasterEggBarrier = game.InitBarrier(&world.RoomCorridorRight, 19.0/20.0, h, blackOnBlack) // Easter Egg: passable with Dot
 	game.InitBarrier(&world.RoomSideCorridorOlive, 1.0/20.0, h, blackOnBlack)  // below white castle: block left side
 	game.InitBarrier(&world.RoomSideCorridorCyan, 19.0/20.0, h, blackOnBlack) // cyan room next to it: block right side
 
@@ -161,25 +190,14 @@ func InitScreen() {
 		os.Exit(1)
 	}
 
-	Screen.SetStyle(tcell.StyleDefault.
-		Background(world.RoomSplashScreen.Background).
-		Foreground(world.RoomSplashScreen.Foreground))
+	bg := world.RoomSplashScreen.Background
+	Screen.SetStyle(tcell.StyleDefault.Background(bg).Foreground(bg))
+	Screen.Clear()
 
-	for i := 0; i < 256; i++ {
-		Screen.SetStyle(tcell.StyleDefault.
-			Background(world.RoomSplashScreen.Background).
-			Foreground(tcell.NewRGBColor(int32(i), int32(i), int32(i))))
-
-		screenWidth, screenHeight := Screen.Size()
-		title := "An Adventure - dedicated to Warren Robinett"
-		subline := "Press [Q] to quit  [H] for help"
-		emitStr(Screen, screenWidth/2-len(title)/2, screenHeight/2-1, tcell.StyleDefault, title)
-		emitStr(Screen, screenWidth/2-len(subline)/2, screenHeight/2, tcell.StyleDefault, subline)
-
-		time.Sleep(time.Millisecond * 10)
-		Screen.Show()
-	}
-	time.Sleep(time.Second * 3)
+	screenWidth, screenHeight := Screen.Size()
+	drawSplashOnScreen(screenWidth, screenHeight, bg)
+	Screen.Show()
+	time.Sleep(time.Second * 5)
 }
 
 func FillTheScreen() {
@@ -274,25 +292,14 @@ func WouldCollideWall(screenX, screenY, width, height int) bool {
 func DrawHelp() {
 	termW, termH := Screen.Size()
 	bg := tcell.NewRGBColor(0xcd, 0xcd, 0xcd)
-	blank := tcell.StyleDefault.Background(bg).Foreground(bg)
-	head := tcell.StyleDefault.Background(bg).Foreground(tcell.ColorBlack)
+	gold := tcell.NewRGBColor(0xFF, 0xD8, 0x4C)
+	head := tcell.StyleDefault.Background(bg).Foreground(tcell.ColorBlack).Bold(true)
 	body := tcell.StyleDefault.Background(bg).Foreground(tcell.ColorBlack)
-	hilite := tcell.StyleDefault.Background(bg).Foreground(tcell.NewRGBColor(0x60, 0x60, 0x60))
-	cur := tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Foreground(tcell.ColorBlack)
+	hilite := tcell.StyleDefault.Background(bg).Foreground(tcell.NewRGBColor(0x40, 0x40, 0xC0))
+	cur := tcell.StyleDefault.Background(gold).Foreground(tcell.ColorBlack)
 
 	lx := termW/2 - 22
 	cy := termH/2 - 11
-	boxW := 72 // content max ~68 + 2 padding each side
-	boxH := 37 // content 29 lines + 4 padding + 4 for box
-
-	// Draw gray box (+2 padding around text).
-	for y := cy - 2; y < cy-2+boxH; y++ {
-		for x := lx - 2; x < lx-2+boxW; x++ {
-			if x >= 0 && x < termW && y >= 0 && y < termH {
-				Screen.SetContent(x, y, ' ', nil, blank)
-			}
-		}
-	}
 
 	put := func(y int, s string, st tcell.Style) {
 		emitStr(Screen, lx, y, st, s)
@@ -533,6 +540,8 @@ func DrawSpecialRooms() {
 	switch game.CurrentRoom {
 	case &world.RoomNumberRoom:
 		drawNameRoom()
+	case &world.RoomSplashScreen:
+		drawEasterEggRoom()
 	}
 }
 
@@ -668,6 +677,330 @@ func drawNameRoom() {
 	}
 
 	_ = bg // room bg visible through castle graphic behind the box
+}
+
+// adventureTitleGlyphs holds the 7×5 half-block glyphs for "An ADVENTURE".
+var adventureTitleGlyphs = map[rune][5]string{
+	'A': {"  ███  ", " █   █ ", "███████", "█     █", "█     █"},
+	'n': {"       ", "       ", " ████▄ ", " █   █ ", " █   █ "},
+	'D': {"█████▄ ", "█     █", "█     █", "█     █", "█████▀ "},
+	'V': {"█     █", "█     █", " █   █ ", "  █ █  ", "   █   "},
+	'E': {"███████", "█      ", "█████  ", "█      ", "███████"},
+	'N': {"█▄    █", "█ █   █", "█  █  █", "█   █ █", "█    ▀█"},
+	'T': {"███████", "   █   ", "   █   ", "   █   ", "   █   "},
+	'U': {"█     █", "█     █", "█     █", "█     █", " █████ "},
+	'R': {"██████ ", "█     █", "██████ ", "█  █   ", "█   ██ "},
+	' ': {"       ", "       ", "       ", "       ", "       "},
+}
+
+// drawAdventureTitle renders the "An ADVENTURE" half-block title centered at centerY.
+// Returns the Y coordinate of the row immediately below the title (centerY + 5).
+func drawAdventureTitle(termW, termH int, bg tcell.Color, centerY int) int {
+	gold := tcell.NewRGBColor(0xFF, 0xD8, 0x4C)
+	dim := tcell.NewRGBColor(0xAA, 0xAA, 0xAA)
+	rainbow := []tcell.Color{
+		tcell.NewRGBColor(0xFF, 0x44, 0x44),
+		tcell.NewRGBColor(0xFF, 0x88, 0x00),
+		tcell.NewRGBColor(0xFF, 0xD8, 0x4C),
+		tcell.NewRGBColor(0x88, 0xFF, 0x44),
+		tcell.NewRGBColor(0x00, 0xFF, 0xAA),
+		tcell.NewRGBColor(0x44, 0xCC, 0xFF),
+		tcell.NewRGBColor(0xAA, 0x44, 0xFF),
+		tcell.NewRGBColor(0xFF, 0x44, 0xCC),
+		tcell.NewRGBColor(0xFF, 0x44, 0x44),
+	}
+	title := []rune("An ADVENTURE")
+	titleColors := []tcell.Color{
+		gold, gold, dim,
+		rainbow[0], rainbow[1], rainbow[2], rainbow[3],
+		rainbow[4], rainbow[5], rainbow[6], rainbow[7], rainbow[8],
+	}
+	const letterW = 7
+	const gap = 1
+	titleW := len(title)*letterW + (len(title)-1)*gap
+	startX := termW/2 - titleW/2
+	for i, r := range title {
+		g, ok := adventureTitleGlyphs[r]
+		if !ok {
+			continue
+		}
+		cx := startX + i*(letterW+gap)
+		st := tcell.StyleDefault.Background(bg).Foreground(titleColors[i])
+		for row := 0; row < 5; row++ {
+			for col, ch := range []rune(g[row]) {
+				sx, sy := cx+col, centerY+row
+				if sx >= 0 && sx < termW && sy >= 0 && sy < termH {
+					Screen.SetContent(sx, sy, ch, nil, st)
+				}
+			}
+		}
+	}
+	return centerY + 5
+}
+
+// splashTitleGlyphs holds 8×8 block-pixel glyphs for the startup splash screen title.
+var splashTitleGlyphs = map[rune][8]string{
+	'A': {
+		"   ██   ",
+		"  █  █  ",
+		" █    █ ",
+		"█      █",
+		"████████",
+		"█      █",
+		"█      █",
+		"█      █",
+	},
+	'n': {
+		"        ",
+		"        ",
+		"        ",
+		" ██████ ",
+		"██     █",
+		"█      █",
+		"█      █",
+		"█      █",
+	},
+	'D': {
+		"███████ ",
+		"█      █",
+		"█      █",
+		"█      █",
+		"█      █",
+		"█      █",
+		"█      █",
+		"███████ ",
+	},
+	'V': {
+		"█      █",
+		"█      █",
+		" █    █ ",
+		" █    █ ",
+		"  █  █  ",
+		"  █  █  ",
+		"   ██   ",
+		"   ██   ",
+	},
+	'E': {
+		"████████",
+		"█       ",
+		"█       ",
+		"██████  ",
+		"█       ",
+		"█       ",
+		"█       ",
+		"████████",
+	},
+	'N': {
+		"█      █",
+		"██     █",
+		"█ █    █",
+		"█  █   █",
+		"█   █  █",
+		"█    █ █",
+		"█     ██",
+		"█      █",
+	},
+	'T': {
+		"████████",
+		"   █    ",
+		"   █    ",
+		"   █    ",
+		"   █    ",
+		"   █    ",
+		"   █    ",
+		"   █    ",
+	},
+	'U': {
+		"█      █",
+		"█      █",
+		"█      █",
+		"█      █",
+		"█      █",
+		"█      █",
+		"█      █",
+		" ██████ ",
+	},
+	'R': {
+		"███████ ",
+		"█      █",
+		"█      █",
+		"███████ ",
+		"█   █   ",
+		"█    █  ",
+		"█     █ ",
+		"█      █",
+	},
+	' ': {
+		"        ",
+		"        ",
+		"        ",
+		"        ",
+		"        ",
+		"        ",
+		"        ",
+		"        ",
+	},
+}
+
+// drawSplashTitle renders the "An ADVENTURE" title using 8×8 glyphs, centered at centerY.
+// Returns the Y coordinate immediately below the title (centerY + 8).
+func drawSplashTitle(termW, termH int, bg tcell.Color, centerY int) int {
+	gold := tcell.NewRGBColor(0xFF, 0xD8, 0x4C)
+	dim := tcell.NewRGBColor(0xAA, 0xAA, 0xAA)
+	rainbow := []tcell.Color{
+		tcell.NewRGBColor(0xFF, 0x44, 0x44),
+		tcell.NewRGBColor(0xFF, 0x88, 0x00),
+		tcell.NewRGBColor(0xFF, 0xD8, 0x4C),
+		tcell.NewRGBColor(0x88, 0xFF, 0x44),
+		tcell.NewRGBColor(0x00, 0xFF, 0xAA),
+		tcell.NewRGBColor(0x44, 0xCC, 0xFF),
+		tcell.NewRGBColor(0xAA, 0x44, 0xFF),
+		tcell.NewRGBColor(0xFF, 0x44, 0xCC),
+		tcell.NewRGBColor(0xFF, 0x44, 0x44),
+	}
+	title := []rune("An ADVENTURE")
+	titleColors := []tcell.Color{
+		gold, gold, dim,
+		rainbow[0], rainbow[1], rainbow[2], rainbow[3],
+		rainbow[4], rainbow[5], rainbow[6], rainbow[7], rainbow[8],
+	}
+	const letterW = 8
+	const gap = 1
+	titleW := len(title)*letterW + (len(title)-1)*gap
+	startX := termW/2 - titleW/2
+	for i, r := range title {
+		g, ok := splashTitleGlyphs[r]
+		if !ok {
+			continue
+		}
+		cx := startX + i*(letterW+gap)
+		st := tcell.StyleDefault.Background(bg).Foreground(titleColors[i])
+		for row := 0; row < 8; row++ {
+			for col, ch := range []rune(g[row]) {
+				sx, sy := cx+col, centerY+row
+				if sx >= 0 && sx < termW && sy >= 0 && sy < termH {
+					Screen.SetContent(sx, sy, ch, nil, st)
+				}
+			}
+		}
+	}
+	return centerY + 8
+}
+
+func drawSplashScreen() {
+	termW, termH := Screen.Size()
+	drawSplashOnScreen(termW, termH, game.CurrentRoom.Background)
+}
+
+func drawSplashOnScreen(termW, termH int, bg tcell.Color) {
+	gold := tcell.NewRGBColor(0xFF, 0xD8, 0x4C)
+	dim := tcell.NewRGBColor(0xAA, 0xAA, 0xAA)
+
+	titleY := termH/2 - 4 // center 9-row title: rows termH/2-4 … termH/2+4
+	below := drawSplashTitle(termW, termH, bg, titleY)
+
+	subtitle := "ported to Go by Jens Schendel, dedicated to Warren Robinett"
+	subY := below + 1
+	emitStr(Screen, termW/2-len(subtitle)/2, subY,
+		tcell.StyleDefault.Background(bg).Foreground(dim), subtitle)
+
+	hintY := subY + 1
+	hintParts := []struct {
+		text  string
+		color tcell.Color
+	}{
+		{"Press ", dim},
+		{"[H]", gold},
+		{" for help", dim},
+	}
+	hintLen := 0
+	for _, p := range hintParts {
+		hintLen += len(p.text)
+	}
+	hx := termW/2 - hintLen/2
+	for _, p := range hintParts {
+		emitStr(Screen, hx, hintY, tcell.StyleDefault.Background(bg).Foreground(p.color), p.text)
+		hx += len(p.text)
+	}
+}
+
+// drawEasterEggRoom renders the Easter Egg room (C++ 0x1E):
+// "An ADVENTURE" in the splash-screen pixel font, then credit text in cycling flash color.
+func drawEasterEggRoom() {
+	termW, termH := Screen.Size()
+	bg := game.CurrentRoom.Background
+
+	// Advance the local slow hue: step 1 every 4 frames → ~6× slower than chalice.
+	eeFlashTick++
+	if eeFlashTick >= 4 {
+		eeFlashTick = 0
+		eeFlashHue++
+		if eeFlashHue >= 360 {
+			eeFlashHue = 0
+		}
+	}
+	// Compute color from eeFlashHue (same formula as GetFlashColor but own counter).
+	h := float64(eeFlashHue) / (360.0 / 3)
+	var cr, cg, cb float64
+	if h < 1 {
+		cr = h * 255; cg = 0; cb = (1 - h) * 255
+	} else if h < 2 {
+		h -= 1; cr = (1 - h) * 255; cg = h * 255; cb = 0
+	} else {
+		h -= 2; cr = 0; cg = (1 - h) * 255; cb = h * 255
+	}
+	fc := tcell.NewRGBColor(int32(cr), int32(cg), int32(cb))
+
+	// Title: 12 glyphs × 7 + 11 gaps = 95 cols wide.
+	// Text wrapped to 70 cols yields ~4 lines.
+	fullText := "ported with \u2665 to Go by Jens Schendel with intense use of the awesome tcell package provided by Garrett D\u2019Amore, and with heartfelt thanks for countless hours spent in front of my Atari 2600, dedicated to Warren Robinett. The ADVENTURE goes on and on!"
+	lines := wordWrap(fullText, 70)
+
+	totalRows := 5 + 1 + len(lines) // title height + gap + text lines
+	startY := termH/2 - totalRows/2
+	below := drawAdventureTitle(termW, termH, bg, startY)
+
+	st := tcell.StyleDefault.Background(bg).Foreground(fc)
+	for i, l := range lines {
+		lw := len([]rune(l))
+		emitStr(Screen, termW/2-lw/2, below+1+i, st, l)
+	}
+}
+
+// wordWrap breaks s into lines of at most maxW runes, splitting at word boundaries.
+func wordWrap(s string, maxW int) []string {
+	words := []string{}
+	cur := ""
+	for _, r := range s {
+		if r == ' ' {
+			if cur != "" {
+				words = append(words, cur)
+				cur = ""
+			}
+		} else {
+			cur += string(r)
+		}
+	}
+	if cur != "" {
+		words = append(words, cur)
+	}
+
+	var lines []string
+	line := ""
+	for _, w := range words {
+		if line == "" {
+			line = w
+		} else if len([]rune(line))+1+len([]rune(w)) <= maxW {
+			line += " " + w
+		} else {
+			lines = append(lines, line)
+			line = w
+		}
+	}
+	if line != "" {
+		lines = append(lines, line)
+	}
+	return lines
 }
 
 func repeatStr(s string, n int) string {

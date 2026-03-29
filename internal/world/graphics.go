@@ -43,11 +43,15 @@ var KeyGfx = []*Cell{
 
 // Dragon (8 wide x 10 tall terminal rows = 20 pixel rows via half-block chars)
 // State 0 from objectGfxDrag[] in Adventure.cpp
-//     ▄██▄
+//
+//	▄██▄
+//
 // ████▄▄█▀
-//     ▀█▀
-//    ▄▄█▄
-//  ▄██████
+//
+//	   ▀█▀
+//	  ▄▄█▄
+//	▄██████
+//
 // ██▀   ██
 // ██   ▄██
 // ▀▀████▀▀
@@ -129,7 +133,8 @@ var DragonGfx = []*Cell{
 // █      █
 // ██    ██
 // ▀█▀██▀█▀
-//  ▀▀  ▀▀
+//
+//	▀▀  ▀▀
 var BatGfx = []*Cell{
 	// Row 0: 0x81+0x81 → █      █
 	{X: 0, Y: 0, Symbol: '█'},
@@ -160,7 +165,9 @@ var BatGfx = []*Cell{
 //
 // ▄      ▀
 // ▄      ▀
-//  ▄▀██▀▄
+//
+//	▄▀██▀▄
+//
 // ▄█▀  ▀█▄
 // █      █
 // ▀      ▀
@@ -197,14 +204,18 @@ var BatGfxOpen = []*Cell{
 // 22 pixel rows → 11 terminal rows via half-block pairs (bit7=leftmost pixel)
 //
 // ▀▄
-//   ▀▄▄██▄
-//     █▄█▀
-//   ▄▀▀█▀
+//
+//	▀▄▄██▄
+//	  █▄█▀
+//	▄▀▀█▀
+//
 // ▄▀  ▄█▄
-//   ▄████▄
-//  ███████
-//  ███████
-//   ▀███▀
+//
+//	 ▄████▄
+//	███████
+//	███████
+//	 ▀███▀
+//
 // ▄▄▄▄█
 // █▄▄
 var DragonGfxOpen = []*Cell{
@@ -287,15 +298,17 @@ var DragonGfxOpen = []*Cell{
 // 17 pixel rows → 8 terminal rows (7 pairs + 1 lone top-half row)
 // dragonStates[] = {0,2,0,1}: game state 1 (dead) → graphic frame index 2 → this sprite.
 //
-//     ██
-//     ██▄
-//  ▄▄██▄██
+//	   ██
+//	   ██▄
+//	▄▄██▄██
+//
 // █▀  ▀▀▀
 // ██████▄
 // ▀██████
-//  ▀█▀▀
-//  █▀ ▀▀█
-//  ▀▀▀▀▀▀
+//
+//	▀█▀▀
+//	█▀ ▀▀█
+//	▀▀▀▀▀▀
 var DragonGfxDead = []*Cell{
 	// Row 0: 0x0C+0x0C →     ██
 	{X: 4, Y: 0, Symbol: '█'},
@@ -356,7 +369,9 @@ var DragonGfxDead = []*Cell{
 
 // Bridge — objectGfxBridge, 24 pixel rows → 12 terminal rows
 // ██      ██  (top caps ×2)
-//  █      █   (pillars ×8)
+//
+//	█      █   (pillars ×8)
+//
 // ██      ██  (bottom caps ×2)
 var BridgeGfx = makeBridgeGfx()
 
@@ -388,9 +403,12 @@ func makeBridgeGfx() []*Cell {
 }
 
 // Sword — objectGfxSword, 5 pixel rows → 3 terminal rows
-//  ▄▀
+//
+//	▄▀
+//
 // ▀█▀▀▀▀▀▀
-//   ▀
+//
+//	▀
 var SwordGfx = []*Cell{
 	// Row 1: guard tip (shifted down 1 to center in Height=4 box)
 	{X: 1, Y: 1, Symbol: '▄'}, {X: 2, Y: 1, Symbol: '▀'},
@@ -404,9 +422,12 @@ var SwordGfx = []*Cell{
 }
 
 // SwordGfxLeft — tip pointing left (horizontal mirror of SwordGfx)
-//      ▀▄
+//
+//	▀▄
+//
 // ▀▀▀▀▀▀█▀
-//      ▀
+//
+//	▀
 var SwordGfxLeft = []*Cell{
 	// Row 1: guard tip (shifted down 1)
 	{X: 5, Y: 1, Symbol: '▀'}, {X: 6, Y: 1, Symbol: '▄'},
@@ -421,10 +442,11 @@ var SwordGfxLeft = []*Cell{
 
 // SwordGfxUp — tip pointing up (90° CCW rotation of SwordGfx, centered in 8-wide box)
 // Pixel grid 8px tall × 5px wide, packed into 4 terminal rows × 8 cols (X offset +2)
-//     █
-//     █
-//   ▄ █ ▄
-//   ▀█▀
+//
+//	  █
+//	  █
+//	▄ █ ▄
+//	▀█▀
 var SwordGfxUp = []*Cell{
 	// Row 0: tip (blade end)
 	{X: 4, Y: 0, Symbol: '█'},
@@ -437,10 +459,11 @@ var SwordGfxUp = []*Cell{
 }
 
 // SwordGfxDown — tip pointing down (vertical flip of SwordGfxUp, ▄↔▀)
-//   ▄█▄
-//   ▀ █ ▀
-//     █
-//     █
+//
+//	▄█▄
+//	▀ █ ▀
+//	  █
+//	  █
 var SwordGfxDown = []*Cell{
 	// Row 0: handle/pommel (flipped from row 3 of Up)
 	{X: 3, Y: 0, Symbol: '▄'}, {X: 4, Y: 0, Symbol: '█'}, {X: 5, Y: 0, Symbol: '▄'},
@@ -455,9 +478,10 @@ var SwordGfxDown = []*Cell{
 // Chalice — objectGfxChallise, 9 pixel rows → 5 terminal rows
 // █      █
 // ▀█▄▄▄▄█▀
-//  ▀████▀
-//    ██
-//  ▀▀▀▀▀▀
+//
+//	▀████▀
+//	  ██
+//	▀▀▀▀▀▀
 var ChaliceGfx = []*Cell{
 	// Row 0: 0x81+0x81 → █      █
 	{X: 0, Y: 0, Symbol: '█'}, {X: 7, Y: 0, Symbol: '█'},
@@ -479,7 +503,9 @@ var ChaliceGfx = []*Cell{
 }
 
 // Magnet — objectGfxMagnet, 8 pixel rows → 4 terminal rows
-//  ▄████▄
+//
+//	▄████▄
+//
 // ██▀  ▀██
 // ██    ██
 // ██    ██
@@ -500,8 +526,9 @@ var MagnetGfx = []*Cell{
 // MakeMagnetFrames returns 16 frames for the magnet (Width=12, Height=8).
 //
 // Layout: Frames[orientation*4 + fieldPhase]
-//   orientation 0=Down, 1=Right, 2=Up, 3=Left
-//   fieldPhase  0=no arc, 1=inner, 2=medium, 3=outer
+//
+//	orientation 0=Down, 1=Right, 2=Up, 3=Left
+//	fieldPhase  0=no arc, 1=inner, 2=medium, 3=outer
 //
 // Orientation and field-line phase are driven by independent timers (SubFrameCount=4).
 // Arcs use box-drawing chars so they pick up the background color of whatever they overlap.
@@ -975,7 +1002,7 @@ var RoomBlackMaze3Gfx = &[]string{
 	"XXXXXXXX    XXXXXXXXXXXXXXXX    XXXXXXXX",
 	"XX          XX      XX          XX      ",
 	"XX          XX      XX          XX      ",
-	"XXXXXXXX    XXXXXXXXXXXXXXXX    XXXXXXXX",
+	"XXXXXXXX    XXXXxXXXXXXXXXXX    XXXXXXXX",
 }
 
 // Black Maze Entry (Room 0x16 in C++, ROOMFLAG_NONE: right = reverse(left))

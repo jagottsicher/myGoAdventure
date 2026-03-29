@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"time"
 
 	"development/myGoAdventure/internal/world"
@@ -96,19 +97,78 @@ func cycleSelOverlay() {
 	}
 }
 
+// NeedFullReset signals adventure.go to call render.InitGamestate on the next tick.
+var NeedFullReset bool
+
 func applySelOverlay() {
 	if !Overlay.Active {
 		return
 	}
 	switch Overlay.Kind {
 	case "variation":
-		G.GameType = uint8(Overlay.Value)
+		newType := uint8(Overlay.Value)
+		if newType != G.GameType {
+			G.GameType = newType
+			NeedFullReset = true
+		}
 	case "difficulty":
 		a := Overlay.Value == 0
 		DifficultyLeft = a
 		DifficultyRight = a
 	}
 	Overlay.Active = false
+}
+
+// ClearForFullReset clears all dynamic game state before a full re-init.
+// Called from adventure.go when NeedFullReset is true.
+func ClearForFullReset() {
+	AllObjects = nil
+	CarriedObject = nil
+	GameWon = false
+	WinOverlayTimer = 0
+	HelpMode = false
+	ConfirmMode = false
+	GodMode = false
+	Eaten = false
+	NeedFullReset = false
+}
+
+// RandomizeObjectsV3 mirrors C++ SetupRoomObjects randomization for game level 2 (variation 3).
+// For each object in roomBoundsData, picks a random room in [lower, upper] using the
+// same retry-loop strategy as the original.
+func RandomizeObjectsV3() {
+	if G.GameType != 3 {
+		return
+	}
+	type bound struct {
+		obj         **Object
+		lower, upper int
+	}
+	bounds := []bound{
+		{&Chalice,      0x13, 0x1A},
+		{&RedDragon,    0x01, 0x1D},
+		{&YellowDragon, 0x01, 0x1D},
+		{&GreenDragon,  0x01, 0x1D},
+		{&Sword,        0x01, 0x1D},
+		{&Bridge,       0x01, 0x1D},
+		{&YellowKey,    0x01, 0x1D},
+		{&WhiteKey,     0x01, 0x16},
+		{&BlackKey,     0x01, 0x12},
+		{&Bat,          0x01, 0x1D},
+		{&Magnet,       0x01, 0x1D},
+	}
+	for _, b := range bounds {
+		if *b.obj == nil {
+			continue
+		}
+		for {
+			id := rand.Intn(0x1F) // 0x00–0x1E, matches C++ Platform_Random()*0x1f
+			if id >= b.lower && id <= b.upper {
+				(*b.obj).Room = world.RoomsByID[id]
+				break
+			}
+		}
+	}
 }
 
 // UpdateSelOverlay decrements the overlay timer and applies the selection on timeout.
@@ -632,6 +692,7 @@ var Sword *Object
 var Chalice *Object
 var Magnet *Object
 var Dot *Object
+var EasterEggBarrier *Object
 var AllObjects []*Object
 var CurrentRoom *world.Room
 
@@ -721,12 +782,16 @@ func UpdateWinState() {
 }
 
 func InitYellowKey(w, h int) {
-	// C++ V2: room 0x09 (RoomMazeMiddle), X=0x20, Y=0x40
+	// C++ V1: room 0x11 (RoomYellowCastle) / V2: room 0x09 (RoomMazeMiddle)
+	room := &world.RoomMazeMiddle
+	if G.GameType == 1 {
+		room = &world.RoomYellowCastle
+	}
 	YellowKey = &Object{
 		RelX: 0.20, RelY: 0.50, Width: 8, Height: 2,
 		ZLayer:    1,
 		Carryable: true,
-		Room:      &world.RoomMazeMiddle,
+		Room:      room,
 		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xF5, 0xCE, 0x42)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape: world.KeyGfx,
 	}
@@ -734,12 +799,16 @@ func InitYellowKey(w, h int) {
 }
 
 func InitWhiteKey(w, h int) {
-	// C++ V2: room 0x06 (RoomBlueMazeBottom), X=0x20, Y=0x40
+	// C++ V1: room 0x0E (RoomDeadEndCyan) / V2: room 0x06 (RoomBlueMazeBottom)
+	room := &world.RoomBlueMazeBottom
+	if G.GameType == 1 {
+		room = &world.RoomDeadEndCyan
+	}
 	WhiteKey = &Object{
 		RelX: 0.20, RelY: 0.50, Width: 8, Height: 2,
 		ZLayer:    1,
 		Carryable: true,
-		Room:      &world.RoomBlueMazeBottom,
+		Room:      room,
 		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xFF, 0xFF)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape: world.KeyGfx,
 	}
@@ -747,12 +816,16 @@ func InitWhiteKey(w, h int) {
 }
 
 func InitBlackKey(w, h int) {
-	// C++ V2: room 0x19 (RoomRedMazeBottom), X=0x20, Y=0x40
+	// C++ V1: room 0x1D (RoomBlackCastleTop) / V2: room 0x19 (RoomRedMazeBottom)
+	room := &world.RoomRedMazeBottom
+	if G.GameType == 1 {
+		room = &world.RoomBlackCastleTop
+	}
 	BlackKey = &Object{
 		RelX: 0.20, RelY: 0.50, Width: 8, Height: 2,
 		ZLayer:    1,
 		Carryable: true,
-		Room:      &world.RoomRedMazeBottom,
+		Room:      room,
 		Style: tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x00, 0x00, 0x00)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape: world.KeyGfx,
 	}
@@ -820,12 +893,16 @@ func initDragonState(ds *dragonState, dragon *Object, w, h int) {
 }
 
 func InitGreenDragon(w, h int) {
-	// C++ V2: room 0x04 (RoomBlueMazeTop), X=0x50, Y=0x20
+	// C++ V1: room 0x1D (RoomBlackCastleTop) / V2: room 0x04 (RoomBlueMazeTop)
+	room := &world.RoomBlueMazeTop
+	if G.GameType == 1 {
+		room = &world.RoomBlackCastleTop
+	}
 	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
 	GreenDragon = &Object{
 		RelX: 0.50, RelY: 0.25, Width: 8, Height: 10,
 		ZLayer:       1,
-		Room:         &world.RoomBlueMazeTop,
+		Room:         room,
 		Style:        tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x86, 0xd9, 0x22)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:        frames[0],
 		Frames:       frames,
@@ -836,12 +913,16 @@ func InitGreenDragon(w, h int) {
 }
 
 func InitYellowDragon(w, h int) {
-	// C++ V2: room 0x19 (RoomRedMazeBottom), X=0x50, Y=0x20
+	// C++ V1: room 0x01 (RoomTopAccessRight) / V2: room 0x19 (RoomRedMazeBottom)
+	room := &world.RoomRedMazeBottom
+	if G.GameType == 1 {
+		room = &world.RoomTopAccessRight
+	}
 	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
 	YellowDragon = &Object{
 		RelX: 0.50, RelY: 0.25, Width: 8, Height: 10,
 		ZLayer:       1,
-		Room:         &world.RoomRedMazeBottom,
+		Room:         room,
 		Style:        tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:        frames[0],
 		Frames:       frames,
@@ -852,12 +933,16 @@ func InitYellowDragon(w, h int) {
 }
 
 func InitRedDragon(w, h int) {
-	// C++ V2: room 0x14 (RoomBlackMaze2), X=0x50, Y=0x20
+	// C++ V1: room 0x0E (RoomDeadEndCyan) / V2: room 0x14 (RoomBlackMaze2)
+	room := &world.RoomBlackMaze2
+	if G.GameType == 1 {
+		room = &world.RoomDeadEndCyan
+	}
 	frames := [][]*world.Cell{world.DragonGfx, world.DragonGfxOpen}
 	RedDragon = &Object{
 		RelX: 0.50, RelY: 0.25, Width: 8, Height: 10,
 		ZLayer:       1,
-		Room:         &world.RoomBlackMaze2,
+		Room:         room,
 		Style:        tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFA, 0x52, 0x55)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:        frames[0],
 		Frames:       frames,
@@ -936,11 +1021,6 @@ func moveDragon(dragon *Object, ds *dragonState, matrix [][2]*Object, tickPeriod
 			}
 		}
 		return // no movement during roar
-	}
-
-	// State 0: V1 dragons are static.
-	if G.GameType == 1 {
-		return
 	}
 
 	// Dormant: wait until the player first enters this dragon's room, then wake permanently.
@@ -1154,13 +1234,18 @@ func UpdateDragons(termW, termH int) {
 }
 
 func InitBat(w, h int) {
-	// C++ V2: room 0x02 (RoomBelowYellowCastle), X=0x20, Y=0x20
+	// C++ V1: room 0x1A (RoomWhiteCastleEntry), no movement
+	//         V2: room 0x02 (RoomBelowYellowCastle), movementY=-3
+	batRoom := &world.RoomBelowYellowCastle
+	if G.GameType == 1 {
+		batRoom = &world.RoomWhiteCastleEntry
+	}
 	frames := [][]*world.Cell{world.BatGfx, world.BatGfxOpen}
 	Bat = &Object{
 		RelX: 0.20, RelY: 0.25, Width: 8, Height: 6,
 		ZLayer:       1,
 		Carryable:    true,
-		Room:         &world.RoomBelowYellowCastle,
+		Room:         batRoom,
 		Style:        tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:        frames[0],
 		Frames:       frames,
@@ -1175,7 +1260,11 @@ func InitBat(w, h int) {
 	batHuntDelay = 0
 	BatCarrying = nil
 	batDirX = 0
-	batDirY = 1
+	if G.GameType == 1 {
+		batDirY = 0 // V1: bat starts stationary
+	} else {
+		batDirY = 1 // V2/V3: bat starts moving immediately
+	}
 	batTick = 0
 	batCellX = int(0.20*float64(w)) - Bat.Width/2
 	batCellY = int(0.25*float64(h)) - Bat.Height/2
@@ -1221,12 +1310,16 @@ func InitPortcullises(w, h int) {
 }
 
 func InitBridge(w, h int) {
-	// C++ V2: room 0x0B (RoomMazeSide), X=0x40, Y=0x40
+	// C++ V1: room 0x04 (RoomBlueMazeTop) / V2: room 0x0B (RoomMazeSide)
+	room := &world.RoomMazeSide
+	if G.GameType == 1 {
+		room = &world.RoomBlueMazeTop
+	}
 	Bridge = &Object{
 		RelX: 0.40, RelY: 0.50, Width: 10, Height: 12,
 		ZLayer: 0,
 		Carryable: true,
-		Room:      &world.RoomMazeSide,
+		Room:      room,
 		Style:     tcell.StyleDefault.Foreground(tcell.NewRGBColor(0x99, 0x00, 0xCC)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:  world.BridgeGfx,
 	}
@@ -1234,13 +1327,17 @@ func InitBridge(w, h int) {
 }
 
 func InitSword(w, h int) {
-	// C++ V2: room 0x11 (RoomYellowCastle), X=0x20, Y=0x20
+	// C++ V1: room 0x12 (RoomAboveYellowCastle) / V2: room 0x11 (RoomYellowCastle)
+	room := &world.RoomYellowCastle
+	if G.GameType == 1 {
+		room = &world.RoomAboveYellowCastle
+	}
 	frames := [][]*world.Cell{world.SwordGfx, world.SwordGfxLeft, world.SwordGfxUp, world.SwordGfxDown}
 	Sword = &Object{
 		RelX: 0.20, RelY: 0.25, Width: 8, Height: 4,
 		ZLayer:       1,
 		Carryable:    true,
-		Room:         &world.RoomYellowCastle,
+		Room:         room,
 		Style:        tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xF5, 0xCE, 0x42)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:        frames[0],
 		Frames:       frames,
@@ -1251,12 +1348,16 @@ func InitSword(w, h int) {
 }
 
 func InitChalice(w, h int) {
-	// C++ V2: room 0x14 (RoomBlackMaze2), X=0x30, Y=0x20
+	// C++ V1: room 0x1C (RoomOtherPurpleRoom) / V2: room 0x14 (RoomBlackMaze2)
+	room := &world.RoomBlackMaze2
+	if G.GameType == 1 {
+		room = &world.RoomOtherPurpleRoom
+	}
 	Chalice = &Object{
 		RelX: 0.30, RelY: 0.25, Width: 8, Height: 5,
 		ZLayer:    1,
 		Carryable: true,
-		Room:      &world.RoomBlackMaze2,
+		Room:      room,
 		Style:     tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xAA, 0x00)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:     world.ChaliceGfx,
 	}
@@ -1264,12 +1365,16 @@ func InitChalice(w, h int) {
 }
 
 func InitMagnet(w, h int) {
-	// C++ V2: room 0x0E (RoomDeadEndCyan), X=0x80, Y=0x20
+	// C++ V1: room 0x1B (RoomBlackCastleEntry) / V2: room 0x0E (RoomDeadEndCyan)
+	room := &world.RoomDeadEndCyan
+	if G.GameType == 1 {
+		room = &world.RoomBlackCastleEntry
+	}
 	frames := world.MakeMagnetFrames()
 	Magnet = &Object{
 		RelX: 0.80, RelY: 0.25, Width: 12, Height: 8,
 		Carryable:        true,
-		Room:             &world.RoomDeadEndCyan,
+		Room:             room,
 		Style:            tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape:            frames[0],
 		Frames:           frames,
@@ -1289,18 +1394,30 @@ func magnetPriorityList() []*Object {
 	return []*Object{YellowKey, WhiteKey, BlackKey, Sword, Bridge, Chalice}
 }
 
+// magnetFieldStopOffsets gives the (dx, dy) stop displacement from the magnet anchor
+// per orientation (0=Down, 1=Right, 2=Up, 3=Left), in terminal cells.
+// Attracted objects stop at the outer field-line arc, not on the magnet body itself.
+var magnetFieldStopOffsets = [4][2]int{
+	{0, +4},  // Down:  outer arc bottom-centre at local Y=6, anchor at Y=2 → +4
+	{+7, 0},  // Right: outer arc right-centre at local X=11, anchor at X=4 → +7
+	{0, -5},  // Up:    outer arc top-centre at local Y=1, anchor at Y=6 → -5
+	{-8, 0},  // Left:  outer arc left-centre at local X=0, anchor at X=8 → -8
+}
+
 // UpdateMagnet attracts the highest-priority eligible object in the magnet's room
-// toward the magnet at ±1 Atari px/frame (same proportional speed as bat).
+// toward the outer field-line arc at ±1 cell/frame.
 // Only the player's CarriedObject is excluded (matches C++ original).
 func UpdateMagnet(termW, termH int) {
 	if Magnet == nil {
 		return
 	}
 
-	// Magnet anchor in screen coordinates (RelX/RelY = anchor point, orientation-independent).
-	// Use math.Round to avoid float64 truncation giving wrong integer center.
-	targetX := int(math.Round(Magnet.RelX * float64(termW)))
-	targetY := int(math.Round(Magnet.RelY * float64(termH)))
+	// Compute stop position: magnet anchor displaced to outer arc tip for current orientation.
+	anchorX := int(math.Round(Magnet.RelX * float64(termW)))
+	anchorY := int(math.Round(Magnet.RelY * float64(termH)))
+	orient := Magnet.OrientationFrame % 4
+	targetX := anchorX + magnetFieldStopOffsets[orient][0]
+	targetY := anchorY + magnetFieldStopOffsets[orient][1]
 
 	// Tick gate runs unconditionally so rhythm is independent of object eligibility.
 	magnetTick = (magnetTick + 1) % 4
@@ -1361,13 +1478,26 @@ func InitBarrier(room *world.Room, relX float64, h int, style tcell.Style) *Obje
 func InitDot(w, h int) {
 	// C++ V2: room 0x15 (RoomBlackMaze3), X=0x45, Y=0x12
 	Dot = &Object{
-		RelX: 0.43, RelY: 0.14, Width: 1, Height: 1,
+		RelX: 0.40, RelY: 0.917, Width: 1, Height: 1,
 		Carryable: true,
 		Room:      &world.RoomBlackMaze3,
 		Style:     tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xAA, 0xAA, 0xAA)).Background(tcell.NewRGBColor(0xcd, 0xcd, 0xcd)),
 		Shape: world.DotGfx,
 	}
 	AllObjects = append(AllObjects, Dot)
+}
+
+// UpdateEasterEggBarrier mirrors C++ ROOMFLAG_RIGHTTHINWALL logic:
+// the right barrier of RoomCorridorRight is passable only when the Dot is in that room.
+func UpdateEasterEggBarrier() {
+	if EasterEggBarrier == nil {
+		return
+	}
+	if Dot != nil && Dot.Room == &world.RoomCorridorRight {
+		EasterEggBarrier.Room = nil // disable — no 'X' cells drawn, wall passable
+	} else {
+		EasterEggBarrier.Room = &world.RoomCorridorRight // restore barrier
+	}
 }
 
 // portStatesSeq mirrors C++ portStates[]: maps PortState index (0–23) to graphic state (0–6).
