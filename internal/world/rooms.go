@@ -283,9 +283,11 @@ func InitDirections(gameType int) {
 	RoomBelowYellowCastle.Right = &RoomCorridorRight
 
 	RoomTopAccessRight.Up = &RoomBlueMazeEntry
-	// V1: Down→BlackCastle (0x10) / V2+: Down→WhiteCastle (0x0F)
+	// V1: Down→BlackCastleEntry (0x1B) — mirrors V2 symmetry: home castle DRRD = BlackCastleEntry.
+	// C++ raw says 0x10 (BlackCastle) but gameplay requires BlackCastleEntry for path symmetry.
+	// V2+: Down→WhiteCastle (0x0F)
 	if gameType == 1 {
-		RoomTopAccessRight.Down = &RoomBlackCastle
+		RoomTopAccessRight.Down = &RoomBlackCastleEntry
 	} else {
 		RoomTopAccessRight.Down = &RoomWhiteCastle
 	}
