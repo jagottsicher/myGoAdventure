@@ -15,7 +15,6 @@ No graphics. No sprites. Just `▀`, `▄`, `█` and a healthy respect for the 
 - Dragon AI with state machine: roaming, roaring, eating, fleeing
 - Magnet, portcullis, bat, bridge — all behave as in the original
 - Adaptive layout: rooms scale to terminal size
-- God mode (`G`) with debug overlay
 - Easter egg room (enter your name)
 
 ## Requirements
@@ -38,11 +37,13 @@ go build -o adventure && ./adventure
 
 | Key | Action |
 |-----|--------|
-| Arrow keys | Move |
-| Space | Pick up / drop object |
-| `1` / `2` / `3` | Select game variation |
-| `H` | Help screen |
-| `Q` / `Esc` | Quit |
+| Arrow keys / `W` `A` `S` `D` | Move |
+| `Space` | Pick up / drop object |
+| `V` | Cycle game variation (1 / 2 / 3) |
+| `N` | Cycle difficulty (A / B) |
+| `R` | Reset game |
+| `H` | Toggle help screen |
+| `Q` | Quit |
 
 ## Dependencies
 
