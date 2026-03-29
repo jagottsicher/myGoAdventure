@@ -371,7 +371,9 @@ func InitDirections(gameType int) {
 		RoomCorridorRight.Down = &RoomMazeEntry
 	}
 	RoomCorridorRight.Left = &RoomBelowYellowCastle
-	RoomCorridorRight.Right = &RoomSplashScreen
+	// Right = 0x01 (TopAccessRight) per C++ raw data.
+	// SplashScreen (0x1E) is only reachable via the secret dot — not normal navigation.
+	RoomCorridorRight.Right = &RoomTopAccessRight
 
 	RoomMazeEntry.Up = &RoomCorridorRight
 	RoomMazeEntry.Down = &RoomMazeMiddle
