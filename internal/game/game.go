@@ -698,7 +698,6 @@ var CurrentRoom *world.Room
 
 // castle portal state — tracked across frames by UpdateCastlePortals
 var castlePortalPrevRoom *world.Room
-var prevPlayerRelY float64
 
 // Win condition state.
 var GameWon bool
@@ -1589,7 +1588,6 @@ func UpdateCastlePortals(termW, termH int) bool {
 	roomChanged := false
 	defer func() {
 		castlePortalPrevRoom = CurrentRoom
-		prevPlayerRelY = Player.RelY
 	}()
 
 	type castlePair struct {
