@@ -42,7 +42,6 @@ go build -o adventure && ./adventure
 | Space | Pick up / drop object |
 | `1` / `2` / `3` | Select game variation |
 | `H` | Help screen |
-| `G` | God mode (debug overlay) |
 | `Q` / `Esc` | Quit |
 
 ## Dependencies
