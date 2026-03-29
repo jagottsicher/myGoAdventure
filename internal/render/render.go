@@ -821,11 +821,6 @@ func drawSplashTitle(termW, termH int, bg tcell.Color, centerY int) int {
 	return centerY + 8
 }
 
-func drawSplashScreen() {
-	termW, termH := Screen.Size()
-	drawSplashOnScreen(termW, termH, game.CurrentRoom.Background)
-}
-
 func drawSplashOnScreen(termW, termH int, bg tcell.Color) {
 	gold := tcell.NewRGBColor(0xFF, 0xD8, 0x4C)
 	dim := tcell.NewRGBColor(0xAA, 0xAA, 0xAA)
