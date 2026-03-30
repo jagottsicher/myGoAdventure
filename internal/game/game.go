@@ -59,10 +59,11 @@ func CancelConfirm() {
 
 // SelOverlay is the selection overlay state for variation and difficulty cycling.
 type SelOverlay struct {
-	Active bool
-	Kind   string // "variation" or "difficulty"
-	Value  int    // current preview: variation=1..3, difficulty=0(A)/1(B)
-	Ticks  int    // countdown; reaches 0 → apply and close
+	Active   bool
+	Kind     string // "variation" or "difficulty"
+	Value    int    // current preview: variation=1..3, difficulty=0(A)/1(B)
+	Ticks    int    // countdown; reaches 0 → apply and close
+	MaxTicks int    // initial Ticks value — used by render to compute fill ratio
 }
 
 var Overlay SelOverlay
@@ -74,9 +75,11 @@ func HandleSelOverlayKey(kind string) {
 	if Overlay.Active && Overlay.Kind != kind {
 		applySelOverlay()
 	}
+	max := 3 * int(G.FPS)
 	if Overlay.Active && Overlay.Kind == kind {
 		cycleSelOverlay()
-		Overlay.Ticks = 3 * int(G.FPS)
+		Overlay.Ticks = max
+		Overlay.MaxTicks = max
 	} else {
 		var val int
 		if kind == "variation" {
@@ -84,7 +87,7 @@ func HandleSelOverlayKey(kind string) {
 		} else if !DifficultyLeft {
 			val = 1 // B
 		}
-		Overlay = SelOverlay{Active: true, Kind: kind, Value: val, Ticks: 3 * int(G.FPS)}
+		Overlay = SelOverlay{Active: true, Kind: kind, Value: val, Ticks: max, MaxTicks: max}
 	}
 }
 
