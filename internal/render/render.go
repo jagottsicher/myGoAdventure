@@ -482,7 +482,7 @@ func DrawSelOverlay() {
 	if len(itemsRow)+4 > boxW {
 		boxW = len(itemsRow) + 4
 	}
-	boxH := 5
+	boxH := 6 // +1 row for progress bar
 	bx := termW/2 - boxW/2
 	by := termH/2 - boxH/2
 
@@ -511,6 +511,34 @@ func DrawSelOverlay() {
 		if i < len(labels)-1 {
 			emitStr(Screen, col, by+3, bg, "  ")
 			col += 2
+		}
+	}
+
+	// Progress bar — smooth 8-level half-block countdown.
+	// Full at overlay open, empties as timer runs out.
+	barW := boxW - 2
+	barX := bx + 1
+	barY := by + 4
+	filled := tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Foreground(tcell.NewRGBColor(0x33, 0x33, 0x33))
+	empty := bg
+
+	ratio := 1.0
+	if o.MaxTicks > 0 {
+		ratio = float64(o.Ticks) / float64(o.MaxTicks)
+	}
+	eighths := int(ratio * float64(barW*8))
+	fullCells := eighths / 8
+	partial := eighths % 8
+	partialChars := []rune{' ', '▏', '▎', '▍', '▌', '▋', '▊', '▉'}
+
+	for i := 0; i < barW; i++ {
+		x := barX + i
+		if i < fullCells {
+			Screen.SetContent(x, barY, '█', nil, filled)
+		} else if i == fullCells && partial > 0 {
+			Screen.SetContent(x, barY, partialChars[partial], nil, filled)
+		} else {
+			Screen.SetContent(x, barY, ' ', nil, empty)
 		}
 	}
 }
