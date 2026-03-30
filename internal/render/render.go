@@ -482,7 +482,7 @@ func DrawSelOverlay() {
 	if len(itemsRow)+4 > boxW {
 		boxW = len(itemsRow) + 4
 	}
-	boxH := 6 // +1 row for progress bar
+	boxH := 7 // +2 rows: empty line + progress bar
 	bx := termW/2 - boxW/2
 	by := termH/2 - boxH/2
 
@@ -518,8 +518,9 @@ func DrawSelOverlay() {
 	// Full at overlay open, empties as timer runs out.
 	barW := boxW - 2
 	barX := bx + 1
-	barY := by + 4
-	filled := tcell.StyleDefault.Background(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Foreground(tcell.NewRGBColor(0x33, 0x33, 0x33))
+	barY := by + 5
+	// '█' and partial block chars use Foreground color — gold fg, dark bg.
+	filled := tcell.StyleDefault.Foreground(tcell.NewRGBColor(0xFF, 0xD8, 0x4C)).Background(tcell.NewRGBColor(0x33, 0x33, 0x33))
 	empty := bg
 
 	ratio := 1.0
