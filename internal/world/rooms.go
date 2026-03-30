@@ -374,9 +374,13 @@ func InitDirections(gameType int) {
 		RoomCorridorRight.Down = &RoomMazeEntry
 	}
 	RoomCorridorRight.Left = &RoomBelowYellowCastle
-	// Right = 0x01 (TopAccessRight) per C++ raw data.
-	// SplashScreen (0x1E) is only reachable via the secret dot — not normal navigation.
-	RoomCorridorRight.Right = &RoomTopAccessRight
+	// V1: Right→TopAccessRight (C++ raw 0x01; Easter Egg not used in V1 navigation)
+	// V2/V3: Right→SplashScreen (Easter Egg room, accessible from CorridorRight)
+	if gameType == 1 {
+		RoomCorridorRight.Right = &RoomTopAccessRight
+	} else {
+		RoomCorridorRight.Right = &RoomSplashScreen
+	}
 
 	RoomMazeEntry.Up = &RoomCorridorRight
 	RoomMazeEntry.Down = &RoomMazeMiddle
@@ -437,7 +441,9 @@ func InitDirections(gameType int) {
 	// Room 0x1B — Black Castle Entry
 	// All 4 dirs: V1→OtherPurpleRoom (0x1C) / V2+: stays as current (confirmed correct in V2)
 	if gameType == 1 {
-		RoomBlackCastleEntry.Up = &RoomOtherPurpleRoom
+		// Up→CorridorRight: symmetric return path (CorridorRight.Down→BlackCastleEntry in V1)
+		// Down/Left/Right→OtherPurpleRoom per C++ 0x89 group
+		RoomBlackCastleEntry.Up = &RoomCorridorRight
 		RoomBlackCastleEntry.Down = &RoomOtherPurpleRoom
 		RoomBlackCastleEntry.Left = &RoomOtherPurpleRoom
 		RoomBlackCastleEntry.Right = &RoomOtherPurpleRoom
