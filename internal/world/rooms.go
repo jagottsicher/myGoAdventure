@@ -374,13 +374,10 @@ func InitDirections(gameType int) {
 		RoomCorridorRight.Down = &RoomMazeEntry
 	}
 	RoomCorridorRight.Left = &RoomBelowYellowCastle
-	// V1: Right→TopAccessRight (C++ raw 0x01; Easter Egg not used in V1 navigation)
-	// V2/V3: Right→SplashScreen (Easter Egg room, accessible from CorridorRight)
-	if gameType == 1 {
-		RoomCorridorRight.Right = &RoomTopAccessRight
-	} else {
-		RoomCorridorRight.Right = &RoomSplashScreen
-	}
+	// All variations: Right→SplashScreen (Easter Egg room).
+	// C++ raw value is 0x01 (TopAccessRight), overridden to 0x1E via secret-dot mechanic.
+	// Since the dot is not yet implemented, we connect directly — same for all variations.
+	RoomCorridorRight.Right = &RoomSplashScreen
 
 	RoomMazeEntry.Up = &RoomCorridorRight
 	RoomMazeEntry.Down = &RoomMazeMiddle
