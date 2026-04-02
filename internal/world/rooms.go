@@ -1,6 +1,6 @@
 package world
 
-import "github.com/gdamore/tcell/v2"
+import "github.com/gdamore/tcell/v3"
 
 // Room 0x1E in C++ — "Name Room" (Easter Egg, zeigt "Warren Robinett" in Originalfarbe FLASH)
 // In Go als Splashscreen genutzt — gleiche Rolle: Sonder-Anzeigeraum außerhalb des Spielablaufs

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"development/myGoAdventure/internal/world"
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 type Game struct {

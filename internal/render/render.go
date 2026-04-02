@@ -7,7 +7,7 @@ import (
 
 	"development/myGoAdventure/internal/game"
 	"development/myGoAdventure/internal/world"
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 	"github.com/mattn/go-runewidth"
 )
 
@@ -101,7 +101,7 @@ func DrawObject(obj *game.Object) {
 	}
 	screenX := int(obj.RelX*float64(termW)) - ox
 	screenY := int(obj.RelY*float64(termH)) - oy
-	objFg, _, _ := obj.Style.Decompose()
+	objFg := obj.Style.GetForeground()
 	for _, point := range obj.Shape {
 		px := screenX + point.X
 		if obj.Flipped {
@@ -116,8 +116,8 @@ func DrawObject(obj *game.Object) {
 		isHalfBlock := s >= 0x2580 && s <= 0x259F && s != '█'
 		isBoxDrawing := s >= 0x2500 && s <= 0x257F
 		if isHalfBlock || isBoxDrawing {
-			_, _, existingStyle, _ := Screen.GetContent(px, py)
-			_, existingBg, _ := existingStyle.Decompose()
+			_, existingStyle, _ := Screen.Get(px, py)
+			existingBg := existingStyle.GetBackground()
 			if obj == game.Dot && s == '▀' {
 				// Use wall color as background only when the dot's own cell is a wall cell.
 				// Mirror the aura logic from DrawStage for dark maze rooms.

@@ -10,7 +10,7 @@ import (
 
 	"development/myGoAdventure/internal/game"
 	"development/myGoAdventure/internal/render"
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 const (
@@ -33,7 +33,7 @@ var (
 func InitUserInput() {
 	go func() {
 		for {
-			switch ev := render.Screen.PollEvent().(type) {
+			switch ev := (<-render.Screen.EventQ()).(type) {
 			case *tcell.EventKey:
 				handleKey(ev)
 			case *tcell.EventResize:
@@ -50,7 +50,7 @@ func InitUserInput() {
 func handleKey(ev *tcell.EventKey) {
 	// Confirmation dialog takes priority.
 	if game.ConfirmMode {
-		if ev.Key() == tcell.KeyRune && (ev.Rune() == 'y' || ev.Rune() == 'Y') {
+		if ev.Key() == tcell.KeyRune && (ev.Str() == "y" || ev.Str() == "Y") {
 			action := game.ConfirmAction
 			game.CancelConfirm()
 			if action == "quit" {
@@ -79,20 +79,20 @@ func handleKey(ev *tcell.EventKey) {
 	case ev.Key() == tcell.KeyCtrlG:
 		game.ToggleGodMode()
 		return
-	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'h' || ev.Rune() == 'H'):
+	case ev.Key() == tcell.KeyRune && (ev.Str() == "h" || ev.Str() == "H"):
 		game.ToggleHelp()
 		render.FillTheScreen()
 		return
-	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'v' || ev.Rune() == 'V'):
+	case ev.Key() == tcell.KeyRune && (ev.Str() == "v" || ev.Str() == "V"):
 		game.HandleSelOverlayKey("variation")
 		return
-	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'n' || ev.Rune() == 'N'):
+	case ev.Key() == tcell.KeyRune && (ev.Str() == "n" || ev.Str() == "N"):
 		game.HandleSelOverlayKey("difficulty")
 		return
-	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'r' || ev.Rune() == 'R'):
+	case ev.Key() == tcell.KeyRune && (ev.Str() == "r" || ev.Str() == "R"):
 		game.StartConfirm("reset")
 		return
-	case ev.Key() == tcell.KeyRune && ev.Rune() == ' ':
+	case ev.Key() == tcell.KeyRune && ev.Str() == " ":
 		if game.CarriedObject != nil {
 			game.DropCarried()
 		} else {
@@ -100,7 +100,7 @@ func handleKey(ev *tcell.EventKey) {
 			game.TryPickup(w, h)
 		}
 		return
-	case ev.Key() == tcell.KeyRune && (ev.Rune() == 'q' || ev.Rune() == 'Q'):
+	case ev.Key() == tcell.KeyRune && (ev.Str() == "q" || ev.Str() == "Q"):
 		game.StartConfirm("quit")
 		return
 	}

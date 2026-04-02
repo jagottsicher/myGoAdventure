@@ -1,6 +1,6 @@
 package world
 
-import "github.com/gdamore/tcell/v2"
+import "github.com/gdamore/tcell/v3"
 
 type Cell struct {
 	X, Y   int
