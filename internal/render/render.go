@@ -851,8 +851,8 @@ func drawSplashTitle(termW, termH int, bg tcell.Color, centerY int) int {
 }
 
 func drawSplashOnScreen(termW, termH int, bg tcell.Color) {
-	gold := tcell.NewRGBColor(0xFF, 0xD8, 0x4C)
-	dim := tcell.NewRGBColor(0xAA, 0xAA, 0xAA)
+	gold := tcell.NewRGBColor(0xFF, 0x80, 0x00)
+	dim := tcell.NewRGBColor(0x77, 0x77, 0x77)
 
 	titleY := termH/2 - 4 // center 9-row title: rows termH/2-4 … termH/2+4
 	below := drawSplashTitle(termW, termH, bg, titleY)
