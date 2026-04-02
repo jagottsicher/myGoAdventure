@@ -6,6 +6,10 @@ A terminal remake of Warren Robinett's [Adventure](https://en.wikipedia.org/wiki
 
 No graphics. No sprites. Just `▀`, `▄`, `█` and a healthy respect for the original.
 
+## An ADEVENTURE 
+
+ported with ♥ to Go by Jens Schendel with intense use of the awesome tcell package provided by Garrett D'Amore, and with heartfelt thanks for countless hours spent in front of my Atari 2600, dedicated to Warren Robinett. The ADVENTURE goes on and on!
+
 ---
 
 ## Features
