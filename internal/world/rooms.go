@@ -335,9 +335,9 @@ func InitDirections(gameType int) {
 	RoomWhiteCastleEntry.Left = &RoomRedMazeBottom
 
 	// Room 0x1D — Black Castle Top
-	// UP: V1→CorridorRight (0x03) / V2+: stays as BlackMazeEntry (confirmed correct in V2)
+	// V1: Up→OtherPurpleRoom (lila, nur unten offen) / V2+: Up→BlackMazeEntry
 	if gameType == 1 {
-		RoomBlackCastleTop.Up = &RoomCorridorRight
+		RoomBlackCastleTop.Up = &RoomOtherPurpleRoom
 	} else {
 		RoomBlackCastleTop.Up = &RoomBlackMazeEntry
 	}
@@ -452,9 +452,10 @@ func InitDirections(gameType int) {
 	}
 
 	RoomOtherPurpleRoom.Up = &RoomBlackCastleTop
-	// V1: Down→BlackCastleEntry (0x1B) / V2+: Down→SideCorridorCyan (0x0C)
+	// V1: Down→BlackCastleTop (symmetric: BlackCastleTop.Up→OtherPurpleRoom)
+	// V2+: Down→SideCorridorCyan (0x0C)
 	if gameType == 1 {
-		RoomOtherPurpleRoom.Down = &RoomBlackCastleEntry
+		RoomOtherPurpleRoom.Down = &RoomBlackCastleTop
 	} else {
 		RoomOtherPurpleRoom.Down = &RoomSideCorridorCyan
 	}
