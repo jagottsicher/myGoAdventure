@@ -19,7 +19,7 @@ ported with ♥ to Go by Jens Schendel with intense use of the awesome tcell pac
 - Dragon AI with state machine: roaming, roaring, eating, fleeing
 - Magnet, portcullis, bat, bridge — all behave as in the original
 - Adaptive layout: rooms scale to terminal size
-- Easter egg room (enter your name)
+- Easter egg room with scrolling credit text
 
 ## Requirements
 
@@ -76,16 +76,18 @@ myGoAdventure/
 ## Current State
 
 Working:
-- All 31 rooms with correct connections for variations 1 and 2
-- Variation 3 random placement (mirrors original C++ bounds table)
+- All 31 rooms implemented; connections verified for variation 1
+- Variation 2/3 connections mostly correct — see known issues below
+- Variation 3 random object placement (mirrors original C++ bounds table)
 - Full dragon behavior (roam, roar, eat, flee from sword)
+- V2/V3 dragons start moving immediately from game start (matches original)
 - All object interactions: keys, castles, portcullis, bridge, bat, magnet, sword, chalice
 - Win condition and win overlay
 - Help screen and Easter egg room
 
 Known issues / not yet implemented:
-- Variation 3 connections not fully verified against original
-- Number room (game select screen) is functional but visually minimal
+- 5 room connections wrong in V2/V3: BlackMazeEntry.Down, BlackCastleTop.Up, BlackCastleEntry.Up/Right/Left
+- Easter egg dot mechanic not implemented (dot exists but carrying it has no effect yet)
 - Audio: none (terminal limitation)
 
 ## References
