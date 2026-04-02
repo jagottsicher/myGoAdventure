@@ -882,9 +882,9 @@ func initDragonState(ds *dragonState, dragon *Object, w, h int) {
 	ds.tick = 0
 	ds.State = 0
 	ds.RoarTimer = 0
-	ds.Dormant = true
+	ds.Dormant = false
 	Eaten = false
-	// V1 (GameType==1): dragons stand still. V2/V3: start moving diagonally.
+	// V1 (GameType==1): dragons stand still. V2/V3: start moving diagonally immediately (C++ original).
 	if G.GameType == 1 {
 		ds.dirX = 0
 		ds.dirY = 0
@@ -1508,8 +1508,8 @@ func UpdateEasterEggBarrier() {
 var portStatesSeq = [24]int{0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1}
 
 // portTicksPerStep: frames between each portcullis state increment.
-// 12 steps × 30 frames / 60 fps ≈ 6 seconds to fully open.
-const portTicksPerStep = 30
+// 12 steps × 15 frames / 60 fps ≈ 3 seconds to fully open.
+const portTicksPerStep = 15
 
 // CollisionCheckObjects returns true if the bounding boxes of a and b overlap.
 func CollisionCheckObjects(a, b *Object, termW, termH int) bool {
