@@ -53,7 +53,7 @@ go build -o adventure && ./adventure
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| [github.com/gdamore/tcell/v2](https://github.com/gdamore/tcell) | v2.7.4 | Terminal rendering, input, color |
+| [github.com/gdamore/tcell/v3](https://github.com/gdamore/tcell) | v3.1.2 | Terminal rendering, input, color |
 | [github.com/mattn/go-runewidth](https://github.com/mattn/go-runewidth) | v0.0.15 | Unicode character width handling |
 
 Indirect dependencies pulled in by tcell: `go-colorful`, `encoding`, `uniseg`, `golang.org/x/sys`, `golang.org/x/term`, `golang.org/x/text`.

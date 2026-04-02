@@ -74,6 +74,10 @@ jobs:
           generate_release_notes: true
           files: binaries/*
           body: |
+            ## What's new
+
+            - Upgraded to **tcell v3** — improved terminal compatibility and event handling
+
             ## Installation
 
             Download the binary for your platform and run it in a terminal.
