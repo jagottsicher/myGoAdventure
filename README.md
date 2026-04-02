@@ -19,7 +19,7 @@ ported with ♥ to Go by Jens Schendel with intense use of the awesome tcell pac
 - Dragon AI with state machine: roaming, roaring, eating, fleeing
 - Magnet, portcullis, bat, bridge — all behave as in the original
 - Adaptive layout: rooms scale to terminal size
-- Easter egg room with scrolling credit text
+- Easter egg room with credit text
 
 ## Requirements
 
