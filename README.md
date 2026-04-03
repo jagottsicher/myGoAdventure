@@ -12,6 +12,14 @@ ported with ♥ to Go by Jens Schendel with intense use of the awesome tcell pac
 
 ---
 
+## Screenshots
+
+<p>
+  <img src="screenie_1.png" width="300" alt="Yellow Castle with portcullis and dragon"/>
+  &nbsp;
+  <img src="screenie_2.png" width="300" alt="Blue maze with white key and dragon"/>
+</p>
+
 ## Features
 
 - All 3 game variations (1: easy, 2: standard, 3: random placement)
