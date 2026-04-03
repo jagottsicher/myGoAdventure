@@ -11,11 +11,11 @@ No graphics. No sprites. Just `▀`, `▄`, `█` and a healthy respect for the 
 ## Screenshots
 
 <p>
-  <img src="screenie_1.png" width="300" alt="Yellow Castle with portcullis and dragon"/>
+  <img src="screenie_1.png" width="240" alt="Yellow Castle with portcullis and dragon"/>
   &nbsp;
-  <img src="screenie_2.png" width="300" alt="Blue maze with white key and dragon"/>
+  <img src="screenie_2.png" width="240" alt="Blue maze with white key and dragon"/>
   &nbsp;
-  <img src="screenie_3.png" width="300" alt="Easter egg screen"/>
+  <img src="screenie_3.png" width="240" alt="Easter egg screen"/>
 </p>
 
 ## An ADVENTURE 
