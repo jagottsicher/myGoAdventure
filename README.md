@@ -15,11 +15,11 @@ ported with ♥ to Go by Jens Schendel with intense use of the awesome tcell pac
 ## Screenshots
 
 <p>
-  <img src="screenie_1.png" width="200" alt="Yellow Castle with portcullis and dragon"/>
+  <img src="screenie_1.png" width="240" alt="Yellow Castle with portcullis and dragon"/>
   &nbsp;
-  <img src="screenie_2.png" width="200" alt="Blue maze with white key and dragon"/>
+  <img src="screenie_2.png" width="240" alt="Blue maze with white key and dragon"/>
   &nbsp;
-  <img src="screenie_3.png" width="200" alt="Easter egg screen"/>
+  <img src="screenie_3.png" width="240" alt="Easter egg screen"/>
 </p>
 
 ## Features
