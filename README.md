@@ -87,7 +87,7 @@ Working:
 
 Known issues / not yet implemented:
 - 5 room connections wrong in V2/V3: BlackMazeEntry.Down, BlackCastleTop.Up, BlackCastleEntry.Up/Right/Left
-- Easter egg dot mechanic not implemented (dot exists but carrying it has no effect yet)
+- Easter egg dot mechanic not implemented (dot exists but dot "visible")
 - Audio: none (terminal limitation)
 
 ## References
