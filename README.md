@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/jagottsicher/myGoAdventure/actions/workflows/ci.yml/badge.svg)](https://github.com/jagottsicher/myGoAdventure/actions/workflows/ci.yml)
 
-A terminal remake of Warren Robinett's [Adventure](https://en.wikipedia.org/wiki/Adventure_(Atari_2600)) (Atari 2600, 1980) — written in Go, rendered entirely in the terminal using Unicode block characters.
+A terminal remake of Warren Robinett's [Adventure](https://en.wikipedia.org/wiki/Adventure_(Atari_2600)) (Atari 2600, 1980) — written in Go, rendered entirely in the terminal using Unicode block characters. Should work on MS Windows (better use PowerShell), Linux (amd64, arm64) and Mac!. See latest release.
 
 No graphics. No sprites. Just `▀`, `▄`, `█` and a healthy respect for the original.
 
